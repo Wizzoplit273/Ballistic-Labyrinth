@@ -1,0 +1,106 @@
+[gd_scene load_steps=6 format=3 uid="uid://ccyu7vmeopnny"]
+
+[ext_resource type="Texture2D" uid="uid://ufr4xvpydw1x" path="res://ingame/entities/player/player_regular.png" id="1_5b1xy"]
+
+[sub_resource type="Gradient" id="Gradient_rth3e"]
+colors = PackedColorArray(0.294118, 0.294118, 0.294118, 0.368627, 1, 1, 1, 0.388235)
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_5b1xy"]
+frequency = 0.005
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_53dy8"]
+width = 2
+height = 2
+color_ramp = SubResource("Gradient_rth3e")
+noise = SubResource("FastNoiseLite_5b1xy")
+
+[sub_resource type="LabelSettings" id="LabelSettings_rth3e"]
+font_size = 25
+
+[node name="PlayerLobbyUI" type="TextureRect"]
+custom_minimum_size = Vector2(380, 275)
+offset_right = 2.0
+offset_bottom = 2.0
+texture = SubResource("NoiseTexture2D_53dy8")
+metadata/_edit_lock_ = true
+
+[node name="Frame" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+metadata/_edit_lock_ = true
+
+[node name="IDLabel" type="Label" parent="Frame"]
+layout_mode = 2
+text = "ID: n"
+label_settings = SubResource("LabelSettings_rth3e")
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="NameLabel" type="Label" parent="Frame"]
+layout_mode = 2
+text = "Name: placeholder"
+label_settings = SubResource("LabelSettings_rth3e")
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+metadata/_edit_lock_ = true
+
+[node name="TextureBox" type="HBoxContainer" parent="Frame"]
+layout_mode = 2
+size_flags_vertical = 3
+metadata/_edit_lock_ = true
+
+[node name="HSpacerLeft" type="Control" parent="Frame/TextureBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.05
+metadata/_edit_lock_ = true
+
+[node name="TankTexture" type="TextureRect" parent="Frame/TextureBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+texture = ExtResource("1_5b1xy")
+stretch_mode = 5
+metadata/_edit_lock_ = true
+
+[node name="HSpacerRight" type="Control" parent="Frame/TextureBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.05
+metadata/_edit_lock_ = true
+
+[node name="RemoveBotButton" type="Button" parent="Frame/TextureBox"]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+text = "Remove"
+metadata/_edit_lock_ = true
+
+[node name="RestLabels" type="HBoxContainer" parent="Frame"]
+layout_mode = 2
+metadata/_edit_lock_ = true
+
+[node name="ScoreLabel" type="Label" parent="Frame/RestLabels"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Score: n"
+label_settings = SubResource("LabelSettings_rth3e")
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="KillsLabel" type="Label" parent="Frame/RestLabels"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Kills: n"
+label_settings = SubResource("LabelSettings_rth3e")
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_lock_ = true

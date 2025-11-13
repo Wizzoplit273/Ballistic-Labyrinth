@@ -1,0 +1,1084 @@
+[gd_scene load_steps=26 format=3 uid="uid://dl53xfp6aj77b"]
+
+[ext_resource type="Script" uid="uid://wgurxu8fyrnf" path="res://origin.gd" id="1_tb4yc"]
+[ext_resource type="Script" uid="uid://desjpxlp4d326" path="res://ui/main_menu/main_menu.gd" id="2_2me8q"]
+[ext_resource type="Texture2D" uid="uid://bsnkweusjyp86" path="res://ui/main_menu/main_menu_background.jpg" id="2_wc1iw"]
+[ext_resource type="Script" uid="uid://tecvb1bo3wnl" path="res://ui/pause_menu/pause_menu.gd" id="2_xyqw4"]
+[ext_resource type="Texture2D" uid="uid://cfp23f081i35a" path="res://ui/noise_texture_1.tres" id="4_xyqw4"]
+[ext_resource type="Script" uid="uid://b41ev4xjlv5mx" path="res://ui/settings_menu/settings_menu.gd" id="6_ppsw1"]
+[ext_resource type="Script" uid="uid://cen5mp5h1gvmu" path="res://ui/chat_window.gd" id="7_6o7oq"]
+[ext_resource type="Texture2D" uid="uid://ufr4xvpydw1x" path="res://ingame/entities/player/player_regular.png" id="7_bao8v"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_ppsw1"]
+font_size = 70
+
+[sub_resource type="LabelSettings" id="LabelSettings_xyqw4"]
+font_size = 75
+
+[sub_resource type="LabelSettings" id="LabelSettings_wc1iw"]
+font_size = 100
+outline_size = 10
+shadow_size = 100
+shadow_color = Color(0, 0, 0, 0.639216)
+
+[sub_resource type="LabelSettings" id="LabelSettings_pqpuc"]
+font_size = 30
+
+[sub_resource type="LabelSettings" id="LabelSettings_j0wob"]
+font_size = 50
+
+[sub_resource type="Theme" id="Theme_bao8v"]
+LineEdit/font_sizes/font_size = 40
+
+[sub_resource type="LabelSettings" id="LabelSettings_bao8v"]
+font_size = 50
+
+[sub_resource type="LabelSettings" id="LabelSettings_mh6uv"]
+font_size = 40
+
+[sub_resource type="LabelSettings" id="LabelSettings_1n0q8"]
+font_size = 30
+
+[sub_resource type="Gradient" id="Gradient_bao8v"]
+interpolation_mode = 1
+offsets = PackedFloat32Array(0, 0.280303, 0.477273, 0.659091, 0.810606)
+colors = PackedColorArray(0, 0, 0, 1, 0.18359, 0.18359, 0.18359, 1, 0, 0, 0, 1, 0.187176, 0.187176, 0.187176, 1, 0, 0, 0, 1)
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_6o7oq"]
+seed = 9
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_j0wob"]
+width = 100
+height = 100
+color_ramp = SubResource("Gradient_bao8v")
+noise = SubResource("FastNoiseLite_6o7oq")
+
+[sub_resource type="Gradient" id="Gradient_6o7oq"]
+interpolation_mode = 1
+offsets = PackedFloat32Array(0.00757576, 0.568182)
+colors = PackedColorArray(0.118581, 0.118581, 0.118581, 1, 0, 0, 0, 1)
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_j0wob"]
+frequency = 1.0
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_mh6uv"]
+width = 10
+height = 10
+color_ramp = SubResource("Gradient_6o7oq")
+noise = SubResource("FastNoiseLite_j0wob")
+
+[sub_resource type="LabelSettings" id="LabelSettings_g7lja"]
+font_size = 40
+
+[sub_resource type="LabelSettings" id="LabelSettings_6o7oq"]
+font_size = 35
+
+[node name="Origin" type="Node"]
+script = ExtResource("1_tb4yc")
+
+[node name="CurrentLevelContainer" type="Node" parent="."]
+
+[node name="MenusBackground" type="CanvasLayer" parent="."]
+layer = -128
+
+[node name="Background" type="TextureRect" parent="MenusBackground"]
+modulate = Color(0.716296, 0.716296, 0.716296, 0.482353)
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_wc1iw")
+metadata/_edit_lock_ = true
+
+[node name="DEBUG_Screen" type="CanvasLayer" parent="."]
+layer = 128
+
+[node name="Frame" type="VBoxContainer" parent="DEBUG_Screen"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+metadata/_edit_lock_ = true
+
+[node name="DEBUG_MazeCheck" type="Label" parent="DEBUG_Screen/Frame"]
+visible = false
+layout_mode = 2
+text = "Debug maze generation log messages are on. Press SHIFT + G to toggle it."
+metadata/_edit_lock_ = true
+
+[node name="DEBUG_DodgeCheck" type="Label" parent="DEBUG_Screen/Frame"]
+visible = false
+layout_mode = 2
+text = "Debug enemy dodge points are shown. Press SHIFT + V to toggle it."
+metadata/_edit_lock_ = true
+
+[node name="PauseMenu" type="CanvasLayer" parent="."]
+process_mode = 3
+visible = false
+script = ExtResource("2_xyqw4")
+
+[node name="Background" type="TextureRect" parent="PauseMenu"]
+modulate = Color(1, 1, 1, 0.784314)
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("4_xyqw4")
+metadata/_edit_lock_ = true
+
+[node name="Frame" type="VBoxContainer" parent="PauseMenu"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+metadata/_edit_lock_ = true
+
+[node name="Title" type="Label" parent="PauseMenu/Frame"]
+layout_mode = 2
+size_flags_vertical = 10
+size_flags_stretch_ratio = 0.35
+text = "The game is paused.
+Press P, escape or resume to unpause"
+label_settings = SubResource("LabelSettings_ppsw1")
+horizontal_alignment = 1
+vertical_alignment = 2
+metadata/_edit_lock_ = true
+
+[node name="VSpacer1" type="Control" parent="PauseMenu/Frame"]
+layout_mode = 2
+size_flags_vertical = 3
+metadata/_edit_lock_ = true
+
+[node name="BurronContainer" type="HBoxContainer" parent="PauseMenu/Frame"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.2
+alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="ResumeButton" type="Button" parent="PauseMenu/Frame/BurronContainer"]
+layout_mode = 2
+size_flags_horizontal = 10
+text = "Resume"
+metadata/_edit_lock_ = true
+
+[node name="HSpacer" type="Control" parent="PauseMenu/Frame/BurronContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+metadata/_edit_lock_ = true
+
+[node name="BackToMainMenuButton" type="Button" parent="PauseMenu/Frame/BurronContainer"]
+layout_mode = 2
+size_flags_horizontal = 2
+text = "Back to Menu"
+metadata/_edit_lock_ = true
+
+[node name="VSpacer2" type="Control" parent="PauseMenu/Frame"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.05
+metadata/_edit_lock_ = true
+
+[node name="MainMenu" type="Control" parent="."]
+self_modulate = Color(0.168627, 0.168627, 0.168627, 0.419608)
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("2_2me8q")
+metadata/_edit_lock_ = true
+
+[node name="ExitConfirmDialog" type="CanvasLayer" parent="MainMenu"]
+visible = false
+
+[node name="Background" type="TextureRect" parent="MainMenu/ExitConfirmDialog"]
+modulate = Color(1, 1, 1, 0.72549)
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("4_xyqw4")
+metadata/_edit_lock_ = true
+
+[node name="Frame" type="VBoxContainer" parent="MainMenu/ExitConfirmDialog"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+metadata/_edit_lock_ = true
+
+[node name="ExitConfirmDialogTitle" type="Label" parent="MainMenu/ExitConfirmDialog/Frame"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 10
+size_flags_stretch_ratio = 0.17
+text = "Lorem Ipsum depends on if it's host and if it's exiting room or exiting game"
+label_settings = SubResource("LabelSettings_xyqw4")
+horizontal_alignment = 1
+vertical_alignment = 2
+autowrap_mode = 3
+metadata/_edit_lock_ = true
+
+[node name="VSpacer1" type="Control" parent="MainMenu/ExitConfirmDialog/Frame"]
+layout_mode = 2
+size_flags_vertical = 3
+metadata/_edit_lock_ = true
+
+[node name="ButtonContainer" type="HBoxContainer" parent="MainMenu/ExitConfirmDialog/Frame"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.2
+alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="DiscardButton" type="Button" parent="MainMenu/ExitConfirmDialog/Frame/ButtonContainer"]
+layout_mode = 2
+size_flags_horizontal = 10
+text = "No"
+metadata/_edit_lock_ = true
+
+[node name="HSpacer" type="Control" parent="MainMenu/ExitConfirmDialog/Frame/ButtonContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+metadata/_edit_lock_ = true
+
+[node name="ConfirmButton" type="Button" parent="MainMenu/ExitConfirmDialog/Frame/ButtonContainer"]
+layout_mode = 2
+size_flags_horizontal = 2
+text = "Yes"
+metadata/_edit_lock_ = true
+
+[node name="VSpacer2" type="Control" parent="MainMenu/ExitConfirmDialog/Frame"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.05
+metadata/_edit_lock_ = true
+
+[node name="Frame" type="VBoxContainer" parent="MainMenu"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+metadata/_edit_lock_ = true
+
+[node name="TitleContainer1" type="HBoxContainer" parent="MainMenu/Frame"]
+layout_mode = 2
+metadata/_edit_lock_ = true
+
+[node name="TitleContainer2" type="VBoxContainer" parent="MainMenu/Frame/TitleContainer1"]
+layout_mode = 2
+size_flags_horizontal = 10
+metadata/_edit_lock_ = true
+
+[node name="Title" type="Label" parent="MainMenu/Frame/TitleContainer1/TitleContainer2"]
+layout_mode = 2
+size_flags_stretch_ratio = 0.2
+text = "Ballistic Labyrinth"
+label_settings = SubResource("LabelSettings_wc1iw")
+horizontal_alignment = 1
+vertical_alignment = 2
+metadata/_edit_lock_ = true
+
+[node name="VersionLabel" type="Label" parent="MainMenu/Frame/TitleContainer1/TitleContainer2"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 2
+size_flags_stretch_ratio = 0.07
+text = "Version xyp.yp.yp.yp"
+label_settings = SubResource("LabelSettings_pqpuc")
+horizontal_alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="VSpacer" type="Control" parent="MainMenu/Frame/TitleContainer1"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.12
+metadata/_edit_lock_ = true
+
+[node name="VSpacer1" type="Control" parent="MainMenu/Frame"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.15
+metadata/_edit_lock_ = true
+
+[node name="MainContainer" type="HBoxContainer" parent="MainMenu/Frame"]
+layout_mode = 2
+size_flags_horizontal = 3
+metadata/_edit_lock_ = true
+
+[node name="LeftSide" type="VBoxContainer" parent="MainMenu/Frame/MainContainer"]
+layout_mode = 2
+size_flags_horizontal = 10
+size_flags_stretch_ratio = 1.7
+metadata/_edit_lock_ = true
+
+[node name="PlayerNameLabel" type="Label" parent="MainMenu/Frame/MainContainer/LeftSide"]
+layout_mode = 2
+text = "Name:"
+label_settings = SubResource("LabelSettings_j0wob")
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="PlayerNameEdit" type="LineEdit" parent="MainMenu/Frame/MainContainer/LeftSide"]
+unique_name_in_owner = true
+layout_mode = 2
+theme = SubResource("Theme_bao8v")
+text = "unnamed"
+placeholder_text = "name"
+metadata/_edit_lock_ = true
+
+[node name="PlayerColorTitle" type="Label" parent="MainMenu/Frame/MainContainer/LeftSide"]
+layout_mode = 2
+text = "Player Colour"
+label_settings = SubResource("LabelSettings_bao8v")
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="PlayerColorContainer" type="HBoxContainer" parent="MainMenu/Frame/MainContainer/LeftSide"]
+layout_mode = 2
+size_flags_vertical = 0
+alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="PlayerColorTest" type="TextureRect" parent="MainMenu/Frame/MainContainer/LeftSide/PlayerColorContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+texture = ExtResource("7_bao8v")
+metadata/_edit_lock_ = true
+
+[node name="PlayerColorPicker" type="ColorPicker" parent="MainMenu/Frame/MainContainer/LeftSide/PlayerColorContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 0
+edit_alpha = false
+sampler_visible = false
+color_modes_visible = false
+sliders_visible = false
+hex_visible = false
+presets_visible = false
+metadata/_edit_lock_ = true
+
+[node name="HSpacer1" type="Control" parent="MainMenu/Frame/MainContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.05
+metadata/_edit_lock_ = true
+
+[node name="RightSide" type="VBoxContainer" parent="MainMenu/Frame/MainContainer"]
+layout_mode = 2
+metadata/_edit_lock_ = true
+
+[node name="PeerModeLabel" type="Label" parent="MainMenu/Frame/MainContainer/RightSide"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.07
+text = "You're not part of a room! Click \"Host\" to start hosting a room or \"Join\" to join a created room"
+label_settings = SubResource("LabelSettings_pqpuc")
+horizontal_alignment = 1
+autowrap_mode = 3
+metadata/_edit_lock_ = true
+
+[node name="ButtonsContainer" type="HBoxContainer" parent="MainMenu/Frame/MainContainer/RightSide"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.4
+alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="StartContainer" type="VBoxContainer" parent="MainMenu/Frame/MainContainer/RightSide/ButtonsContainer"]
+layout_mode = 2
+alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="StartMissionButton" type="Button" parent="MainMenu/Frame/MainContainer/RightSide/ButtonsContainer/StartContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+text = "Start Game"
+metadata/_edit_lock_ = true
+
+[node name="VSpacer1" type="Control" parent="MainMenu/Frame/MainContainer/RightSide/ButtonsContainer/StartContainer"]
+custom_minimum_size = Vector2(0, 15)
+layout_mode = 2
+size_flags_stretch_ratio = 0.1
+metadata/_edit_lock_ = true
+
+[node name="ServerButtons" type="HBoxContainer" parent="MainMenu/Frame/MainContainer/RightSide/ButtonsContainer/StartContainer"]
+layout_mode = 2
+alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="HostButton" type="Button" parent="MainMenu/Frame/MainContainer/RightSide/ButtonsContainer/StartContainer/ServerButtons"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+text = "Host"
+metadata/_edit_lock_ = true
+
+[node name="HSpacer" type="Control" parent="MainMenu/Frame/MainContainer/RightSide/ButtonsContainer/StartContainer/ServerButtons"]
+custom_minimum_size = Vector2(25, 0)
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.05
+metadata/_edit_lock_ = true
+
+[node name="JoinButton" type="Button" parent="MainMenu/Frame/MainContainer/RightSide/ButtonsContainer/StartContainer/ServerButtons"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+text = "Join"
+metadata/_edit_lock_ = true
+
+[node name="VSpacer2" type="Control" parent="MainMenu/Frame/MainContainer/RightSide/ButtonsContainer/StartContainer"]
+custom_minimum_size = Vector2(0, 15)
+layout_mode = 2
+size_flags_stretch_ratio = 0.1
+metadata/_edit_lock_ = true
+
+[node name="AddBotButton" type="Button" parent="MainMenu/Frame/MainContainer/RightSide/ButtonsContainer/StartContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+disabled = true
+text = "Add Bot"
+metadata/_edit_lock_ = true
+
+[node name="SettingsExitContainer" type="VBoxContainer" parent="MainMenu/Frame/MainContainer/RightSide/ButtonsContainer"]
+layout_mode = 2
+alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="SettingsButton" type="Button" parent="MainMenu/Frame/MainContainer/RightSide/ButtonsContainer/SettingsExitContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+text = "Settings"
+metadata/_edit_lock_ = true
+
+[node name="VSpacer" type="Control" parent="MainMenu/Frame/MainContainer/RightSide/ButtonsContainer/SettingsExitContainer"]
+custom_minimum_size = Vector2(0, 15)
+layout_mode = 2
+metadata/_edit_lock_ = true
+
+[node name="ExitButtons" type="HBoxContainer" parent="MainMenu/Frame/MainContainer/RightSide/ButtonsContainer/SettingsExitContainer"]
+layout_mode = 2
+metadata/_edit_lock_ = true
+
+[node name="ExitRoomButton" type="Button" parent="MainMenu/Frame/MainContainer/RightSide/ButtonsContainer/SettingsExitContainer/ExitButtons"]
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 4
+text = "Exit
+Room"
+metadata/_edit_lock_ = true
+
+[node name="HSpacer" type="Control" parent="MainMenu/Frame/MainContainer/RightSide/ButtonsContainer/SettingsExitContainer/ExitButtons"]
+custom_minimum_size = Vector2(25, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.05
+metadata/_edit_lock_ = true
+
+[node name="ExitGameButton" type="Button" parent="MainMenu/Frame/MainContainer/RightSide/ButtonsContainer/SettingsExitContainer/ExitButtons"]
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 4
+text = "Exit
+Game"
+metadata/_edit_lock_ = true
+
+[node name="Developer" type="Label" parent="MainMenu/Frame/MainContainer/RightSide"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.07
+text = "Project made by Wizzoplit273"
+label_settings = SubResource("LabelSettings_pqpuc")
+horizontal_alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="HSpacer2" type="Control" parent="MainMenu/Frame/MainContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.05
+metadata/_edit_lock_ = true
+
+[node name="VSpacer3" type="Control" parent="MainMenu/Frame"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.4
+metadata/_edit_lock_ = true
+
+[node name="Lobby" type="VBoxContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+size_flags_stretch_ratio = 1.18
+mouse_filter = 2
+metadata/_edit_lock_ = true
+
+[node name="PlayerListLabels" type="HBoxContainer" parent="Lobby"]
+layout_mode = 2
+size_flags_vertical = 10
+size_flags_stretch_ratio = 2.89
+alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="PlayerListLabel" type="Label" parent="Lobby/PlayerListLabels"]
+layout_mode = 2
+size_flags_vertical = 1
+text = "Lobby"
+label_settings = SubResource("LabelSettings_mh6uv")
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="HSpacer" type="Control" parent="Lobby/PlayerListLabels"]
+custom_minimum_size = Vector2(25, 0)
+layout_mode = 2
+metadata/_edit_lock_ = true
+
+[node name="PlayerListCountLabel" type="Label" parent="Lobby/PlayerListLabels"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 1
+text = "Player count: 0"
+label_settings = SubResource("LabelSettings_1n0q8")
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Lobby"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+metadata/_edit_lock_ = true
+
+[node name="PlayerLobbyList" type="GridContainer" parent="Lobby/ScrollContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 3
+columns = 5
+metadata/_edit_lock_ = true
+
+[node name="Chat" type="TextureRect" parent="."]
+self_modulate = Color(1, 1, 1, 0.529412)
+custom_minimum_size = Vector2(650, 775)
+offset_right = 5.0
+offset_bottom = 5.0
+texture = SubResource("NoiseTexture2D_j0wob")
+script = ExtResource("7_6o7oq")
+metadata/_edit_lock_ = true
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Chat"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+metadata/_edit_lock_ = true
+
+[node name="ChatLabelTexture" type="TextureRect" parent="Chat/VBoxContainer"]
+self_modulate = Color(1, 1, 1, 0.815686)
+custom_minimum_size = Vector2(0, 65)
+layout_mode = 2
+texture = SubResource("NoiseTexture2D_mh6uv")
+metadata/_edit_lock_ = true
+
+[node name="ChatLabel" type="Label" parent="Chat/VBoxContainer/ChatLabelTexture"]
+layout_mode = 2
+offset_top = 9.0
+offset_right = 650.0
+offset_bottom = 64.0
+grow_horizontal = 2
+text = "Chat"
+label_settings = SubResource("LabelSettings_g7lja")
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="ChatNode" type="RichTextLabel" parent="Chat/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+focus_mode = 2
+context_menu_enabled = true
+selection_enabled = true
+metadata/_edit_lock_ = true
+
+[node name="ChatInput" type="LineEdit" parent="Chat/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+placeholder_text = "Press Enter to type/send message"
+metadata/_edit_lock_ = true
+
+[node name="SettingsMenu" type="Control" parent="."]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("6_ppsw1")
+metadata/_edit_lock_ = true
+
+[node name="Frame" type="VBoxContainer" parent="SettingsMenu"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+metadata/_edit_lock_ = true
+
+[node name="VSpacer1" type="Control" parent="SettingsMenu/Frame"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.02
+metadata/_edit_lock_ = true
+
+[node name="MazeSizeInterval" type="HBoxContainer" parent="SettingsMenu/Frame"]
+layout_mode = 2
+alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="MinMazeSize" type="VBoxContainer" parent="SettingsMenu/Frame/MazeSizeInterval"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+metadata/_edit_lock_ = true
+
+[node name="MinMazeSizeTitle" type="Label" parent="SettingsMenu/Frame/MazeSizeInterval/MinMazeSize"]
+layout_mode = 2
+text = "Minimum Maze Size"
+label_settings = SubResource("LabelSettings_bao8v")
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="Width" type="HBoxContainer" parent="SettingsMenu/Frame/MazeSizeInterval/MinMazeSize"]
+custom_minimum_size = Vector2(800, 0)
+layout_mode = 2
+metadata/_edit_lock_ = true
+
+[node name="MinMazeSizeScrollerX" type="HScrollBar" parent="SettingsMenu/Frame/MazeSizeInterval/MinMazeSize/Width"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(500, 50)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+min_value = 6.0
+max_value = 32.0
+step = 1.0
+value = 12.0
+metadata/_edit_lock_ = true
+
+[node name="MinWidthLabel" type="Label" parent="SettingsMenu/Frame/MazeSizeInterval/MinMazeSize/Width"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Width : 12"
+label_settings = SubResource("LabelSettings_6o7oq")
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="Height" type="HBoxContainer" parent="SettingsMenu/Frame/MazeSizeInterval/MinMazeSize"]
+custom_minimum_size = Vector2(800, 0)
+layout_mode = 2
+metadata/_edit_lock_ = true
+
+[node name="MinMazeSizeScrollerY" type="HScrollBar" parent="SettingsMenu/Frame/MazeSizeInterval/MinMazeSize/Height"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(500, 50)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+min_value = 6.0
+max_value = 32.0
+step = 1.0
+value = 12.0
+metadata/_edit_lock_ = true
+
+[node name="MinHeightLabel" type="Label" parent="SettingsMenu/Frame/MazeSizeInterval/MinMazeSize/Height"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Height : 12"
+label_settings = SubResource("LabelSettings_6o7oq")
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="MaxMazeSize" type="VBoxContainer" parent="SettingsMenu/Frame/MazeSizeInterval"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+metadata/_edit_lock_ = true
+
+[node name="MaxMazeSizeTitle" type="Label" parent="SettingsMenu/Frame/MazeSizeInterval/MaxMazeSize"]
+layout_mode = 2
+text = "Maximum Maze Size"
+label_settings = SubResource("LabelSettings_bao8v")
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="Width" type="HBoxContainer" parent="SettingsMenu/Frame/MazeSizeInterval/MaxMazeSize"]
+custom_minimum_size = Vector2(800, 0)
+layout_mode = 2
+metadata/_edit_lock_ = true
+
+[node name="MaxMazeSizeScrollerX" type="HScrollBar" parent="SettingsMenu/Frame/MazeSizeInterval/MaxMazeSize/Width"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(500, 50)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+min_value = 6.0
+max_value = 32.0
+step = 1.0
+value = 16.0
+metadata/_edit_lock_ = true
+
+[node name="MaxWidthLabel" type="Label" parent="SettingsMenu/Frame/MazeSizeInterval/MaxMazeSize/Width"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Width : 16"
+label_settings = SubResource("LabelSettings_6o7oq")
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="Height" type="HBoxContainer" parent="SettingsMenu/Frame/MazeSizeInterval/MaxMazeSize"]
+custom_minimum_size = Vector2(800, 0)
+layout_mode = 2
+metadata/_edit_lock_ = true
+
+[node name="MaxMazeSizeScrollerY" type="HScrollBar" parent="SettingsMenu/Frame/MazeSizeInterval/MaxMazeSize/Height"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(500, 50)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+min_value = 6.0
+max_value = 32.0
+step = 1.0
+value = 16.0
+metadata/_edit_lock_ = true
+
+[node name="MaxHeightLabel" type="Label" parent="SettingsMenu/Frame/MazeSizeInterval/MaxMazeSize/Height"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Height : 16"
+label_settings = SubResource("LabelSettings_6o7oq")
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="EnemyAndWallRemove" type="HBoxContainer" parent="SettingsMenu/Frame"]
+layout_mode = 2
+alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="MazeWallRemove" type="VBoxContainer" parent="SettingsMenu/Frame/EnemyAndWallRemove"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+metadata/_edit_lock_ = true
+
+[node name="MazeWallRemoveTitle" type="Label" parent="SettingsMenu/Frame/EnemyAndWallRemove/MazeWallRemove"]
+layout_mode = 2
+text = "Random Maze Wall Remove Count"
+label_settings = SubResource("LabelSettings_bao8v")
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="MinimumMazeWallRemove" type="HBoxContainer" parent="SettingsMenu/Frame/EnemyAndWallRemove/MazeWallRemove"]
+custom_minimum_size = Vector2(800, 0)
+layout_mode = 2
+metadata/_edit_lock_ = true
+
+[node name="MinMazeWallRemoveScroller" type="HScrollBar" parent="SettingsMenu/Frame/EnemyAndWallRemove/MazeWallRemove/MinimumMazeWallRemove"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(500, 50)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+max_value = 60.0
+step = 1.0
+metadata/_edit_lock_ = true
+
+[node name="MinMazeWallRemoveLabel" type="Label" parent="SettingsMenu/Frame/EnemyAndWallRemove/MazeWallRemove/MinimumMazeWallRemove"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Minimum: 0"
+label_settings = SubResource("LabelSettings_6o7oq")
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="MaximumMazeWallRemove" type="HBoxContainer" parent="SettingsMenu/Frame/EnemyAndWallRemove/MazeWallRemove"]
+custom_minimum_size = Vector2(800, 0)
+layout_mode = 2
+metadata/_edit_lock_ = true
+
+[node name="MaxMazeWallRemoveScroller" type="HScrollBar" parent="SettingsMenu/Frame/EnemyAndWallRemove/MazeWallRemove/MaximumMazeWallRemove"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(500, 50)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+max_value = 60.0
+step = 1.0
+value = 5.0
+metadata/_edit_lock_ = true
+
+[node name="MaxMazeWallRemoveLabel" type="Label" parent="SettingsMenu/Frame/EnemyAndWallRemove/MazeWallRemove/MaximumMazeWallRemove"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Maximum: 5"
+label_settings = SubResource("LabelSettings_6o7oq")
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="EnemyCount" type="VBoxContainer" parent="SettingsMenu/Frame/EnemyAndWallRemove"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+metadata/_edit_lock_ = true
+
+[node name="EnemyCountTitle" type="Label" parent="SettingsMenu/Frame/EnemyAndWallRemove/EnemyCount"]
+layout_mode = 2
+text = "Enemy Count"
+label_settings = SubResource("LabelSettings_bao8v")
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="MinEnemyCount" type="HBoxContainer" parent="SettingsMenu/Frame/EnemyAndWallRemove/EnemyCount"]
+custom_minimum_size = Vector2(800, 0)
+layout_mode = 2
+metadata/_edit_lock_ = true
+
+[node name="MinEnemyCountScroller" type="HScrollBar" parent="SettingsMenu/Frame/EnemyAndWallRemove/EnemyCount/MinEnemyCount"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(500, 50)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+min_value = 1.0
+max_value = 15.0
+step = 1.0
+value = 1.0
+metadata/_edit_lock_ = true
+
+[node name="MinEnemyCountLabel" type="Label" parent="SettingsMenu/Frame/EnemyAndWallRemove/EnemyCount/MinEnemyCount"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Minimum: 1"
+label_settings = SubResource("LabelSettings_6o7oq")
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="MaxEnemyCount" type="HBoxContainer" parent="SettingsMenu/Frame/EnemyAndWallRemove/EnemyCount"]
+custom_minimum_size = Vector2(800, 0)
+layout_mode = 2
+metadata/_edit_lock_ = true
+
+[node name="MaxEnemyCountScroller" type="HScrollBar" parent="SettingsMenu/Frame/EnemyAndWallRemove/EnemyCount/MaxEnemyCount"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(500, 50)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+min_value = 1.0
+max_value = 15.0
+step = 1.0
+value = 3.0
+metadata/_edit_lock_ = true
+
+[node name="MaxEnemyCountLabel" type="Label" parent="SettingsMenu/Frame/EnemyAndWallRemove/EnemyCount/MaxEnemyCount"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Maximum: 3"
+label_settings = SubResource("LabelSettings_6o7oq")
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="EnemyFriendlyFire1" type="HBoxContainer" parent="SettingsMenu/Frame"]
+layout_mode = 2
+alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="EnemyFriendlyFire2" type="VBoxContainer" parent="SettingsMenu/Frame/EnemyFriendlyFire1"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+metadata/_edit_lock_ = true
+
+[node name="EnemyFriendlyFireTitle" type="Label" parent="SettingsMenu/Frame/EnemyFriendlyFire1/EnemyFriendlyFire2"]
+layout_mode = 2
+text = "Enemy Friendly Fire"
+label_settings = SubResource("LabelSettings_bao8v")
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="EnemyFriendlyFire3" type="HBoxContainer" parent="SettingsMenu/Frame/EnemyFriendlyFire1/EnemyFriendlyFire2"]
+layout_mode = 2
+alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="EnemyFriendlyFireCheck" type="CheckButton" parent="SettingsMenu/Frame/EnemyFriendlyFire1/EnemyFriendlyFire2/EnemyFriendlyFire3"]
+layout_mode = 2
+button_pressed = true
+metadata/_edit_lock_ = true
+
+[node name="EnemyFriendlyFireLabel" type="Label" parent="SettingsMenu/Frame/EnemyFriendlyFire1/EnemyFriendlyFire2/EnemyFriendlyFire3"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "True"
+label_settings = SubResource("LabelSettings_6o7oq")
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="CarveOffset" type="VBoxContainer" parent="SettingsMenu/Frame/EnemyFriendlyFire1"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+metadata/_edit_lock_ = true
+
+[node name="CarveOffsetTitle" type="Label" parent="SettingsMenu/Frame/EnemyFriendlyFire1/CarveOffset"]
+layout_mode = 2
+text = "Carve Offset"
+label_settings = SubResource("LabelSettings_bao8v")
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="MinCarveOffset" type="HBoxContainer" parent="SettingsMenu/Frame/EnemyFriendlyFire1/CarveOffset"]
+custom_minimum_size = Vector2(800, 0)
+layout_mode = 2
+metadata/_edit_lock_ = true
+
+[node name="MinCarveOffsetScroller" type="HScrollBar" parent="SettingsMenu/Frame/EnemyFriendlyFire1/CarveOffset/MinCarveOffset"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(500, 50)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+max_value = 10.0
+step = 1.0
+metadata/_edit_lock_ = true
+
+[node name="MinCarveOffsetLabel" type="Label" parent="SettingsMenu/Frame/EnemyFriendlyFire1/CarveOffset/MinCarveOffset"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Minimum: 0"
+label_settings = SubResource("LabelSettings_6o7oq")
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="MaxCarveOffset" type="HBoxContainer" parent="SettingsMenu/Frame/EnemyFriendlyFire1/CarveOffset"]
+custom_minimum_size = Vector2(800, 0)
+layout_mode = 2
+metadata/_edit_lock_ = true
+
+[node name="MaxCarveOffsetScroller" type="HScrollBar" parent="SettingsMenu/Frame/EnemyFriendlyFire1/CarveOffset/MaxCarveOffset"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(500, 50)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+max_value = 10.0
+step = 1.0
+value = 3.0
+metadata/_edit_lock_ = true
+
+[node name="MaxCarveOffsetLabel" type="Label" parent="SettingsMenu/Frame/EnemyFriendlyFire1/CarveOffset/MaxCarveOffset"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Maximum: 3"
+label_settings = SubResource("LabelSettings_6o7oq")
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="VSpacer2" type="Control" parent="SettingsMenu/Frame"]
+layout_mode = 2
+size_flags_vertical = 3
+metadata/_edit_lock_ = true
+
+[node name="SettingsToMainMenuButton" type="Button" parent="SettingsMenu/Frame"]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Back to Main Menu"
+metadata/_edit_lock_ = true
+
+[node name="VSpacer3" type="Control" parent="SettingsMenu/Frame"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.05
+metadata/_edit_lock_ = true
+
+[connection signal="pressed" from="PauseMenu/Frame/BurronContainer/ResumeButton" to="PauseMenu" method="_on_resume_button_pressed"]
+[connection signal="pressed" from="PauseMenu/Frame/BurronContainer/BackToMainMenuButton" to="PauseMenu" method="_on_back_to_main_menu_button_pressed"]
+[connection signal="pressed" from="MainMenu/ExitConfirmDialog/Frame/ButtonContainer/DiscardButton" to="MainMenu" method="_on_discard_button_pressed"]
+[connection signal="pressed" from="MainMenu/ExitConfirmDialog/Frame/ButtonContainer/ConfirmButton" to="MainMenu" method="_on_confirm_button_pressed"]
+[connection signal="text_changed" from="MainMenu/Frame/MainContainer/LeftSide/PlayerNameEdit" to="MainMenu" method="_on_player_name_edit_text_changed"]
+[connection signal="color_changed" from="MainMenu/Frame/MainContainer/LeftSide/PlayerColorContainer/PlayerColorPicker" to="MainMenu" method="_on_player_color_picker_color_changed"]
+[connection signal="pressed" from="MainMenu/Frame/MainContainer/RightSide/ButtonsContainer/StartContainer/StartMissionButton" to="MainMenu" method="_on_start_mission_button_pressed"]
+[connection signal="pressed" from="MainMenu/Frame/MainContainer/RightSide/ButtonsContainer/StartContainer/ServerButtons/HostButton" to="MainMenu" method="_on_host_button_pressed"]
+[connection signal="pressed" from="MainMenu/Frame/MainContainer/RightSide/ButtonsContainer/StartContainer/ServerButtons/JoinButton" to="MainMenu" method="_on_join_button_pressed"]
+[connection signal="pressed" from="MainMenu/Frame/MainContainer/RightSide/ButtonsContainer/StartContainer/AddBotButton" to="MainMenu" method="_on_add_bot_button_pressed"]
+[connection signal="pressed" from="MainMenu/Frame/MainContainer/RightSide/ButtonsContainer/SettingsExitContainer/SettingsButton" to="MainMenu" method="_on_settings_button_pressed"]
+[connection signal="pressed" from="MainMenu/Frame/MainContainer/RightSide/ButtonsContainer/SettingsExitContainer/ExitButtons/ExitRoomButton" to="MainMenu" method="_on_exit_room_button_pressed"]
+[connection signal="pressed" from="MainMenu/Frame/MainContainer/RightSide/ButtonsContainer/SettingsExitContainer/ExitButtons/ExitGameButton" to="MainMenu" method="_on_exit_game_button_pressed"]
+[connection signal="text_submitted" from="Chat/VBoxContainer/ChatInput" to="Chat" method="_on_chat_input_text_submitted"]
+[connection signal="value_changed" from="SettingsMenu/Frame/MazeSizeInterval/MinMazeSize/Width/MinMazeSizeScrollerX" to="SettingsMenu" method="_on_min_maze_size_scroller_x_value_changed"]
+[connection signal="value_changed" from="SettingsMenu/Frame/MazeSizeInterval/MinMazeSize/Height/MinMazeSizeScrollerY" to="SettingsMenu" method="_on_min_maze_size_scroller_y_value_changed"]
+[connection signal="value_changed" from="SettingsMenu/Frame/MazeSizeInterval/MaxMazeSize/Width/MaxMazeSizeScrollerX" to="SettingsMenu" method="_on_max_maze_size_scroller_x_value_changed"]
+[connection signal="value_changed" from="SettingsMenu/Frame/MazeSizeInterval/MaxMazeSize/Height/MaxMazeSizeScrollerY" to="SettingsMenu" method="_on_max_maze_size_scroller_y_value_changed"]
+[connection signal="value_changed" from="SettingsMenu/Frame/EnemyAndWallRemove/MazeWallRemove/MinimumMazeWallRemove/MinMazeWallRemoveScroller" to="SettingsMenu" method="_on_min_maze_wall_remove_scroller_value_changed"]
+[connection signal="value_changed" from="SettingsMenu/Frame/EnemyAndWallRemove/MazeWallRemove/MaximumMazeWallRemove/MaxMazeWallRemoveScroller" to="SettingsMenu" method="_on_max_maze_wall_remove_scroller_value_changed"]
+[connection signal="value_changed" from="SettingsMenu/Frame/EnemyAndWallRemove/EnemyCount/MinEnemyCount/MinEnemyCountScroller" to="SettingsMenu" method="_on_min_enemy_count_scroller_value_changed"]
+[connection signal="value_changed" from="SettingsMenu/Frame/EnemyAndWallRemove/EnemyCount/MaxEnemyCount/MaxEnemyCountScroller" to="SettingsMenu" method="_on_max_enemy_count_collider_value_changed"]
+[connection signal="toggled" from="SettingsMenu/Frame/EnemyFriendlyFire1/EnemyFriendlyFire2/EnemyFriendlyFire3/EnemyFriendlyFireCheck" to="SettingsMenu" method="_on_enemy_friendly_fire_check_toggled"]
+[connection signal="value_changed" from="SettingsMenu/Frame/EnemyFriendlyFire1/CarveOffset/MinCarveOffset/MinCarveOffsetScroller" to="SettingsMenu" method="_on_min_carve_offset_scroller_value_changed"]
+[connection signal="value_changed" from="SettingsMenu/Frame/EnemyFriendlyFire1/CarveOffset/MaxCarveOffset/MaxCarveOffsetScroller" to="SettingsMenu" method="_on_max_carve_offset_scroller_value_changed"]
+[connection signal="pressed" from="SettingsMenu/Frame/SettingsToMainMenuButton" to="SettingsMenu" method="_on_settings_to_main_menu_button_pressed"]

@@ -1,0 +1,22 @@
+[gd_resource type="TileSet" load_steps=3 format=3 uid="uid://ddrdyvjlplhow"]
+
+[ext_resource type="Texture2D" uid="uid://dlcktv10duwwe" path="res://ingame/tiles/tile_maze_ground_atlas.png" id="1_1e702"]
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_k23aa"]
+resource_name = "inside"
+texture = ExtResource("1_1e702")
+0:0/next_alternative_id = 4
+0:0/0 = 0
+0:0/1 = 1
+0:0/1/modulate = Color(0, 0, 0, 0.701961)
+0:0/2 = 2
+0:0/2/modulate = Color(0.683077, 0.683077, 0.683077, 0.443137)
+0:0/3 = 3
+0:0/3/modulate = Color(0.517184, 0.517184, 0.517184, 0.478431)
+1:0/0 = 0
+2:0/0 = 0
+3:0/0 = 0
+
+[resource]
+sources/0 = SubResource("TileSetAtlasSource_k23aa")
+tile_proxies/coords_level = [[0, Vector2i(0, 0)], [6, Vector2i(0, 0)], [1, Vector2i(0, 0)], [6, Vector2i(1, 0)], [2, Vector2i(0, 0)], [4, Vector2i(0, 0)], [3, Vector2i(0, 0)], [7, Vector2i(0, 0)], [4, Vector2i(0, 0)], [7, Vector2i(1, 0)], [5, Vector2i(0, 0)], [7, Vector2i(2, 0)], [6, Vector2i(0, 0)], [7, Vector2i(3, 0)], [7, Vector2i(0, 0)], [13, Vector2i(0, 0)], [8, Vector2i(0, 0)], [13, Vector2i(1, 0)], [9, Vector2i(0, 0)], [13, Vector2i(2, 0)], [10, Vector2i(0, 0)], [13, Vector2i(0, 1)], [11, Vector2i(0, 0)], [13, Vector2i(1, 1)], [12, Vector2i(0, 0)], [13, Vector2i(2, 1)], [15, Vector2i(0, 0)], [20, Vector2i(0, 0)], [16, Vector2i(0, 0)], [20, Vector2i(1, 0)], [17, Vector2i(0, 0)], [20, Vector2i(2, 0)], [18, Vector2i(0, 0)], [20, Vector2i(0, 1)], [19, Vector2i(0, 0)], [20, Vector2i(1, 1)], [21, Vector2i(0, 0)], [23, Vector2i(0, 0)], [22, Vector2i(0, 0)], [23, Vector2i(1, 0)]]

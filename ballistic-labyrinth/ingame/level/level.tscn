@@ -1,0 +1,357 @@
+[gd_scene load_steps=19 format=3 uid="uid://dgtphg54tf63k"]
+
+[ext_resource type="Script" uid="uid://byehuv55tv13h" path="res://ingame/level/level.gd" id="1_cssg1"]
+[ext_resource type="AudioStream" uid="uid://dhoxj0irluo7u" path="res://ingame/tiles/MAZE_GENERATION_glitch-fx-transitions-10-311812.mp3" id="2_158qh"]
+[ext_resource type="AudioStream" uid="uid://cy22uropw1uaf" path="res://ingame/entities/SHOOT_NORMAL_toy-gun-364850.mp3" id="3_nlg7o"]
+[ext_resource type="TileSet" uid="uid://ddrdyvjlplhow" path="res://ingame/tiles/base_tileset.tres" id="4_0ykja"]
+[ext_resource type="TileSet" uid="uid://c4vwq4xoys05c" path="res://ingame/tiles/wall_tileset.tres" id="5_uv2y4"]
+[ext_resource type="PhysicsMaterial" uid="uid://dwflcy1oyadf7" path="res://ingame/tiles/maze_wall_physics_material.tres" id="6_4fwcq"]
+[ext_resource type="TileSet" uid="uid://dfsuj2j7xhgpg" path="res://ingame/tiles/navigation_tileset.tres" id="7_as2pi"]
+
+[sub_resource type="Gradient" id="Gradient_uasfe"]
+offsets = PackedFloat32Array(0, 0.383117, 0.642857, 0.824675, 1)
+colors = PackedColorArray(0, 0, 0, 1, 0.366595, 0.366595, 0.366595, 1, 0, 0, 0, 1, 0.370364, 0.370365, 0.370364, 1, 0, 0, 0, 1)
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_1iybg"]
+noise_type = 5
+frequency = 0.05
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_15ocg"]
+color_ramp = SubResource("Gradient_uasfe")
+noise = SubResource("FastNoiseLite_1iybg")
+
+[sub_resource type="LabelSettings" id="LabelSettings_uasfe"]
+line_spacing = 0.0
+font_size = 20
+font_color = Color(0, 0, 0, 1)
+shadow_size = 15
+shadow_color = Color(1, 1, 1, 1)
+shadow_offset = Vector2(0, 0)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_qmdpg"]
+size = Vector2(1, 1)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_wosq1"]
+size = Vector2(1, 1)
+
+[sub_resource type="LabelSettings" id="LabelSettings_1iybg"]
+shadow_size = 15
+shadow_color = Color(0, 0, 0, 1)
+shadow_offset = Vector2(0, 0)
+
+[sub_resource type="LabelSettings" id="LabelSettings_15ocg"]
+shadow_size = 15
+shadow_color = Color(0, 0, 0, 1)
+shadow_offset = Vector2(0, 0)
+
+[sub_resource type="LabelSettings" id="LabelSettings_kclq5"]
+font_size = 100
+shadow_size = 15
+shadow_color = Color(0, 0, 0, 1)
+shadow_offset = Vector2(0, 0)
+
+[sub_resource type="LabelSettings" id="LabelSettings_bsfgd"]
+shadow_size = 15
+shadow_color = Color(0, 0, 0, 1)
+shadow_offset = Vector2(0, 0)
+
+[sub_resource type="LabelSettings" id="LabelSettings_kgy77"]
+shadow_size = 15
+shadow_color = Color(0, 0, 0, 1)
+shadow_offset = Vector2(0, 0)
+
+[node name="Level" type="Node2D"]
+script = ExtResource("1_cssg1")
+
+[node name="Camera" type="Camera2D" parent="."]
+metadata/_edit_lock_ = true
+
+[node name="OutsideMaze" type="TextureRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -1178.0
+offset_top = -1595.0
+offset_right = -666.0
+offset_bottom = -1083.0
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(8, 8)
+texture = SubResource("NoiseTexture2D_15ocg")
+metadata/_edit_lock_ = true
+
+[node name="NavigationNode" type="Node2D" parent="."]
+visible = false
+metadata/_edit_lock_ = true
+
+[node name="NavigationAgent" type="NavigationAgent2D" parent="NavigationNode"]
+
+[node name="Timers" type="Node" parent="."]
+
+[node name="BotTargetClosestPlayerDelay" type="Timer" parent="Timers"]
+wait_time = 0.5
+
+[node name="CrateSpawnDelay" type="Timer" parent="Timers"]
+wait_time = 10.0
+
+[node name="NextRoundDelay" type="Timer" parent="Timers"]
+process_mode = 3
+wait_time = 3.0
+one_shot = true
+
+[node name="DeathDelay" type="Timer" parent="Timers"]
+process_mode = 3
+wait_time = 3.0
+one_shot = true
+
+[node name="SoundEffects" type="Node" parent="."]
+
+[node name="NextRoundNoise" type="AudioStreamPlayer" parent="SoundEffects"]
+process_mode = 3
+stream = ExtResource("2_158qh")
+volume_db = -4.0
+pitch_scale = 0.2
+
+[node name="DeathNoise" type="AudioStreamPlayer" parent="SoundEffects"]
+stream = ExtResource("3_nlg7o")
+volume_db = -4.0
+pitch_scale = 0.2
+max_polyphony = 5
+
+[node name="NoAmmoNoise" type="AudioStreamPlayer" parent="SoundEffects"]
+stream = ExtResource("2_158qh")
+volume_db = -14.0
+pitch_scale = 7.0
+
+[node name="CrateSpawnNoise" type="AudioStreamPlayer" parent="SoundEffects"]
+stream = ExtResource("2_158qh")
+volume_db = -7.0
+pitch_scale = 0.65
+
+[node name="TrapPlaceNoise" type="AudioStreamPlayer" parent="SoundEffects"]
+stream = ExtResource("3_nlg7o")
+volume_db = -10.0
+pitch_scale = 0.15
+
+[node name="RocketShootNoise" type="AudioStreamPlayer" parent="SoundEffects"]
+stream = ExtResource("3_nlg7o")
+pitch_scale = 0.4
+
+[node name="LaserShootNoise" type="AudioStreamPlayer" parent="SoundEffects"]
+stream = ExtResource("2_158qh")
+pitch_scale = 0.7
+
+[node name="NormalShootNoise" type="AudioStreamPlayer" parent="SoundEffects"]
+stream = ExtResource("3_nlg7o")
+volume_db = -7.0
+pitch_scale = 0.65
+
+[node name="WallRemoveNoise" type="AudioStreamPlayer" parent="SoundEffects"]
+stream = ExtResource("2_158qh")
+volume_db = -10.0
+pitch_scale = 0.4
+max_polyphony = 60
+
+[node name="MazeGenerationNoise" type="AudioStreamPlayer" parent="SoundEffects"]
+stream = ExtResource("2_158qh")
+volume_db = -22.0
+pitch_scale = 0.8
+max_polyphony = 10
+
+[node name="TerrainGenerationNoise" type="AudioStreamPlayer" parent="SoundEffects"]
+stream = ExtResource("3_nlg7o")
+volume_db = -15.0
+pitch_scale = 0.1
+max_polyphony = 20
+
+[node name="DoubleIntervalNoise" type="AudioStreamPlayer" parent="SoundEffects"]
+stream = ExtResource("2_158qh")
+volume_db = -20.0
+pitch_scale = 1.1
+max_polyphony = 10
+
+[node name="SingleIntervalNoise" type="AudioStreamPlayer" parent="SoundEffects"]
+stream = ExtResource("2_158qh")
+volume_db = -20.0
+max_polyphony = 10
+
+[node name="DimensionsGenerationNoise" type="AudioStreamPlayer" parent="SoundEffects"]
+stream = ExtResource("2_158qh")
+volume_db = -28.0
+pitch_scale = 0.1
+max_polyphony = 80
+
+[node name="Map" type="Node2D" parent="."]
+metadata/_edit_lock_ = true
+
+[node name="Ground" type="TileMapLayer" parent="Map"]
+scale = Vector2(8, 8)
+tile_set = ExtResource("4_0ykja")
+metadata/_edit_lock_ = true
+
+[node name="MazeDimensionsLabel" type="Label" parent="Map/Ground"]
+offset_left = 0.5
+offset_top = 0.5
+offset_right = 130.5
+offset_bottom = 56.5
+scale = Vector2(0.09, 0.09)
+text = "Width: place
+Height: place"
+label_settings = SubResource("LabelSettings_uasfe")
+metadata/_edit_lock_ = true
+
+[node name="VerticalIntervals" type="TileMapLayer" parent="Map"]
+scale = Vector2(8, 8)
+tile_set = ExtResource("4_0ykja")
+metadata/_edit_lock_ = true
+
+[node name="HorizontalIntervals" type="TileMapLayer" parent="Map"]
+scale = Vector2(8, 8)
+tile_set = ExtResource("4_0ykja")
+metadata/_edit_lock_ = true
+
+[node name="Walls" type="TileMapLayer" parent="Map"]
+position = Vector2(0, -32)
+scale = Vector2(4, 4)
+tile_set = ExtResource("5_uv2y4")
+metadata/_edit_lock_ = true
+
+[node name="Edges" type="Node2D" parent="Map"]
+scale = Vector2(8, 8)
+metadata/_edit_lock_ = true
+
+[node name="RightEdgeWall" type="StaticBody2D" parent="Map/Edges"]
+unique_name_in_owner = true
+physics_material_override = ExtResource("6_4fwcq")
+metadata/_edit_lock_ = true
+
+[node name="Rectangle" type="CollisionShape2D" parent="Map/Edges/RightEdgeWall"]
+shape = SubResource("RectangleShape2D_qmdpg")
+metadata/_edit_lock_ = true
+
+[node name="DownEdgeWall" type="StaticBody2D" parent="Map/Edges"]
+unique_name_in_owner = true
+physics_material_override = ExtResource("6_4fwcq")
+metadata/_edit_lock_ = true
+
+[node name="Rectangle" type="CollisionShape2D" parent="Map/Edges/DownEdgeWall"]
+shape = SubResource("RectangleShape2D_wosq1")
+metadata/_edit_lock_ = true
+
+[node name="LeftEdgeWall" type="StaticBody2D" parent="Map/Edges"]
+unique_name_in_owner = true
+physics_material_override = ExtResource("6_4fwcq")
+metadata/_edit_lock_ = true
+
+[node name="Rectangle" type="CollisionShape2D" parent="Map/Edges/LeftEdgeWall"]
+shape = SubResource("RectangleShape2D_wosq1")
+metadata/_edit_lock_ = true
+
+[node name="UpEdgeWall" type="StaticBody2D" parent="Map/Edges"]
+unique_name_in_owner = true
+physics_material_override = ExtResource("6_4fwcq")
+metadata/_edit_lock_ = true
+
+[node name="Rectangle" type="CollisionShape2D" parent="Map/Edges/UpEdgeWall"]
+shape = SubResource("RectangleShape2D_wosq1")
+metadata/_edit_lock_ = true
+
+[node name="PhysicsWalls" type="Node2D" parent="Map"]
+scale = Vector2(8, 8)
+metadata/_edit_lock_ = true
+
+[node name="Navigation" type="TileMapLayer" parent="Map"]
+visible = false
+scale = Vector2(8, 8)
+tile_set = ExtResource("7_as2pi")
+metadata/_edit_lock_ = true
+
+[node name="Crates" type="Node" parent="."]
+
+[node name="Players" type="Node" parent="."]
+
+[node name="Bullets" type="Node" parent="."]
+
+[node name="ScoresLayer" type="CanvasLayer" parent="."]
+
+[node name="ScoresContainer" type="HBoxContainer" parent="ScoresLayer"]
+custom_minimum_size = Vector2(500, 0)
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = -20.0
+offset_bottom = 50.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="EnemyScoreContainer" type="VBoxContainer" parent="ScoresLayer/ScoresContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="EnemyTitle" type="Label" parent="ScoresLayer/ScoresContainer/EnemyScoreContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Enemies"
+label_settings = SubResource("LabelSettings_1iybg")
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="EnemyScore" type="Label" parent="ScoresLayer/ScoresContainer/EnemyScoreContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "0"
+label_settings = SubResource("LabelSettings_15ocg")
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="DrawContainer" type="VBoxContainer" parent="ScoresLayer/ScoresContainer"]
+custom_minimum_size = Vector2(1775, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="DrawTitle" type="Label" parent="ScoresLayer/ScoresContainer/DrawContainer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+text = "DRAW"
+label_settings = SubResource("LabelSettings_kclq5")
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="PlayerScoreContainer" type="VBoxContainer" parent="ScoresLayer/ScoresContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="PlayerTitle" type="Label" parent="ScoresLayer/ScoresContainer/PlayerScoreContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Player"
+label_settings = SubResource("LabelSettings_bsfgd")
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="PlayerScore" type="Label" parent="ScoresLayer/ScoresContainer/PlayerScoreContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "0"
+label_settings = SubResource("LabelSettings_kgy77")
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_lock_ = true
+
+[connection signal="timeout" from="Timers/BotTargetClosestPlayerDelay" to="." method="_on_bot_target_closest_player_delay_timeout"]
+[connection signal="timeout" from="Timers/CrateSpawnDelay" to="." method="_on_crate_spawn_delay_timeout"]
+[connection signal="timeout" from="Timers/NextRoundDelay" to="." method="_on_next_round_delay_timeout"]
+[connection signal="timeout" from="Timers/DeathDelay" to="." method="_on_death_delay_timeout"]

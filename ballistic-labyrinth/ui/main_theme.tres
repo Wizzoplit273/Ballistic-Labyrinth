@@ -1,0 +1,65 @@
+[gd_resource type="Theme" load_steps=6 format=3 uid="uid://0h4vvs6aqh51"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_joxlk"]
+bg_color = Color(0.705939, 2.23808e-06, 2.88785e-07, 1)
+skew = Vector2(0.2, 0)
+border_width_left = 5
+border_width_top = 5
+border_width_right = 5
+border_width_bottom = 5
+border_color = Color(1, 0.241517, 0.509823, 1)
+shadow_size = 20
+shadow_offset = Vector2(20, 20)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tsbh2"]
+draw_center = false
+skew = Vector2(0.2, 0)
+border_width_left = 10
+border_width_top = 10
+border_width_right = 10
+border_width_bottom = 10
+border_color = Color(1, 1, 1, 1)
+shadow_offset = Vector2(20, 20)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_g1fjd"]
+bg_color = Color(0.774519, 0.771782, 0.75397, 1)
+skew = Vector2(0.2, 0)
+border_width_left = 5
+border_width_top = 5
+border_width_right = 5
+border_width_bottom = 5
+border_color = Color(0.654232, 0.654232, 0.654232, 1)
+shadow_size = 20
+shadow_offset = Vector2(20, 20)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_6tukj"]
+bg_color = Color(0.396889, 0.396889, 0.396889, 1)
+skew = Vector2(0.2, 0)
+border_width_left = 5
+border_width_top = 5
+border_width_right = 5
+border_width_bottom = 5
+shadow_size = 20
+shadow_offset = Vector2(20, 20)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_3xb56"]
+bg_color = Color(0.187176, 0.187176, 0.187176, 1)
+skew = Vector2(0.2, 0)
+border_width_left = 5
+border_width_top = 5
+border_width_right = 5
+border_width_bottom = 5
+border_color = Color(0.355314, 0.355314, 0.355313, 1)
+shadow_size = 20
+shadow_offset = Vector2(20, 20)
+
+[resource]
+Button/colors/font_color = Color(1, 1, 1, 1)
+Button/font_sizes/font_size = 60
+Button/styles/disabled = SubResource("StyleBoxFlat_joxlk")
+Button/styles/focus = SubResource("StyleBoxFlat_tsbh2")
+Button/styles/hover = SubResource("StyleBoxFlat_g1fjd")
+Button/styles/normal = SubResource("StyleBoxFlat_6tukj")
+Button/styles/pressed = SubResource("StyleBoxFlat_3xb56")
+ColorPicker/constants/sv_height = 200
+ColorPicker/constants/sv_width = 200

@@ -1,0 +1,130 @@
+[gd_scene load_steps=13 format=3 uid="uid://dap0ih14qy4pi"]
+
+[ext_resource type="Script" uid="uid://bjt002ahl8r3j" path="res://ingame/entities/player/player.gd" id="1_2w6dw"]
+[ext_resource type="Texture2D" uid="uid://ufr4xvpydw1x" path="res://ingame/entities/player/player_regular.png" id="2_1etb5"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_1etb5"]
+friction = 0.0
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_ll50v"]
+properties/0/path = NodePath(".:position")
+properties/0/spawn = true
+properties/0/replication_mode = 1
+properties/1/path = NodePath(".:rotation")
+properties/1/spawn = true
+properties/1/replication_mode = 1
+properties/2/path = NodePath("Rest/FixedRotation:rotation")
+properties/2/spawn = true
+properties/2/replication_mode = 1
+properties/3/path = NodePath(".:linear_velocity")
+properties/3/spawn = true
+properties/3/replication_mode = 1
+properties/4/path = NodePath(".:angular_velocity")
+properties/4/spawn = true
+properties/4/replication_mode = 1
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_2w6dw"]
+size = Vector2(16, 12)
+
+[sub_resource type="Gradient" id="Gradient_ll50v"]
+offsets = PackedFloat32Array(0.188312, 0.545455, 0.883117)
+colors = PackedColorArray(1, 1, 1, 1, 0.525101, 0.525101, 0.525101, 1, 0.728822, 0.728822, 0.728822, 1)
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_1vkw8"]
+seed = 2
+frequency = 0.1
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_ll50v"]
+width = 10
+height = 10
+color_ramp = SubResource("Gradient_ll50v")
+noise = SubResource("FastNoiseLite_1vkw8")
+
+[sub_resource type="Gradient" id="Gradient_1vkw8"]
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_cy2ya"]
+gradient = SubResource("Gradient_1vkw8")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_cy2ya"]
+particle_flag_disable_z = true
+angle_min = 1.07288e-05
+angle_max = 720.0
+velocity_pivot = Vector3(100, 0, 0)
+spread = 180.0
+initial_velocity_max = 46.15
+angular_velocity_min = -244.38
+angular_velocity_max = 255.27
+gravity = Vector3(0, 0, 0)
+radial_accel_min = -2.23517e-06
+radial_accel_max = -2.23517e-06
+tangential_accel_min = -2.23517e-06
+tangential_accel_max = -2.23517e-06
+scale_min = 0.5
+color_ramp = SubResource("GradientTexture1D_cy2ya")
+
+[sub_resource type="LabelSettings" id="LabelSettings_ll50v"]
+font_size = 52
+font_color = Color(1, 1, 1, 0.686275)
+shadow_size = 5
+shadow_color = Color(0, 0, 0, 0.529412)
+shadow_offset = Vector2(0, 0)
+
+[node name="Player" type="RigidBody2D"]
+collision_layer = 6
+collision_mask = 19
+physics_material_override = SubResource("PhysicsMaterial_1etb5")
+gravity_scale = 0.0
+script = ExtResource("1_2w6dw")
+metadata/_edit_lock_ = true
+metadata/type = "player"
+metadata/server_id = -1
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
+replication_config = SubResource("SceneReplicationConfig_ll50v")
+
+[node name="ShootCooldown" type="Timer" parent="."]
+wait_time = 0.05
+one_shot = true
+
+[node name="Hitbox" type="CollisionShape2D" parent="."]
+scale = Vector2(3, 3)
+shape = SubResource("RectangleShape2D_2w6dw")
+metadata/_edit_lock_ = true
+
+[node name="DeathParticles" type="GPUParticles2D" parent="."]
+process_mode = 1
+emitting = false
+amount = 100
+texture = SubResource("NoiseTexture2D_ll50v")
+lifetime = 5.0
+one_shot = true
+speed_scale = 4.0
+explosiveness = 1.0
+process_material = SubResource("ParticleProcessMaterial_cy2ya")
+metadata/_edit_lock_ = true
+
+[node name="Rest" type="Node2D" parent="."]
+scale = Vector2(3, 3)
+metadata/_edit_lock_ = true
+
+[node name="FixedRotation" type="Node2D" parent="Rest"]
+scale = Vector2(0.333333, 0.333333)
+metadata/_edit_lock_ = true
+
+[node name="Name" type="Label" parent="Rest/FixedRotation"]
+offset_left = -500.0
+offset_top = -62.0
+offset_right = 500.0
+offset_bottom = 10.0
+scale = Vector2(0.3, 0.3)
+pivot_offset = Vector2(500, 32)
+text = "unnamed"
+label_settings = SubResource("LabelSettings_ll50v")
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="Image" type="Sprite2D" parent="Rest"]
+texture = ExtResource("2_1etb5")
+metadata/_edit_lock_ = true

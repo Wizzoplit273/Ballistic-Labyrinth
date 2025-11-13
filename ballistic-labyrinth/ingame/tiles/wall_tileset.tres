@@ -1,0 +1,18 @@
+[gd_resource type="TileSet" load_steps=3 format=3 uid="uid://c4vwq4xoys05c"]
+
+[ext_resource type="Texture2D" uid="uid://ded4kr4lkfdqf" path="res://ingame/tiles/tile_maze_wall.png" id="1_40juw"]
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_40juw"]
+texture = ExtResource("1_40juw")
+texture_region_size = Vector2i(18, 18)
+use_texture_padding = false
+0:0/next_alternative_id = 3
+0:0/0 = 0
+0:0/1 = 1
+0:0/1/transpose = true
+
+[resource]
+tile_shape = 1
+tile_layout = 4
+sources/1 = SubResource("TileSetAtlasSource_40juw")
+tile_proxies/coords_level = [[0, Vector2i(0, 0)], [6, Vector2i(0, 0)], [1, Vector2i(0, 0)], [6, Vector2i(1, 0)], [2, Vector2i(0, 0)], [4, Vector2i(0, 0)], [3, Vector2i(0, 0)], [4, Vector2i(1, 0)], [4, Vector2i(0, 0)], [6, Vector2i(1, 1)], [7, Vector2i(0, 0)], [13, Vector2i(0, 0)], [8, Vector2i(0, 0)], [13, Vector2i(1, 0)], [9, Vector2i(0, 0)], [13, Vector2i(2, 0)], [10, Vector2i(0, 0)], [13, Vector2i(0, 1)], [11, Vector2i(0, 0)], [13, Vector2i(1, 1)], [12, Vector2i(0, 0)], [13, Vector2i(2, 1)], [15, Vector2i(0, 0)], [20, Vector2i(0, 0)], [16, Vector2i(0, 0)], [20, Vector2i(1, 0)], [17, Vector2i(0, 0)], [20, Vector2i(2, 0)], [18, Vector2i(0, 0)], [20, Vector2i(0, 1)], [19, Vector2i(0, 0)], [20, Vector2i(1, 1)], [21, Vector2i(0, 0)], [23, Vector2i(0, 0)], [22, Vector2i(0, 0)], [23, Vector2i(1, 0)]]

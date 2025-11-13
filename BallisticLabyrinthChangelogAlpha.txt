@@ -1,0 +1,126 @@
+(22) Update a1.7.1: 9th of September, 2025:
+--- working on multiplayer
+
+(21) Update a1.7: 8th of September, 2025:
+--- made the overall ingame theme back to a greyscale theme
+
+(20) Update a1.6: 29th of August, 2025:
+- this will be one of the last updates before trying to implement multiplayer on the Web
+--- added the laser, rocket and mine weapons for the player to use; they're overall similar to the ones in Tank Trouble:
+- the rocket doesn't have pathfinding, it's just has a bigger hitbox and it randomly rotates
+- the mines are automatically placed on the front of the tank and it goes back to regular shells when the number of existing projectiles are bigger than the max number of regular shells
+--- made the camera follow the player
+--- bound the player score to the screen so it doesn't zoom in or out
+--- added a grass background for the outside of the maze to fit in with the carved grass and tree tiles
+--- changed the colours for all visual tiles to fit in with the green colour scheme
+
+(19) Update a1.5.1: 27th of August, 2025:
+--- changed the player tank's colours in order to make them customisable in the future
+--- added the option to change your tank's colour(only one colour, at least for now):
+- colours will be important in the near future when implementing multiplayer to differentiate players a little bit when playing
+
+(18) Update a1.5: 26th of August, 2025:
+--- added more options for the settings menu
+
+(17) Update a1.4.4: 25th of August, 2025:
+- the code for generating the maze doesn't work for now
+--- partially fixed the glitch that makes a few maze cells unreachable by the maze generation algorithm:
+- it'll always pick the center tile for maze generation and after that, it'll set the remaining cells to outside cells
+
+(16) Update a1.4.3: 23rd of August, 2025:
+--- made the maze's margins better by randomly truncating part of them:
+- added grass and tree tile textures for outside tiles
+- it's not perfect, sometimes it leaves black tiles and some walls may not generate
+- also added animations and sound effects for it, because why not ;)
+
+(15) Update a1.4.2: 21st of August, 2025:
+--- added a settings menu for adjusting certain aspects of the maze, such as its minimum and maximum size, minimum and maximum amount of enemies and so on:
+- this will be particularly good in the near future for experimenting with more gameplay mechanics before I'll want to move to bigger mechanics, such as online multiplayer
+--- added enemy friendly fire as a toggleable option
+
+(14) Update a1.4.1: 20th of August, 2025:
+- perhaps most of the changes in this update will be optimised, this is mostly for experimenting
+--- made the mazes bigger, implemented camera scaling depending on maze size and adjusting enemy count depending on maze size
+--- wall removals now only happen for cells with more than one adjacent wall and the number of removals now also depends on maze size
+--- added mouse scrolling for adjusting the ingame camera's zoom(perhaps a temporary fix for the slight issue automatic camera sizing has now):
+- you can also press shift + w/up arrow to zoom in and shift + s/down arrow to zoom out
+
+(13) Update a1.4: 20th of August, 2025:
+--- added an interface similar to the debug maze generation tool(you just press shift + v instead of holding it now)
+--- changed the enemy's dodging algorithm(it's probably better now)
+--- the enemy now won't reverse while dodging bullets:
+- the current dodging algorithm isn't the best one, but it just needs to be good enough for normal level NPCs
+--- added particle and sound effects for bullets when despawning, bouncing off walls and hitting other bullets
+--- multiple enemies can now spawn in the same maze, all of them are teaming up against the player for now
+--- added random wall removal after maze generation in order to add more loops in mazes(also added a distinct animation and sound effect for it, but it's usually very brief)
+
+(12) Update a1.3: 19th of August, 2025:
+--- added a minimum spawn distance between the enemy and player
+--- added a good enough dodging mechanic for the enemy
+--- added a debug tool that shows the enemy's two points used for which side to dodge incoming bullets; hold shift + v to see them
+--- added a scoring system, continuous gameplay(unlimited number of rounds) alongside player/enemy death and next round delays(similar to Tank Trouble)
+--- added sound effects for shooting, no ammo, death and next round delay
+--- added particle effects for when the player and enemy die
+--- made the enemy move faster
+
+(11) Update a1.2.1: 18th of August, 2025:
+--- improved the enemy's pathfinding and added rotation so it points to the player when it reached its navigation path(i.e. close to the player)
+--- added a debug tool that lets you teleport the player anywhere in debug mode by pressing shift + t
+--- improved the maze generation animation by adding sound effects and the generation step before making the visual walls
+--- added a label on the top-left-most cell of the maze that displays the number of columns and rows(in this order, so x/width first, then y/height)
+--- changed the background's modulation and made it part of the ingame screen as well
+
+(10) Update a1.2: 18th of August, 2025:
+--- made smooth enough pathfinding for the enemy:
+- the enemy can get stuck on maze walls and it crashes when you kill it for now
+- also added going around walls when close to the player, but it moves slower than usual in that case for some reason
+
+(9) Update a1.1.2: 17th of August, 2025:
+--- working on navigation layers for enemy pathfinding, but I'll probably finish it tomorrow, it doesn't work for now
+
+(8) Update a1.1.1: 16th of August, 2025:
+--- worked on bullets physics because it has some problems with wall clipping, I'll probably finish in the next update
+
+(7) Update a1.1: 16th of August, 2025:
+--- greatly optimised the maze generation's code
+--- made a debugging tool for generating mazes for future updates: press shift + g to toggle it
+--- successfully made the interior walls' physics work
+--- added bullets
+
+(6) Update a1.0.5: 15th of August, 2025:
+--- implemented physics for the maze's margin walls
+--- working on the maze's inner wall physics now: it's still buggy, I'll try to patch it in a future update
+
+(5) Update a1.0.4: 15th of August, 2025:
+--- finally fixed the margin walls
+--- implemented maze generation using the Randomized Prim's Algorithm:
+- I'm choosing to leave the animation for the maze generation, it's pretty satisfying to look at
+
+(4) Update a1.0.3: 14th of August, 2025:
+--- optimised the maze generation code:
+- borders still don't generate properly, but it's better now
+
+(3) Update a1.0.2: 14th of August, 2025: Maze Generation
+--- fixed pausing not working:
+- it still has some slight issues with cursor movement for some reason, but it's much better now
+--- made the maze walls thinner and the player smaller
+--- implemented random maze size generation:
+- the maze generation itself isn't fully made yet
+--- optimised the maze walls tileset so only two regular tiles and one alternative tile are needed
+--- implemented margin walls:
+- they're only visual for now and the corners aren't made yet
+
+(2) Update a1.0.1, 13th of August, 2025: UI Beginning
+--- made a barebones UI for the main menu and pausing:
+- pausing actually doesn't work for now because it's a little tricky to make it stop pausing and resuming very fast while holding the pause key
+
+(1) Update a1, 13th of August, 2025: Inception
+- first update yay: this is the date of creation for this project
+- the game will have a slightly different version notation than Nanoflux, the substage updates starting from 1 instead of 0; the rest of the numbers will start from 0
+- the whole map will be made from a single tilemaplayer(note that maps are part of levels, they're not synonymous in this project)
+- all tiles will be 16x16(at least for now)
+--- made the game's bare minimum configuration
+--- made the origin(main scene)
+--- made this changelog
+--- made an empty level prototype with walls
+--- made a player tank that you can drive in the... big box of nothing(for now): collision is also not implemented, maybe it will in the next update

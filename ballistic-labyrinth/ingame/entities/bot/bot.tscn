@@ -1,0 +1,178 @@
+[gd_scene load_steps=15 format=3 uid="uid://dt6pc3iwv8285"]
+
+[ext_resource type="Script" uid="uid://crfjuwlcy81x2" path="res://ingame/entities/bot/bot.gd" id="1_rkno4"]
+[ext_resource type="Texture2D" uid="uid://ufr4xvpydw1x" path="res://ingame/entities/player/player_regular.png" id="2_qajux"]
+[ext_resource type="Texture2D" uid="uid://xa5vxaptiwsv" path="res://ingame/entities/projectiles/bullet_normal.png" id="3_w554m"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_1etb5"]
+friction = 0.0
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_l1d7n"]
+properties/0/path = NodePath(".:position")
+properties/0/spawn = true
+properties/0/replication_mode = 1
+properties/1/path = NodePath(".:rotation")
+properties/1/spawn = true
+properties/1/replication_mode = 1
+properties/2/path = NodePath("Rest/FixedRotation:rotation")
+properties/2/spawn = true
+properties/2/replication_mode = 1
+properties/3/path = NodePath(".:linear_velocity")
+properties/3/spawn = true
+properties/3/replication_mode = 1
+properties/4/path = NodePath(".:angular_velocity")
+properties/4/spawn = true
+properties/4/replication_mode = 1
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_2w6dw"]
+size = Vector2(16, 13)
+
+[sub_resource type="Gradient" id="Gradient_1iybg"]
+offsets = PackedFloat32Array(0.279221, 0.714286, 0.915584)
+colors = PackedColorArray(0.618062, 0.482854, 0, 1, 0.425255, 0.319544, 0, 1, 0.458537, 0.358578, 0, 1)
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_15ocg"]
+seed = 5
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_5mefj"]
+width = 10
+height = 10
+color_ramp = SubResource("Gradient_1iybg")
+noise = SubResource("FastNoiseLite_15ocg")
+
+[sub_resource type="Gradient" id="Gradient_hrl20"]
+offsets = PackedFloat32Array(0.254545, 1)
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_kclq5"]
+gradient = SubResource("Gradient_hrl20")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_3vewc"]
+particle_flag_disable_z = true
+angle_min = 1.07288e-05
+angle_max = 720.0
+velocity_pivot = Vector3(100, 0, 0)
+spread = 180.0
+initial_velocity_max = 46.15
+angular_velocity_min = -244.38
+angular_velocity_max = 255.27
+gravity = Vector3(0, 0, 0)
+radial_accel_min = -2.23517e-06
+radial_accel_max = -2.23517e-06
+tangential_accel_min = -2.23517e-06
+tangential_accel_max = -2.23517e-06
+scale_min = 0.5
+color_ramp = SubResource("GradientTexture1D_kclq5")
+
+[sub_resource type="LabelSettings" id="LabelSettings_l1d7n"]
+font_size = 52
+font_color = Color(1, 1, 1, 0.686275)
+shadow_size = 5
+shadow_color = Color(0, 0, 0, 0.529412)
+shadow_offset = Vector2(0, 0)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_02fao"]
+radius = 225.0
+
+[node name="Bot" type="RigidBody2D"]
+collision_layer = 16
+collision_mask = 19
+physics_material_override = SubResource("PhysicsMaterial_1etb5")
+gravity_scale = 0.0
+contact_monitor = true
+max_contacts_reported = 5
+script = ExtResource("1_rkno4")
+metadata/_edit_lock_ = true
+metadata/type = "bot"
+metadata/is_bot = true
+metadata/bot_id = -1
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
+replication_config = SubResource("SceneReplicationConfig_l1d7n")
+
+[node name="WallStuckCooldown" type="Timer" parent="."]
+wait_time = 0.25
+one_shot = true
+
+[node name="WallDodgeEvadeCooldown" type="Timer" parent="."]
+wait_time = 0.5
+one_shot = true
+
+[node name="ShootingCooldown" type="Timer" parent="."]
+wait_time = 0.5
+one_shot = true
+
+[node name="NavigationAgent" type="NavigationAgent2D" parent="."]
+path_desired_distance = 50.0
+target_desired_distance = 200.0
+path_max_distance = 200.0
+avoidance_enabled = true
+debug_use_custom = true
+debug_path_custom_color = Color(0.941074, 7.70092e-07, 0.514228, 1)
+
+[node name="Hitbox" type="CollisionShape2D" parent="."]
+visible = false
+scale = Vector2(3, 3)
+shape = SubResource("RectangleShape2D_2w6dw")
+metadata/_edit_lock_ = true
+
+[node name="DeathParticles" type="GPUParticles2D" parent="."]
+process_mode = 1
+scale = Vector2(0.333333, 0.333333)
+emitting = false
+amount = 100
+texture = SubResource("NoiseTexture2D_5mefj")
+lifetime = 7.0
+one_shot = true
+speed_scale = 5.0
+explosiveness = 1.0
+process_material = SubResource("ParticleProcessMaterial_3vewc")
+metadata/_edit_lock_ = true
+
+[node name="Rest" type="Node2D" parent="."]
+scale = Vector2(3, 3)
+metadata/_edit_lock_ = true
+
+[node name="FixedRotation" type="Node2D" parent="Rest"]
+metadata/_edit_lock_ = true
+
+[node name="Name" type="Label" parent="Rest/FixedRotation"]
+offset_left = -500.0
+offset_top = -45.0
+offset_right = 500.0
+offset_bottom = 27.0
+scale = Vector2(0.15, 0.15)
+pivot_offset = Vector2(500, 32)
+text = "bot"
+label_settings = SubResource("LabelSettings_l1d7n")
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="BulletDetectionArea" type="Area2D" parent="Rest"]
+scale = Vector2(0.333333, 0.333333)
+collision_layer = 8
+collision_mask = 4
+metadata/_edit_lock_ = true
+
+[node name="HitboxCircle" type="CollisionShape2D" parent="Rest/BulletDetectionArea"]
+shape = SubResource("CircleShape2D_02fao")
+debug_color = Color(0.807088, 0.071692, 1, 0.42)
+metadata/_edit_lock_ = true
+
+[node name="Image" type="Sprite2D" parent="Rest"]
+modulate = Color(0.817154, 0.539453, 7.70092e-07, 1)
+texture = ExtResource("2_qajux")
+metadata/_edit_lock_ = true
+
+[node name="DEBUGLeftBulletDot" type="Sprite2D" parent="Rest"]
+visible = false
+scale = Vector2(0.1, 0.1)
+texture = ExtResource("3_w554m")
+metadata/_edit_lock_ = true
+
+[node name="DEBUGRightBulletDot" type="Sprite2D" parent="Rest"]
+visible = false
+scale = Vector2(0.1, 0.1)
+texture = ExtResource("3_w554m")
+metadata/_edit_lock_ = true
