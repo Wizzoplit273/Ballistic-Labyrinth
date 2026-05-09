@@ -6,8 +6,12 @@ var DEBUG_is_checking_maze: bool = false
 signal dimensions_finished
 signal maze_finished
 
+
+
 @onready var scale_ratio: int = $Map/Ground.scale.x / $Map/Walls.scale.x
-func _ready() -> void:
+## called by the origin scene after initial configuration
+func modified_ready() -> void:
+	initialize_score_ui()
 	create_maze_ground_and_margins()
 	await dimensions_finished
 	generate_maze_with_randomized_prim()
@@ -24,10 +28,14 @@ func _process(_delta: float) -> void:
 	var enemy_cell: Vector2i = $Map/Ground.local_to_map($Map/Ground.to_local($Enemies/Enemy.position))
 	$Enemies/Enemy.is_adjacent_wall_to_player = is_wall_between_cells(player_cell, enemy_cell, 2, true)
 
+func initialize_score_ui() -> void:
+	%PlayerScore.text = str(player_score)
+	%EnemyScore.text = str(enemy_score)
+
 ## first vector entry is width, second is height
 const TILE_SIZE: int = 16
-var min_maze_size: Vector2i = Vector2i(10, 6)
-var max_maze_size: Vector2i = Vector2i(14, 8)
+@export var min_maze_size: Vector2i = Vector2i(10, 6)
+@export var max_maze_size: Vector2i = Vector2i(14, 7)
 var maze_size: Vector2i = Vector2i.ZERO
 var maze_bottom_corner: Vector2i = Vector2i.ZERO
 func create_maze_ground_and_margins() -> void:
@@ -256,13 +264,16 @@ func implement_maze_edges_physics() -> void:
 	%UpEdgeWall.position.x = maze_corner.x / 2
 	%UpEdgeWall.position.y = 0
 	%UpEdgeWall.scale.x = maze_size.x * $Map/Ground.scale.x * $Map/Ground.scale.x / $Map/Walls.scale.x
+	for body: StaticBody2D in $Map/Edges.get_children():
+		body.set_meta("id", "wall")
 
-#const TEMPORARY_DEBUG_WALL_PHYSICS_TEXTURE_PATH: String = "res://icon.svg"
 const TILE_MAZE_WALL_PATH: String = "res://ingame/tiles/tile_maze_wall.png"
 var EFFECTIVE_TILE_WIDTH: int = load(TILE_MAZE_WALL_PATH).get_width() - 1
 func implement_maze_walls_physics() -> void:
 	implement_maze_horizontal_walls_physics()
 	implement_maze_vertical_walls_physics()
+	for body: StaticBody2D in $Map/PhysicsWalls.get_children():
+		body.set_meta("id", "wall")
 
 func new_collision_shape() -> CollisionShape2D:
 	var physics_shape_ref: CollisionShape2D = CollisionShape2D.new()
@@ -401,30 +412,38 @@ func place_player_on_map() -> void:
 	$Player.visible = true
 	$Player.process_mode = Node.PROCESS_MODE_INHERIT
 
+@export var MIN_SPAWNPOINT_DISTANCING: float = 200.0
 func place_enemies_on_map() -> void:
-	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
-	var selected_cell: Vector2i
-	var ground_tile_size: Vector2i = load(GROUND_TILE_SET).tile_size
-	selected_cell.x = rng.randi_range(0, maze_size.x - 1)
-	selected_cell.y = rng.randi_range(0, maze_size.y - 1)
-	var selected_position: Vector2 = $Map/Ground.map_to_local(selected_cell)
-	selected_position.x *= $Map/Ground.scale.x
-	selected_position.y *= $Map/Ground.scale.y
-	$Enemies/Enemy.position = selected_position
-	var offset_vector: Vector2
-	var max_offset_scalar: Vector2 = $Map/Ground.scale / 2 - Vector2.ONE * OFFSET_SUBTRACT
-	offset_vector.x = rng.randf_range(-max_offset_scalar.x, max_offset_scalar.x)
-	offset_vector.y = rng.randf_range(-max_offset_scalar.y, max_offset_scalar.y)
-	$Enemies/Enemy.position += offset_vector
-	$Enemies/Enemy.rotation = rng.randf_range(0, PI * 2)
-	$Enemies/Enemy.visible = true
-	$Enemies/Enemy.player_node = $Player
-	$Enemies/Enemy.process_mode = Node.PROCESS_MODE_INHERIT
+	$Enemies/Enemy.global_position = $Player.global_position
+	while ($Player.global_position - $Enemies/Enemy.global_position).length() <= MIN_SPAWNPOINT_DISTANCING:
+		$Enemies/Enemy.process_mode = Node.PROCESS_MODE_DISABLED
+		$Enemies/Enemy.visible = false
+		var rng: RandomNumberGenerator = RandomNumberGenerator.new()
+		var selected_cell: Vector2i
+		var ground_tile_size: Vector2i = load(GROUND_TILE_SET).tile_size
+		selected_cell.x = rng.randi_range(0, maze_size.x - 1)
+		selected_cell.y = rng.randi_range(0, maze_size.y - 1)
+		var selected_position: Vector2 = $Map/Ground.map_to_local(selected_cell)
+		selected_position.x *= $Map/Ground.scale.x
+		selected_position.y *= $Map/Ground.scale.y
+		$Enemies/Enemy.position = selected_position
+		var offset_vector: Vector2
+		var max_offset_scalar: Vector2 = $Map/Ground.scale / 2 - Vector2.ONE * OFFSET_SUBTRACT
+		offset_vector.x = rng.randf_range(-max_offset_scalar.x, max_offset_scalar.x)
+		offset_vector.y = rng.randf_range(-max_offset_scalar.y, max_offset_scalar.y)
+		$Enemies/Enemy.position += offset_vector
+		$Enemies/Enemy.rotation = rng.randf_range(0, PI * 2)
+		$Enemies/Enemy.visible = true
+		$Enemies/Enemy.player_node = $Player
+		$Enemies/Enemy.process_mode = Node.PROCESS_MODE_INHERIT
 
-const NEW_BULLET_PATH: String = "res://ingame/projectiles/bullet.tscn"
+const NEW_BULLET_PATH: String = "res://ingame/entities/projectiles/bullet.tscn"
 var bullet_ins: RigidBody2D = null
 func _on_player_shoot() -> void:
-	if $Player.bullet_count >= $Player.MAX_BULLET_COUNT: return
+	if $Player.bullet_count >= $Player.MAX_BULLET_COUNT:
+		$NoAmmoNoise.play()
+		return
+	$NormalShootNoise.play()
 	bullet_ins = load(NEW_BULLET_PATH).instantiate()
 	bullet_ins.initial_velocity_direction = $Player.rotation
 	$Bullets.add_child(bullet_ins)
@@ -434,7 +453,59 @@ func _on_player_shoot() -> void:
 	bullet_ins.set_meta("owner_id", "player")
 	$Player.bullet_count += 1
 
+func _on_enemy_shoot() -> void:
+	if $Enemies/Enemy.bullet_count >= $Enemies/Enemy.MAX_BULLET_COUNT:
+		$NoAmmoNoise.play()
+		return
+	$NormalShootNoise.play()
+	bullet_ins = load(NEW_BULLET_PATH).instantiate()
+	bullet_ins.initial_velocity_direction = $Enemies/Enemy.rotation
+	$Bullets.add_child(bullet_ins)
+	bullet_ins.position = $Enemies/Enemy.position + Vector2($Enemies/Enemy.BULLET_SPAWN_OFFSET, 0).rotated($Enemies/Enemy.rotation)
+	bullet_ins.apply_central_impulse(Vector2($Enemies/Enemy.BULLET_SPEED, 0).rotated($Enemies/Enemy.rotation))
+	bullet_ins.connect("despawn", on_bullet_despawn)
+	bullet_ins.set_meta("owner_id", "enemy")
+	$Enemies/Enemy.bullet_count += 1
+
 ## connected to each bullet's despawn signal
 func on_bullet_despawn(node: RigidBody2D) -> void:
 	if node.get_meta("owner_id", "NULL") == "player": $Player.bullet_count -= 1
+	if node.get_meta("owner_id", "NULL") == "enemy": $Enemies/Enemy.bullet_count -= 1
 	node.queue_free()
+
+## winning implementation(for now):
+## -1 means the enemies won
+## 0 means draw
+## 1 means the player won
+var round_win: int = 0
+
+## scores are initialised by the origin scene
+var player_score: int = 0
+var enemy_score: int = 0
+
+func _on_player_level_die() -> void:
+	round_win -= 1
+	$DeathNoise.play()
+	$DeathDelay.start()
+
+func _on_enemy_level_die() -> void:
+	round_win += 1
+	$DeathNoise.play()
+	$DeathDelay.start()
+
+func _on_death_delay_timeout() -> void:
+	if round_win == 1:
+		player_score += 1
+		%PlayerScore.text = str(player_score)
+	if round_win == 0: %DrawTitle.visible = true
+	if round_win == -1:
+		enemy_score += 1
+		%EnemyScore.text = str(enemy_score)
+	$NextRoundDelay.start()
+	$NextRoundNoise.play()
+	process_mode = Node.PROCESS_MODE_DISABLED
+
+signal next_round(player_score: int, enemy_score: int)
+func _on_next_round_delay_timeout() -> void:
+	next_round.emit(player_score, enemy_score)
+	queue_free()

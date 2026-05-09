@@ -1,5 +1,8 @@
 extends Node
 
+var player_score: int = 0
+var enemy_score: int = 0
+
 func _ready() -> void:
 	$MainMenu.activate(true)
 
@@ -35,4 +38,13 @@ func play_level(id: int) -> void:
 		current_level.queue_free()
 	current_level = load(LEVEL_FILE_PREFIX + str(id + 1) + ".tscn").instantiate()
 	current_level.DEBUG_is_checking_maze = DEBUG_is_checking_maze
+	current_level.connect("next_round", next_round)
+	current_level.player_score = player_score
+	current_level.enemy_score = enemy_score
 	$CurrentLevelContainer.add_child(current_level)
+	current_level.modified_ready()
+
+func next_round(player_increment: int, enemy_increment: int) -> void:
+	player_score = player_increment
+	enemy_score = enemy_increment
+	play_level(0)

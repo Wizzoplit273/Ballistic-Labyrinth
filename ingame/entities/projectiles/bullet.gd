@@ -2,12 +2,13 @@ extends RigidBody2D
 
 signal despawn(RigidBody2D)
 
-const FALLBACK_OFFSET: float = 500.0
-
 ## initialised by parent level node right after instantiation:
 ## used for correcting the position of the bullet when it touches a wall in the first frame, in order
 ##		to prevent wall tunneling
 var initial_velocity_direction: float
+
+func _physics_process(_delta: float) -> void:
+	$VelocityRayCast.rotation = linear_velocity.angle() - PI/2
 
 func _on_lifespan_timer_timeout() -> void:
 	despawn.emit(self)

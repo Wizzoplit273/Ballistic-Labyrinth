@@ -1,8 +1,8 @@
 [gd_scene load_steps=6 format=3 uid="uid://bqib0lsdt7lu8"]
 
-[ext_resource type="PhysicsMaterial" uid="uid://4y2mfy5r8u5v" path="res://ingame/projectiles/bullet_physics_material.tres" id="1_4jkvu"]
-[ext_resource type="Texture2D" uid="uid://xa5vxaptiwsv" path="res://ingame/projectiles/bullet_normal.png" id="1_qp50q"]
-[ext_resource type="Script" uid="uid://c116i4g5og7gj" path="res://ingame/projectiles/bullet.gd" id="2_wrvnv"]
+[ext_resource type="PhysicsMaterial" uid="uid://4y2mfy5r8u5v" path="res://ingame/entities/projectiles/bullet_physics_material.tres" id="1_4jkvu"]
+[ext_resource type="Texture2D" uid="uid://xa5vxaptiwsv" path="res://ingame/entities/projectiles/bullet_normal.png" id="1_qp50q"]
+[ext_resource type="Script" uid="uid://c116i4g5og7gj" path="res://ingame/entities/projectiles/bullet.gd" id="2_wrvnv"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_d633r"]
 radius = 32.0
@@ -12,7 +12,7 @@ radius = 3.0
 
 [node name="Bullet" type="RigidBody2D"]
 collision_layer = 4
-collision_mask = 7
+collision_mask = 23
 mass = 0.1
 physics_material_override = ExtResource("1_4jkvu")
 gravity_scale = 0.0
@@ -22,6 +22,7 @@ max_contacts_reported = 2
 script = ExtResource("2_wrvnv")
 metadata/_edit_lock_ = true
 metadata/owner_id = "NULL"
+metadata/id = "bullet"
 
 [node name="WallTunnelProofTimer" type="Timer" parent="."]
 wait_time = 0.05
@@ -52,6 +53,11 @@ metadata/_edit_lock_ = true
 [node name="Hitbox" type="CollisionShape2D" parent="WallTunnelProof"]
 shape = SubResource("CircleShape2D_wrvnv")
 debug_color = Color(0.960603, 6.73831e-07, 0.515095, 0.42)
+metadata/_edit_lock_ = true
+
+[node name="VelocityRayCast" type="RayCast2D" parent="."]
+rotation = -1.5708
+collision_mask = 16
 metadata/_edit_lock_ = true
 
 [connection signal="body_entered" from="." to="." method="_on_body_entered"]

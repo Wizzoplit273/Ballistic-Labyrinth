@@ -32,6 +32,10 @@ func _physics_process(delta: float) -> void:
 	if Input.is_action_just_pressed("Shoot"):
 		shoot.emit()
 
+signal level_die
 ## called by bullet scenes that hit the player
 func die() -> void:
-	visible = false
+	$Rest.visible = false
+	process_mode = Node.PROCESS_MODE_DISABLED
+	$DeathParticles.restart()
+	level_die.emit()

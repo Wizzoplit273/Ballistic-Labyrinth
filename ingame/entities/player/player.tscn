@@ -1,0 +1,82 @@
+[gd_scene load_steps=11 format=3 uid="uid://dap0ih14qy4pi"]
+
+[ext_resource type="Script" uid="uid://bjt002ahl8r3j" path="res://ingame/entities/player/player.gd" id="1_2w6dw"]
+[ext_resource type="Texture2D" uid="uid://bkmwr24uudlm6" path="res://ingame/entities/player/player.png" id="2_1etb5"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_1etb5"]
+friction = 0.0
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_2w6dw"]
+size = Vector2(16, 13)
+
+[sub_resource type="Gradient" id="Gradient_ll50v"]
+offsets = PackedFloat32Array(0.188312, 0.545455, 0.883117)
+colors = PackedColorArray(0.863564, 0.630282, 0.377098, 1, 0.721906, 0.538626, 0.296133, 1, 0.94456, 0.830721, 0.650138, 1)
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_1vkw8"]
+seed = 2
+frequency = 0.1
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_ll50v"]
+width = 10
+height = 10
+color_ramp = SubResource("Gradient_ll50v")
+noise = SubResource("FastNoiseLite_1vkw8")
+
+[sub_resource type="Gradient" id="Gradient_1vkw8"]
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_cy2ya"]
+gradient = SubResource("Gradient_1vkw8")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_cy2ya"]
+particle_flag_disable_z = true
+angle_min = 1.07288e-05
+angle_max = 720.0
+velocity_pivot = Vector3(100, 0, 0)
+spread = 180.0
+initial_velocity_max = 46.15
+angular_velocity_min = -244.38
+angular_velocity_max = 255.27
+gravity = Vector3(0, 0, 0)
+radial_accel_min = -2.23517e-06
+radial_accel_max = -2.23517e-06
+tangential_accel_min = -2.23517e-06
+tangential_accel_max = -2.23517e-06
+scale_min = 0.5
+color_ramp = SubResource("GradientTexture1D_cy2ya")
+
+[node name="Player" type="RigidBody2D"]
+process_mode = 4
+collision_layer = 6
+collision_mask = 19
+physics_material_override = SubResource("PhysicsMaterial_1etb5")
+gravity_scale = 0.0
+script = ExtResource("1_2w6dw")
+metadata/_edit_lock_ = true
+metadata/id = "player"
+
+[node name="Hitbox" type="CollisionShape2D" parent="."]
+scale = Vector2(3, 3)
+shape = SubResource("RectangleShape2D_2w6dw")
+metadata/_edit_lock_ = true
+
+[node name="DeathParticles" type="GPUParticles2D" parent="."]
+process_mode = 3
+emitting = false
+amount = 100
+texture = SubResource("NoiseTexture2D_ll50v")
+lifetime = 5.0
+one_shot = true
+speed_scale = 4.0
+explosiveness = 1.0
+process_material = SubResource("ParticleProcessMaterial_cy2ya")
+metadata/_edit_lock_ = true
+
+[node name="Rest" type="Node2D" parent="."]
+scale = Vector2(3, 3)
+metadata/_edit_lock_ = true
+
+[node name="Image" type="Sprite2D" parent="Rest"]
+texture = ExtResource("2_1etb5")
+metadata/_edit_lock_ = true
