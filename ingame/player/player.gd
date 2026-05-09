@@ -1,14 +1,17 @@
-extends CharacterBody2D
+extends RigidBody2D
 
-const LINEAR_SPEED: float = 0.3
-const ANGULAR_SPEED: float = 5.0
+const LINEAR_SPEED: float = 200.0
+const ANGULAR_SPEED: float = 300.0
 
-func _process(delta: float) -> void:
+func _physics_process(delta: float) -> void:
+	if not visible: return
+	linear_velocity = Vector2.ZERO
+	angular_velocity = 0.0
 	if Input.is_action_pressed("MoveForward"):
-		position += (Vector2.RIGHT * LINEAR_SPEED).rotated(rotation)
+		apply_central_impulse((Vector2.RIGHT * LINEAR_SPEED).rotated(rotation))
 	elif Input.is_action_pressed("MoveBackward"):
-		position -= (Vector2.RIGHT * LINEAR_SPEED).rotated(rotation)
+		apply_central_impulse(-(Vector2.RIGHT * LINEAR_SPEED).rotated(rotation))
 	if Input.is_action_pressed("RotateClockwise"):
-		rotation += ANGULAR_SPEED * delta
+		angular_velocity = ANGULAR_SPEED * delta
 	if Input.is_action_pressed("RotateCounterclockwise"):
-		rotation -= ANGULAR_SPEED * delta
+		angular_velocity = -ANGULAR_SPEED * delta

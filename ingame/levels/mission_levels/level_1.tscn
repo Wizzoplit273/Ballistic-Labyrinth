@@ -1,9 +1,16 @@
-[gd_scene load_steps=5 format=3 uid="uid://dgtphg54tf63k"]
+[gd_scene load_steps=8 format=3 uid="uid://dgtphg54tf63k"]
 
 [ext_resource type="Script" uid="uid://byehuv55tv13h" path="res://ingame/levels/mission_levels/level_1.gd" id="1_bs34n"]
 [ext_resource type="TileSet" uid="uid://ddrdyvjlplhow" path="res://ingame/tiles/ground_tileset.tres" id="2_6fw5i"]
 [ext_resource type="PackedScene" uid="uid://dap0ih14qy4pi" path="res://ingame/player/player.tscn" id="3_pyw2e"]
 [ext_resource type="TileSet" uid="uid://c4vwq4xoys05c" path="res://ingame/tiles/wall_tileset.tres" id="3_wosq1"]
+[ext_resource type="PhysicsMaterial" uid="uid://dwflcy1oyadf7" path="res://ingame/tiles/maze_wall_physics_material.tres" id="4_qmdpg"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_qmdpg"]
+size = Vector2(1, 1)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_wosq1"]
+size = Vector2(1, 1)
 
 [node name="Level1" type="Node"]
 script = ExtResource("1_bs34n")
@@ -25,4 +32,49 @@ scale = Vector2(4, 4)
 tile_set = ExtResource("3_wosq1")
 metadata/_edit_lock_ = true
 
+[node name="Edges" type="Node2D" parent="Map"]
+scale = Vector2(8, 8)
+metadata/_edit_lock_ = true
+
+[node name="RightEdgeWall" type="StaticBody2D" parent="Map/Edges"]
+unique_name_in_owner = true
+physics_material_override = ExtResource("4_qmdpg")
+metadata/_edit_lock_ = true
+
+[node name="Rectangle" type="CollisionShape2D" parent="Map/Edges/RightEdgeWall"]
+shape = SubResource("RectangleShape2D_qmdpg")
+metadata/_edit_lock_ = true
+
+[node name="DownEdgeWall" type="StaticBody2D" parent="Map/Edges"]
+unique_name_in_owner = true
+physics_material_override = ExtResource("4_qmdpg")
+metadata/_edit_lock_ = true
+
+[node name="Rectangle" type="CollisionShape2D" parent="Map/Edges/DownEdgeWall"]
+shape = SubResource("RectangleShape2D_wosq1")
+metadata/_edit_lock_ = true
+
+[node name="LeftEdgeWall" type="StaticBody2D" parent="Map/Edges"]
+unique_name_in_owner = true
+physics_material_override = ExtResource("4_qmdpg")
+metadata/_edit_lock_ = true
+
+[node name="Rectangle" type="CollisionShape2D" parent="Map/Edges/LeftEdgeWall"]
+shape = SubResource("RectangleShape2D_wosq1")
+metadata/_edit_lock_ = true
+
+[node name="UpEdgeWall" type="StaticBody2D" parent="Map/Edges"]
+unique_name_in_owner = true
+physics_material_override = ExtResource("4_qmdpg")
+metadata/_edit_lock_ = true
+
+[node name="Rectangle" type="CollisionShape2D" parent="Map/Edges/UpEdgeWall"]
+shape = SubResource("RectangleShape2D_wosq1")
+metadata/_edit_lock_ = true
+
+[node name="PhysicsWalls" type="Node2D" parent="Map"]
+scale = Vector2(8, 8)
+metadata/_edit_lock_ = true
+
 [node name="Player" parent="." instance=ExtResource("3_pyw2e")]
+visible = false
