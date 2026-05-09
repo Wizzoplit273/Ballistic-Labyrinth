@@ -35,13 +35,46 @@ const MAX_SHOOT_ANGLE_DIFFERENCE: float = 0.4
 var previous_position: Vector2 = Vector2.ZERO
 var previous_rotation: float = 0.0
 
+func point_to_player_if_seen() -> void:
+	for ray: RayCast2D in $Rest/PlayerDetectors.get_children():
+		if ray.get_collider() != player_node: continue
+		$NavigationAgent.target_position = player_node.global_position
+		if position.distance_to(player_node.global_position) >= FLANK_RADIUS:
+			is_patrol_set = true
+		else: is_patrol_set = false
+		return
+
+var FLANK_RESET: float = 1100.0
+var FLANK_RADIUS: float = 300.0
+var FLANK_MIN_INTERVAL: float = 100.0
+var FLANK_MAX_INTERVAL: float = 400.0
+var FLANK_FRONT_DISTANCE: float = 400.0
+const DIRECTION_DEVIATION: float = PI/180*10
+var is_patrol_set: bool = false
 var is_reversing: bool = false
 func _physics_process(_delta: float) -> void:
 	if not visible: return
 	linear_velocity = Vector2.ZERO
 	angular_velocity = 0.0
-	$NavigationAgent.target_position = player_node.global_position
-	
+	if position.distance_to(player_node.global_position) >= FLANK_RESET:
+		$NavigationAgent.target_position = player_node.global_position
+		is_patrol_set = false
+	elif position.distance_to(player_node.global_position) >= FLANK_RADIUS:
+		if not is_patrol_set:
+			var random_x: float = randf_range(FLANK_MIN_INTERVAL, FLANK_MAX_INTERVAL)
+			random_x *= sign(randi_range(0,1))*2-1
+			var random_y: float = randf_range(FLANK_MIN_INTERVAL, FLANK_MAX_INTERVAL)
+			random_y *= sign(randi_range(0,1))*2-1
+			var random_offset: Vector2 = Vector2(random_x, random_y)
+			$NavigationAgent.target_position = player_node.global_position + random_offset
+			if player_node.linear_velocity.length() >= 0.1:
+				var offset: Vector2 = Vector2(FLANK_FRONT_DISTANCE, 0)
+				$NavigationAgent.target_position += offset * player_node.linear_velocity.angle()
+			is_patrol_set = true
+	else:
+		$NavigationAgent.target_position = player_node.global_position
+		is_patrol_set = false
+	point_to_player_if_seen()
 	if player_node.get_node("Rest").visible: $NavigationAgent.process_mode = Node.PROCESS_MODE_INHERIT
 	else: $NavigationAgent.process_mode = Node.PROCESS_MODE_DISABLED
 	$Rest/DEBUGLeftBulletDot.visible = false
@@ -66,16 +99,20 @@ func _physics_process(_delta: float) -> void:
 		$NavigationAgent.target_desired_distance = 0.0
 	else: $NavigationAgent.target_desired_distance = TARGET_DESIRED_DISTANCE
 	if $NavigationAgent.is_navigation_finished() and not is_adjacent_wall_to_player and not is_dodging_bullets:
+		var was_patroling: bool = is_patrol_set
+		is_patrol_set = false
 		if not player_node.get_node("Rest").visible: return
 		var auxiliary: float = rotation
 		var direction_to_player: float
 		look_at(player_node.position)
 		direction_to_player = rotation
 		rotation = auxiliary
-		rotation = lerp_angle(rotation, direction_to_player, ROTATION_INTERPOLATION_WEIGHT * 2)
+		var direction_deviation: float = randf_range(-DIRECTION_DEVIATION, DIRECTION_DEVIATION)
+		rotation = lerp_angle(rotation, direction_to_player+direction_deviation, ROTATION_INTERPOLATION_WEIGHT * 2)
 		if abs(rotation - direction_to_player) <= MAX_SHOOT_ANGLE_DIFFERENCE and $ShootingCooldown.is_stopped():
-			$ShootingCooldown.start()
-			shoot.emit(self)
+			if not was_patroling:
+				$ShootingCooldown.start()
+				shoot.emit(self)
 		return
 	var next_point: Vector2 = $NavigationAgent.get_next_path_position()
 	var direction: Vector2 = (next_point - global_position).normalized()
@@ -95,7 +132,7 @@ func check_nearby_bullets() -> void:
 			is_dodging_bullets = true
 			dodge_bullet(bullet)
 
-@export var BULLET_DANGER_SENSITIVITY: float = 0.4
+@export var BULLET_DANGER_SENSITIVITY: float = 0.3
 #@export var DODGE_SPEED: float = 200.0
 func is_bullet_dangerous(bullet: RigidBody2D) -> bool:
 	if bullet == null: return false
@@ -104,8 +141,10 @@ func is_bullet_dangerous(bullet: RigidBody2D) -> bool:
 		if bullet.owner_node.get_meta("type", "NULL") == "enemy":
 			if not enemy_friendly_fire: return false
 	if (previous_position - position).length() == 0.0:
-		if not bullet.has_node("VelocityRaycast"): return false
-		var is_raycast_hitting_enemy: bool = bullet.get_node("VelocityRaycast").get_collider() == self
+		#if not bullet.has_node("VelocityRaycast"): return false
+		var is_raycast_hitting_enemy: bool = bullet.get_node("Rest/VelocityRaycast1").get_collider() == self
+		is_raycast_hitting_enemy = is_raycast_hitting_enemy or bullet.get_node("Rest/VelocityRaycast2").get_collider() == self
+		is_raycast_hitting_enemy = is_raycast_hitting_enemy or bullet.get_node("Rest/VelocityRaycast3").get_collider() == self
 		if not is_raycast_hitting_enemy: return false
 	var distance_to_enemy: Vector2 = global_position - bullet.global_position
 	var bullet_velocity_direction: Vector2 = bullet.linear_velocity.normalized()

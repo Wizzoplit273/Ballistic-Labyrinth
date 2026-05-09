@@ -2,22 +2,24 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ccc8doq41megt"
-path="res://.godot/imported/grass.png-3b33f7d6d061d5198e0866e12bd0da68.ctex"
+uid="uid://brkhd877byfrv"
+path="res://.godot/imported/tile_maze_ground_atlas_DEP.png-b1c9e6c9fb142acadf6314dd0106e673.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://ingame/tiles/grass.png"
-dest_files=["res://.godot/imported/grass.png-3b33f7d6d061d5198e0866e12bd0da68.ctex"]
+source_file="res://ingame/tiles/tile_maze_ground_atlas_DEP.png"
+dest_files=["res://.godot/imported/tile_maze_ground_atlas_DEP.png-b1c9e6c9fb142acadf6314dd0106e673.ctex"]
 
 [params]
 
 compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
+compress/uastc_level=0
+compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
 compress/normal_map=0
 compress/channel_pack=0
@@ -25,6 +27,10 @@ mipmaps/generate=false
 mipmaps/limit=-1
 roughness/mode=0
 roughness/src_normal=""
+process/channel_remap/red=0
+process/channel_remap/green=1
+process/channel_remap/blue=2
+process/channel_remap/alpha=3
 process/fix_alpha_border=true
 process/premult_alpha=false
 process/normal_map_invert_y=false

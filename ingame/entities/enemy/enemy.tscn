@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://dt6pc3iwv8285"]
+[gd_scene format=3 uid="uid://dt6pc3iwv8285"]
 
 [ext_resource type="Script" uid="uid://crfjuwlcy81x2" path="res://ingame/entities/enemy/enemy.gd" id="1_02fao"]
 [ext_resource type="Texture2D" uid="uid://ufr4xvpydw1x" path="res://ingame/entities/player/player_regular.png" id="2_ado2y"]
@@ -6,9 +6,6 @@
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_1etb5"]
 friction = 0.0
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_2w6dw"]
-size = Vector2(16, 13)
 
 [sub_resource type="Gradient" id="Gradient_1iybg"]
 offsets = PackedFloat32Array(0.279221, 0.714286, 0.915584)
@@ -20,8 +17,8 @@ seed = 5
 [sub_resource type="NoiseTexture2D" id="NoiseTexture2D_5mefj"]
 width = 10
 height = 10
-color_ramp = SubResource("Gradient_1iybg")
 noise = SubResource("FastNoiseLite_15ocg")
+color_ramp = SubResource("Gradient_1iybg")
 
 [sub_resource type="Gradient" id="Gradient_hrl20"]
 offsets = PackedFloat32Array(0.254545, 1)
@@ -47,13 +44,16 @@ tangential_accel_max = -2.23517e-06
 scale_min = 0.5
 color_ramp = SubResource("GradientTexture1D_kclq5")
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_2w6dw"]
+size = Vector2(16, 12)
+
 [sub_resource type="CircleShape2D" id="CircleShape2D_02fao"]
 radius = 225.0
 
-[node name="Enemy" type="RigidBody2D"]
+[node name="Enemy" type="RigidBody2D" unique_id=1362450737]
 process_mode = 4
 collision_layer = 16
-collision_mask = 19
+collision_mask = 3
 physics_material_override = SubResource("PhysicsMaterial_1etb5")
 gravity_scale = 0.0
 contact_monitor = true
@@ -62,33 +62,33 @@ script = ExtResource("1_02fao")
 metadata/_edit_lock_ = true
 metadata/type = "enemy"
 
-[node name="WallStuckCooldown" type="Timer" parent="."]
+[node name="WallStuckCooldown" type="Timer" parent="." unique_id=1051075490]
 wait_time = 0.25
 one_shot = true
 
-[node name="WallDodgeEvadeCooldown" type="Timer" parent="."]
+[node name="WallDodgeEvadeCooldown" type="Timer" parent="." unique_id=1489523543]
 wait_time = 0.5
 one_shot = true
 
-[node name="ShootingCooldown" type="Timer" parent="."]
+[node name="ShootingCooldown" type="Timer" parent="." unique_id=1336478018]
 wait_time = 0.5
 one_shot = true
 
-[node name="NavigationAgent" type="NavigationAgent2D" parent="."]
+[node name="NavigationAgent" type="NavigationAgent2D" parent="." unique_id=538825553]
 path_desired_distance = 50.0
-target_desired_distance = 300.0
-path_max_distance = 200.0
-avoidance_enabled = true
+target_desired_distance = 200.0
+path_postprocessing = 2
+path_search_max_polygons = 4000
+radius = 100.0
+neighbor_distance = 200.0
+max_neighbors = 1
+time_horizon_agents = 10.0
 debug_use_custom = true
 debug_path_custom_color = Color(0.941074, 7.70092e-07, 0.514228, 1)
+debug_path_custom_point_size = 10.0
+debug_path_custom_line_width = 2.0
 
-[node name="Hitbox" type="CollisionShape2D" parent="."]
-visible = false
-scale = Vector2(3, 3)
-shape = SubResource("RectangleShape2D_2w6dw")
-metadata/_edit_lock_ = true
-
-[node name="DeathParticles" type="GPUParticles2D" parent="."]
+[node name="DeathParticles" type="GPUParticles2D" parent="." unique_id=1167136318]
 process_mode = 1
 scale = Vector2(0.333333, 0.333333)
 emitting = false
@@ -101,34 +101,119 @@ explosiveness = 1.0
 process_material = SubResource("ParticleProcessMaterial_3vewc")
 metadata/_edit_lock_ = true
 
-[node name="Rest" type="Node2D" parent="."]
+[node name="Hitbox" type="CollisionShape2D" parent="." unique_id=1754612090]
+scale = Vector2(2.5, 2.5)
+shape = SubResource("RectangleShape2D_2w6dw")
+metadata/_edit_lock_ = true
+
+[node name="Rest" type="Node2D" parent="." unique_id=1036314769]
 scale = Vector2(3, 3)
 metadata/_edit_lock_ = true
 
-[node name="BulletDetectionArea" type="Area2D" parent="Rest"]
-scale = Vector2(0.333333, 0.333333)
+[node name="Image" type="Sprite2D" parent="Rest" unique_id=307403727]
+modulate = Color(0.985421, 0, 0.284938, 1)
+scale = Vector2(0.8333334, 0.8333334)
+texture = ExtResource("2_ado2y")
+metadata/_edit_lock_ = true
+
+[node name="BulletDetectionArea" type="Area2D" parent="Rest" unique_id=1838676578]
+scale = Vector2(0.2, 0.2)
 collision_layer = 8
 collision_mask = 4
 metadata/_edit_lock_ = true
 
-[node name="HitboxCircle" type="CollisionShape2D" parent="Rest/BulletDetectionArea"]
+[node name="HitboxCircle" type="CollisionShape2D" parent="Rest/BulletDetectionArea" unique_id=663156209]
 shape = SubResource("CircleShape2D_02fao")
 debug_color = Color(0.807088, 0.071692, 1, 0.42)
 metadata/_edit_lock_ = true
 
-[node name="Image" type="Sprite2D" parent="Rest"]
-modulate = Color(0.985421, 0, 0.284938, 1)
-texture = ExtResource("2_ado2y")
-metadata/_edit_lock_ = true
-
-[node name="DEBUGLeftBulletDot" type="Sprite2D" parent="Rest"]
+[node name="DEBUGLeftBulletDot" type="Sprite2D" parent="Rest" unique_id=1100602464]
 visible = false
 scale = Vector2(0.1, 0.1)
 texture = ExtResource("3_ado2y")
 metadata/_edit_lock_ = true
 
-[node name="DEBUGRightBulletDot" type="Sprite2D" parent="Rest"]
+[node name="DEBUGRightBulletDot" type="Sprite2D" parent="Rest" unique_id=859752608]
 visible = false
 scale = Vector2(0.1, 0.1)
 texture = ExtResource("3_ado2y")
+metadata/_edit_lock_ = true
+
+[node name="PlayerDetectors" type="Node2D" parent="Rest" unique_id=1321538283]
+visible = false
+
+[node name="Ray1" type="RayCast2D" parent="Rest/PlayerDetectors" unique_id=935750928]
+rotation = -1.5707964
+scale = Vector2(3, 3)
+target_position = Vector2(0, 1000)
+collision_mask = 3
+metadata/_edit_lock_ = true
+
+[node name="Ray2" type="RayCast2D" parent="Rest/PlayerDetectors" unique_id=1084562258]
+rotation = -1.7453293
+scale = Vector2(3, 3)
+target_position = Vector2(0, 1000)
+collision_mask = 3
+metadata/_edit_lock_ = true
+
+[node name="Ray3" type="RayCast2D" parent="Rest/PlayerDetectors" unique_id=1143433266]
+rotation = -1.3962634
+scale = Vector2(3, 3)
+target_position = Vector2(0, 1000)
+collision_mask = 3
+metadata/_edit_lock_ = true
+
+[node name="Ray4" type="RayCast2D" parent="Rest/PlayerDetectors" unique_id=41929099]
+rotation = -2.0943952
+scale = Vector2(3, 3)
+target_position = Vector2(0, 1000)
+collision_mask = 3
+metadata/_edit_lock_ = true
+
+[node name="Ray5" type="RayCast2D" parent="Rest/PlayerDetectors" unique_id=1661602137]
+rotation = -1.0471976
+scale = Vector2(3, 3)
+target_position = Vector2(0, 1000)
+collision_mask = 3
+metadata/_edit_lock_ = true
+
+[node name="Ray6" type="RayCast2D" parent="Rest/PlayerDetectors" unique_id=960626802]
+rotation = -3.1415925
+scale = Vector2(3, 3)
+target_position = Vector2(0, 1000)
+collision_mask = 3
+metadata/_edit_lock_ = true
+
+[node name="Ray7" type="RayCast2D" parent="Rest/PlayerDetectors" unique_id=1442421428]
+scale = Vector2(3, 3)
+target_position = Vector2(0, 1000)
+collision_mask = 3
+metadata/_edit_lock_ = true
+
+[node name="Ray8" type="RayCast2D" parent="Rest/PlayerDetectors" unique_id=1287571123]
+rotation = -0.87266463
+scale = Vector2(3, 3)
+target_position = Vector2(0, 1000)
+collision_mask = 3
+metadata/_edit_lock_ = true
+
+[node name="Ray9" type="RayCast2D" parent="Rest/PlayerDetectors" unique_id=1316655910]
+rotation = -2.268928
+scale = Vector2(3, 3)
+target_position = Vector2(0, 1000)
+collision_mask = 3
+metadata/_edit_lock_ = true
+
+[node name="Ray10" type="RayCast2D" parent="Rest/PlayerDetectors" unique_id=540346187]
+rotation = -1.2217305
+scale = Vector2(3.0000002, 3.0000002)
+target_position = Vector2(0, 1000)
+collision_mask = 3
+metadata/_edit_lock_ = true
+
+[node name="Ray11" type="RayCast2D" parent="Rest/PlayerDetectors" unique_id=495069470]
+rotation = -1.9198622
+scale = Vector2(3.0000002, 3.0000002)
+target_position = Vector2(0, 1000)
+collision_mask = 3
 metadata/_edit_lock_ = true

@@ -1,4 +1,4 @@
-[gd_resource type="TileSet" load_steps=18 format=3 uid="uid://dfsuj2j7xhgpg"]
+[gd_resource type="TileSet" format=3 uid="uid://dfsuj2j7xhgpg"]
 
 [ext_resource type="Texture2D" uid="uid://kyvd456c3tkf" path="res://ingame/tiles/tile_maze_navigation_atlas.png" id="1_74p6l"]
 

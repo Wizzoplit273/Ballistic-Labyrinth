@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://dap0ih14qy4pi"]
+[gd_scene format=3 uid="uid://dap0ih14qy4pi"]
 
 [ext_resource type="Script" uid="uid://bjt002ahl8r3j" path="res://ingame/entities/player/player.gd" id="1_2w6dw"]
 [ext_resource type="Texture2D" uid="uid://ufr4xvpydw1x" path="res://ingame/entities/player/player_regular.png" id="2_1etb5"]
@@ -10,8 +10,8 @@ friction = 0.0
 size = Vector2(16, 13)
 
 [sub_resource type="Gradient" id="Gradient_ll50v"]
-offsets = PackedFloat32Array(0.188312, 0.545455, 0.883117)
-colors = PackedColorArray(1, 1, 1, 1, 0.525101, 0.525101, 0.525101, 1, 0.728822, 0.728822, 0.728822, 1)
+offsets = PackedFloat32Array(0.17307693, 0.53846157, 0.86538464)
+colors = PackedColorArray(0.5781947, 0.57819486, 0, 1, 0.6347943, 0.5059565, 0.20497683, 1, 0.81213886, 0.73213935, 0.33107692, 1)
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_1vkw8"]
 seed = 2
@@ -20,8 +20,8 @@ frequency = 0.1
 [sub_resource type="NoiseTexture2D" id="NoiseTexture2D_ll50v"]
 width = 10
 height = 10
-color_ramp = SubResource("Gradient_ll50v")
 noise = SubResource("FastNoiseLite_1vkw8")
+color_ramp = SubResource("Gradient_ll50v")
 
 [sub_resource type="Gradient" id="Gradient_1vkw8"]
 colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
@@ -46,7 +46,7 @@ tangential_accel_max = -2.23517e-06
 scale_min = 0.5
 color_ramp = SubResource("GradientTexture1D_cy2ya")
 
-[node name="Player" type="RigidBody2D"]
+[node name="Player" type="RigidBody2D" unique_id=757195374]
 process_mode = 4
 collision_layer = 6
 collision_mask = 19
@@ -56,16 +56,17 @@ script = ExtResource("1_2w6dw")
 metadata/_edit_lock_ = true
 metadata/type = "player"
 
-[node name="ShootCooldown" type="Timer" parent="."]
+[node name="ShootCooldown" type="Timer" parent="." unique_id=745658099]
 wait_time = 0.05
 one_shot = true
 
-[node name="Hitbox" type="CollisionShape2D" parent="."]
-scale = Vector2(3, 3)
+[node name="Hitbox" type="CollisionShape2D" parent="." unique_id=2112594917]
+visible = false
+scale = Vector2(2.5, 2.292)
 shape = SubResource("RectangleShape2D_2w6dw")
 metadata/_edit_lock_ = true
 
-[node name="DeathParticles" type="GPUParticles2D" parent="."]
+[node name="DeathParticles" type="GPUParticles2D" parent="." unique_id=1522991270]
 process_mode = 1
 emitting = false
 amount = 100
@@ -77,10 +78,11 @@ explosiveness = 1.0
 process_material = SubResource("ParticleProcessMaterial_cy2ya")
 metadata/_edit_lock_ = true
 
-[node name="Rest" type="Node2D" parent="."]
-scale = Vector2(3, 3)
+[node name="Rest" type="Node2D" parent="." unique_id=1915272750]
+scale = Vector2(2.5, 2.5)
 metadata/_edit_lock_ = true
 
-[node name="Image" type="Sprite2D" parent="Rest"]
+[node name="Image" type="Sprite2D" parent="Rest" unique_id=2072532738]
+modulate = Color(0.9293644, 0.7059703, 0.20295957, 1)
 texture = ExtResource("2_1etb5")
 metadata/_edit_lock_ = true

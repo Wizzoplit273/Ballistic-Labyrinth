@@ -14,7 +14,7 @@ func unfocus() -> void:
 
 func _on_start_mission_button_pressed() -> void:
 	activate(false)
-	$"..".play_level(0)
+	$"..".play()
 
 func _on_exit_game_button_pressed() -> void:
 	unfocus()

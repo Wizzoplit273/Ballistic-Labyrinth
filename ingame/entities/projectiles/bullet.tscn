@@ -1,25 +1,10 @@
-[gd_scene load_steps=18 format=3 uid="uid://bqib0lsdt7lu8"]
+[gd_scene format=3 uid="uid://bqib0lsdt7lu8"]
 
 [ext_resource type="PhysicsMaterial" uid="uid://4y2mfy5r8u5v" path="res://ingame/entities/projectiles/bullet_physics_material.tres" id="1_4jkvu"]
 [ext_resource type="Texture2D" uid="uid://xa5vxaptiwsv" path="res://ingame/entities/projectiles/bullet_normal.png" id="1_qp50q"]
 [ext_resource type="Script" uid="uid://c116i4g5og7gj" path="res://ingame/entities/projectiles/bullet.gd" id="2_wrvnv"]
 [ext_resource type="AudioStream" uid="uid://cy22uropw1uaf" path="res://ingame/entities/SHOOT_NORMAL_toy-gun-364850.mp3" id="3_05xpt"]
 [ext_resource type="AudioStream" uid="uid://dhoxj0irluo7u" path="res://ingame/tiles/MAZE_GENERATION_glitch-fx-transitions-10-311812.mp3" id="3_qbrdm"]
-
-[sub_resource type="Animation" id="Animation_qbrdm"]
-resource_name = "hide_trap"
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath("Rest/Image:modulate")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0, 1),
-"transitions": PackedFloat32Array(1, 1),
-"update": 0,
-"values": [Color(1, 1, 1, 1), Color(1, 1, 1, 0)]
-}
 
 [sub_resource type="Animation" id="Animation_qnes1"]
 length = 0.001
@@ -34,6 +19,21 @@ tracks/0/keys = {
 "transitions": PackedFloat32Array(1),
 "update": 0,
 "values": [Color(1, 1, 1, 1)]
+}
+
+[sub_resource type="Animation" id="Animation_qbrdm"]
+resource_name = "hide_trap"
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Rest/Image:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 1), Color(1, 1, 1, 0)]
 }
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_jhhk6"]
@@ -81,7 +81,7 @@ scale_min = 0.01
 scale_max = 0.05
 color_ramp = SubResource("GradientTexture1D_05xpt")
 
-[node name="Bullet" type="RigidBody2D"]
+[node name="Bullet" type="RigidBody2D" unique_id=828920017]
 process_mode = 4
 collision_layer = 4
 collision_mask = 23
@@ -96,48 +96,46 @@ script = ExtResource("2_wrvnv")
 metadata/_edit_lock_ = true
 metadata/type = "bullet"
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
-libraries = {
-&"": SubResource("AnimationLibrary_jhhk6")
-}
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=946547365]
+libraries/ = SubResource("AnimationLibrary_jhhk6")
 
-[node name="BounceLaser" type="AudioStreamPlayer" parent="."]
+[node name="BounceLaser" type="AudioStreamPlayer" parent="." unique_id=1283858372]
 process_mode = 1
 stream = ExtResource("3_qbrdm")
 volume_db = -7.0
 pitch_scale = 3.0
 
-[node name="BounceRegular" type="AudioStreamPlayer" parent="."]
+[node name="BounceRegular" type="AudioStreamPlayer" parent="." unique_id=1492244216]
 process_mode = 1
 stream = ExtResource("3_05xpt")
 volume_db = -12.0
 pitch_scale = 3.0
 
-[node name="BulletHit" type="AudioStreamPlayer" parent="."]
+[node name="BulletHit" type="AudioStreamPlayer" parent="." unique_id=64223842]
 process_mode = 1
 stream = ExtResource("3_05xpt")
 volume_db = -5.0
 pitch_scale = 0.3
 
-[node name="WallTunnelProofTimer" type="Timer" parent="."]
+[node name="WallTunnelProofTimer" type="Timer" parent="." unique_id=832737102]
 wait_time = 0.05
 one_shot = true
 autostart = true
 
-[node name="LifespanTimer" type="Timer" parent="."]
+[node name="LifespanTimer" type="Timer" parent="." unique_id=195176239]
 wait_time = 10.0
 one_shot = true
 
-[node name="Hitbox" type="CollisionShape2D" parent="."]
+[node name="Hitbox" type="CollisionShape2D" parent="." unique_id=969049502]
 scale = Vector2(0.1, 0.1)
 shape = SubResource("CircleShape2D_d633r")
 metadata/_edit_lock_ = true
 
-[node name="Rest" type="Node2D" parent="."]
+[node name="Rest" type="Node2D" parent="." unique_id=751397502]
 scale = Vector2(0.1, 0.1)
 metadata/_edit_lock_ = true
 
-[node name="LaserTrail" type="GPUParticles2D" parent="Rest"]
+[node name="LaserTrail" type="GPUParticles2D" parent="Rest" unique_id=1691142133]
 scale = Vector2(10, 10)
 emitting = false
 amount = 3000
@@ -148,34 +146,47 @@ fixed_fps = 60
 process_material = SubResource("ParticleProcessMaterial_05xpt")
 metadata/_edit_lock_ = true
 
-[node name="Image" type="Sprite2D" parent="Rest"]
+[node name="Image" type="Sprite2D" parent="Rest" unique_id=501522332]
 texture = ExtResource("1_qp50q")
 metadata/_edit_lock_ = true
 
-[node name="VelocityRaycast" type="RayCast2D" parent="Rest"]
+[node name="VelocityRaycast1" type="RayCast2D" parent="Rest" unique_id=1355516928]
 rotation = -1.5708
 scale = Vector2(10, 10)
+collision_mask = 17
 metadata/_edit_lock_ = true
 
-[node name="WallTunnelProof" type="Area2D" parent="."]
+[node name="VelocityRaycast2" type="RayCast2D" parent="Rest" unique_id=2117798277]
+rotation = -1.6231562
+scale = Vector2(10, 10)
+collision_mask = 17
 metadata/_edit_lock_ = true
 
-[node name="Hitbox" type="CollisionShape2D" parent="WallTunnelProof"]
+[node name="VelocityRaycast3" type="RayCast2D" parent="Rest" unique_id=193421612]
+rotation = -1.5184364
+scale = Vector2(10, 10)
+collision_mask = 17
+metadata/_edit_lock_ = true
+
+[node name="WallTunnelProof" type="Area2D" parent="." unique_id=1450931438]
+metadata/_edit_lock_ = true
+
+[node name="Hitbox" type="CollisionShape2D" parent="WallTunnelProof" unique_id=1141954983]
 shape = SubResource("CircleShape2D_wrvnv")
 debug_color = Color(0.960603, 6.73831e-07, 0.515095, 0.42)
 metadata/_edit_lock_ = true
 
-[node name="EnemyDodgeRadius" type="Area2D" parent="."]
+[node name="EnemyDodgeRadius" type="Area2D" parent="." unique_id=963295539]
 visible = false
 collision_layer = 8
 collision_mask = 16
 metadata/_edit_lock_ = true
 
-[node name="Hitbox" type="CollisionShape2D" parent="EnemyDodgeRadius"]
+[node name="Hitbox" type="CollisionShape2D" parent="EnemyDodgeRadius" unique_id=616895331]
 shape = SubResource("CircleShape2D_o8hsd")
 metadata/_edit_lock_ = true
 
-[node name="DespawnParticles" type="GPUParticles2D" parent="."]
+[node name="DespawnParticles" type="GPUParticles2D" parent="." unique_id=334279389]
 process_mode = 1
 emitting = false
 amount = 70

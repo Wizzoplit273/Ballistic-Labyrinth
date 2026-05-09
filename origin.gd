@@ -1,87 +1,43 @@
 extends Node
 
-## those variables may be changed by the player in the settings menu
-## maze size(width first, then height)
-var min_maze_size: Vector2i = Vector2i(12, 12)
-var max_maze_size: Vector2i = Vector2i(16, 16)
-## random wall remove(after generating internal visual walls)
-var wall_remove_interval: Vector2i = Vector2i(0, 5)
-## enemy count
-var enemy_count_interval: Vector2i = Vector2i(1, 3)
-## friendly fire for enemies(i.e. enemies can kill themselves, but not necessarily individually)
-var enemy_friendly_fire: bool = true
-## maze carve offset
-var maze_carve_offset: Vector2i = Vector2i(0, 3)
 ## player skin colour(corresponds to the player texture's modulation)
 var player_color: Color = Color.WHITE
 
-var player_score: int = 0
-var enemy_score: int = 0
-
 func _ready() -> void:
+	main_menu()
+
+func reset_level() -> void:
+	$Ingame/CrateSpawnDelay.stop()
+	$Ingame/DeathDelay.stop()
+	$Ingame/NextRoundDelay.stop()
+	for enemy: Node in $Ingame/Enemies.get_children():
+		enemy.queue_free()
+	for bullet: Node in $Ingame/Bullets.get_children():
+		bullet.queue_free()
+	for physics_shape: Node in $Ingame/Map/PhysicsWalls.get_children():
+		physics_shape.queue_free()
+	for crate: Node in $Ingame/Crates.get_children():
+		crate.queue_free()
+	for layer: Node in $Ingame/Map.get_children():
+		if not layer is TileMapLayer: continue
+		layer.clear()
+	$Ingame/Player.visible = false
+	$Ingame/Player.process_mode = Node.PROCESS_MODE_DISABLED
+
+func play() -> void:
+	$MainMenu.activate(false)
+	$Ingame/ScoresLayer.visible = true
+	$Ingame/Camera.enabled = true
+	$MenusBackground.visible = false
+	$Ingame.process_mode = Node.PROCESS_MODE_INHERIT
+	$Ingame.visible = true
+	$Ingame.modified_ready()
+
+func main_menu() -> void:
+	reset_level()
 	$MainMenu.activate(true)
-
-var DEBUG_is_checking_maze: bool = false
-var DEBUG_is_showing_dodging: bool = false
-
-func _process(_delta: float) -> void:
-	if OS.is_debug_build() and Input.is_action_just_pressed("DEBUG_Toggle_Maze_Generation"):
-		DEBUG_is_checking_maze = not DEBUG_is_checking_maze
-		if current_level != null: current_level.DEBUG_is_checking_maze = DEBUG_is_checking_maze
-		$DEBUG_Screen/Frame/DEBUG_MazeCheck.visible = DEBUG_is_checking_maze
-		if DEBUG_is_checking_maze:
-			push_warning("DEBUG_Toggle_Maze_Generation is now ON")
-			print("\t\t\tDEBUG_Toggle_Maze_Generation is now ON")
-		else:
-			push_warning("DEBUG_Toggle_Maze_Generation is now OFF")
-			print("\t\t\tDEBUG_Toggle_Maze_Generation is now OFF")
-	if OS.is_debug_build() and Input.is_action_just_pressed("DEBUG_Show_Dodging"):
-		DEBUG_is_showing_dodging = not DEBUG_is_showing_dodging
-		if current_level != null: current_level.DEBUG_is_showing_dodging = DEBUG_is_showing_dodging
-		$DEBUG_Screen/Frame/DEBUG_DodgeCheck.visible = DEBUG_is_showing_dodging
-		if DEBUG_is_showing_dodging:
-			print("\t\t\tDEBUG_Show_Dodging is now ON")
-		else:
-			print("\t\t\tDEBUG_Show_Dodging is now OFF")
-
-func stop_level() -> void:
-	play_level(-1)
-
-var current_level: Node = null
-var unlocked_level_id: int = 0
-var current_level_id: int = unlocked_level_id
-const LEVEL_FILE_PREFIX: String = "res://ingame/levels/mission_levels/level_"
-func play_level(id: int) -> void:
-	if id == -1:
-		$MainMenu.activate(true)
-		if $CurrentLevelContainer.get_child_count() > 0 and current_level != null:
-			current_level.queue_free()
-		return
-	current_level_id = id
-	if id > unlocked_level_id: unlocked_level_id = id
-	if $CurrentLevelContainer.get_child_count() > 0 and current_level != null:
-		current_level.queue_free()
-	current_level = load(LEVEL_FILE_PREFIX + str(id + 1) + ".tscn").instantiate()
-	current_level.connect("next_round", next_round)
-	update_level_variables()
-	$CurrentLevelContainer.add_child(current_level)
-	current_level.modified_ready()
-
-func update_level_variables() -> void:
-	if current_level == null: return
-	current_level.DEBUG_is_checking_maze = DEBUG_is_checking_maze
-	current_level.DEBUG_is_showing_dodging = DEBUG_is_showing_dodging
-	current_level.min_maze_size = min_maze_size
-	current_level.max_maze_size = max_maze_size
-	current_level.wall_remove_interval = wall_remove_interval
-	current_level.enemy_count_interval = enemy_count_interval
-	current_level.enemy_friendly_fire = enemy_friendly_fire
-	current_level.player_score = player_score
-	current_level.enemy_score = enemy_score
-	current_level.maze_carve_offset = maze_carve_offset
-	current_level.player_color = player_color
-
-func next_round(player_increment: int, enemy_increment: int) -> void:
-	player_score = player_increment
-	enemy_score = enemy_increment
-	play_level(0)
+	$Ingame.process_mode = Node.PROCESS_MODE_DISABLED
+	$Ingame/Camera.enabled = false
+	$Ingame/ScoresLayer.visible = false
+	$MenusBackground.visible = true
+	$Ingame.visible = false

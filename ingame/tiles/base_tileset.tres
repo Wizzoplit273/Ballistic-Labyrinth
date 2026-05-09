@@ -1,35 +1,21 @@
-[gd_resource type="TileSet" load_steps=7 format=3 uid="uid://ddrdyvjlplhow"]
+[gd_resource type="TileSet" format=3 uid="uid://ddrdyvjlplhow"]
 
-[ext_resource type="Texture2D" uid="uid://brkhd877byfrv" path="res://ingame/tiles/tile_maze_ground_atlas.png" id="1_1e702"]
-[ext_resource type="Texture2D" uid="uid://b3fymfcfb8ik" path="res://ingame/tiles/tile_outside_maze_atlas.png" id="2_yppv0"]
-[ext_resource type="Texture2D" uid="uid://dhpubri83tvcq" path="res://ingame/tiles/DEBUG_vertical_horizontal.png" id="3_p73si"]
+[ext_resource type="Texture2D" uid="uid://vbfvikhl1bi2" path="res://ingame/tiles/tile_maze_ground_atlas.png" id="1_1e702"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_ae37p"]
 resource_name = "inside"
 texture = ExtResource("1_1e702")
 0:0/next_alternative_id = 7
 0:0/0 = 0
-0:0/1 = 1
-0:0/1/modulate = Color(0.396889, 0.396889, 0.396889, 1)
 0:0/2 = 2
-0:0/2/modulate = Color(0.729412, 0, 0, 0.717647)
+0:0/2/modulate = Color(0.47397572, 0.47397572, 0.47397572, 1)
 0:0/3 = 3
 0:0/3/modulate = Color(0.522277, 0.677125, 1, 0.505882)
+0:0/1 = 1
+0:0/1/modulate = Color(0, 0, 0, 1)
 1:0/0 = 0
-
-[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_p73si"]
-resource_name = "outside"
-texture = ExtResource("2_yppv0")
-0:0/0 = 0
-1:0/0 = 0
-
-[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_k23aa"]
-texture = ExtResource("3_p73si")
-0:0/0 = 0
-1:0/0 = 0
+2:0/0 = 0
 
 [resource]
-sources/1 = SubResource("TileSetAtlasSource_p73si")
-sources/2 = SubResource("TileSetAtlasSource_k23aa")
 sources/0 = SubResource("TileSetAtlasSource_ae37p")
 tile_proxies/coords_level = [[0, Vector2i(0, 0)], [6, Vector2i(0, 0)], [1, Vector2i(0, 0)], [6, Vector2i(1, 0)], [2, Vector2i(0, 0)], [4, Vector2i(0, 0)], [3, Vector2i(0, 0)], [5, Vector2i(0, 0)], [4, Vector2i(0, 0)], [5, Vector2i(1, 0)], [5, Vector2i(0, 0)], [7, Vector2i(0, 0)], [6, Vector2i(0, 0)], [7, Vector2i(1, 0)], [7, Vector2i(0, 0)], [13, Vector2i(0, 0)], [8, Vector2i(0, 0)], [13, Vector2i(1, 0)], [9, Vector2i(0, 0)], [13, Vector2i(2, 0)], [10, Vector2i(0, 0)], [13, Vector2i(0, 1)], [11, Vector2i(0, 0)], [13, Vector2i(1, 1)], [12, Vector2i(0, 0)], [13, Vector2i(2, 1)], [15, Vector2i(0, 0)], [20, Vector2i(0, 0)], [16, Vector2i(0, 0)], [20, Vector2i(1, 0)], [17, Vector2i(0, 0)], [20, Vector2i(2, 0)], [18, Vector2i(0, 0)], [20, Vector2i(0, 1)], [19, Vector2i(0, 0)], [20, Vector2i(1, 1)], [21, Vector2i(0, 0)], [23, Vector2i(0, 0)], [22, Vector2i(0, 0)], [23, Vector2i(1, 0)]]

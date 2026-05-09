@@ -40,7 +40,9 @@ func _physics_process(_delta: float) -> void:
 	if type == "rocket":
 		var random_turn: float = rng.randf_range(-ROCKET_MAX_TURN_SPEED, ROCKET_MAX_TURN_SPEED)
 		linear_velocity = linear_velocity.rotated(random_turn)
-	$Rest/VelocityRaycast.rotation = linear_velocity.angle() - PI/2
+	$Rest/VelocityRaycast1.rotation = linear_velocity.angle() - PI/2
+	$Rest/VelocityRaycast2.rotation = linear_velocity.angle() - PI/2 - PI/60
+	$Rest/VelocityRaycast3.rotation = linear_velocity.angle() - PI/2 + PI/60
 	$Rest/Image.rotation = linear_velocity.angle()
 
 func _on_lifespan_timer_timeout() -> void:
@@ -56,14 +58,14 @@ func _on_body_entered(body: Node) -> void:
 		body.die()
 		die("tank")
 	if body.get_meta("type", "NULL") == "enemy":
-		if body.enemy_friendly_fire == true or owner_node == body or owner_node.get_meta("type", "NULL") == "player":
+		if (body.enemy_friendly_fire == true and owner_node == body) or owner_node.get_meta("type", "NULL") == "player":
 			body.die()
 		die("tank")
 	if body.get_meta("type", "NULL") == "bullet":
 		body.die("bullet")
 		die("bullet")
 
-func _on_wall_tunnel_proof_body_entered(body: Node2D) -> void:
+func _on_wall_tunnel_proof_body_entered(_body: Node2D) -> void:
 	if not $WallTunnelProofTimer.is_stopped():
 		die("tunnel_proof")
 

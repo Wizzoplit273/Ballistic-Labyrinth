@@ -21,11 +21,12 @@ func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
 signal shoot(weapon_type: String)
 func _physics_process(delta: float) -> void:
 	if not visible: return
-	linear_velocity = Vector2.ZERO
+	if not Input.is_action_pressed("Drift"):
+		linear_velocity = Vector2.ZERO
 	angular_velocity = 0.0
-	if Input.is_action_pressed("MoveForward"):
+	if Input.is_action_pressed("MoveForward") and not Input.is_action_pressed("Drift"):
 		apply_central_impulse((Vector2.RIGHT * LINEAR_SPEED).rotated(rotation))
-	elif Input.is_action_pressed("MoveBackward"):
+	elif Input.is_action_pressed("MoveBackward") and not Input.is_action_pressed("Drift"):
 		apply_central_impulse(-(Vector2.RIGHT * LINEAR_SPEED).rotated(rotation))
 	if Input.is_action_pressed("RotateClockwise"):
 		angular_velocity = ANGULAR_SPEED * delta
