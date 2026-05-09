@@ -78,3 +78,8 @@ metadata/_edit_lock_ = true
 
 [node name="Player" parent="." instance=ExtResource("3_pyw2e")]
 visible = false
+
+[node name="Bullets" type="Node2D" parent="."]
+metadata/_edit_lock_ = true
+
+[connection signal="shoot" from="Player" to="." method="_on_player_shoot"]

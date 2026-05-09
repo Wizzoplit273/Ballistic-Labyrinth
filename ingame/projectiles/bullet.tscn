@@ -1,0 +1,37 @@
+[gd_scene load_steps=5 format=3 uid="uid://bqib0lsdt7lu8"]
+
+[ext_resource type="PhysicsMaterial" uid="uid://4y2mfy5r8u5v" path="res://ingame/projectiles/bullet_physics_material.tres" id="1_4jkvu"]
+[ext_resource type="Texture2D" uid="uid://xa5vxaptiwsv" path="res://ingame/projectiles/bullet_normal.png" id="1_qp50q"]
+[ext_resource type="Script" uid="uid://c116i4g5og7gj" path="res://ingame/projectiles/bullet.gd" id="2_wrvnv"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_d633r"]
+radius = 32.0
+
+[node name="Bullet" type="RigidBody2D"]
+mass = 0.1
+physics_material_override = ExtResource("1_4jkvu")
+gravity_scale = 0.0
+continuous_cd = 2
+script = ExtResource("2_wrvnv")
+metadata/_edit_lock_ = true
+metadata/owner_id = "NULL"
+
+[node name="LifespanTimer" type="Timer" parent="."]
+wait_time = 10.0
+one_shot = true
+autostart = true
+
+[node name="Rest" type="Node2D" parent="."]
+scale = Vector2(0.1, 0.1)
+metadata/_edit_lock_ = true
+
+[node name="Image" type="Sprite2D" parent="Rest"]
+texture = ExtResource("1_qp50q")
+metadata/_edit_lock_ = true
+
+[node name="Hitbox" type="CollisionShape2D" parent="."]
+scale = Vector2(0.1, 0.1)
+shape = SubResource("CircleShape2D_d633r")
+metadata/_edit_lock_ = true
+
+[connection signal="timeout" from="LifespanTimer" to="." method="_on_lifespan_timer_timeout"]
