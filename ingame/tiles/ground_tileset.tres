@@ -5,7 +5,12 @@
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_usmk1"]
 resource_name = "ground"
 texture = ExtResource("1_eqhhq")
+0:0/next_alternative_id = 3
 0:0/0 = 0
+0:0/1 = 1
+0:0/1/modulate = Color(0, 0, 0, 1)
+0:0/2 = 2
+0:0/2/modulate = Color(0.408329, 0.408329, 0.408329, 1)
 1:0/0 = 0
 
 [resource]

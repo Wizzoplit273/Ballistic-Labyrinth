@@ -26,5 +26,3 @@ tile_set = ExtResource("3_wosq1")
 metadata/_edit_lock_ = true
 
 [node name="Player" parent="." instance=ExtResource("3_pyw2e")]
-position = Vector2(-45, -57)
-rotation = -0.23911
