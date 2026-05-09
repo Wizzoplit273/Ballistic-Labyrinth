@@ -1,12 +1,21 @@
-[gd_scene load_steps=10 format=3 uid="uid://dgtphg54tf63k"]
+[gd_scene load_steps=12 format=3 uid="uid://dgtphg54tf63k"]
 
 [ext_resource type="Script" uid="uid://byehuv55tv13h" path="res://ingame/levels/mission_levels/level_1.gd" id="1_bs34n"]
 [ext_resource type="TileSet" uid="uid://ddrdyvjlplhow" path="res://ingame/tiles/ground_tileset.tres" id="2_6fw5i"]
+[ext_resource type="AudioStream" uid="uid://dhoxj0irluo7u" path="res://ingame/tiles/MAZE_GENERATION_glitch-fx-transitions-10-311812.mp3" id="2_uasfe"]
 [ext_resource type="TileSet" uid="uid://dfsuj2j7xhgpg" path="res://ingame/tiles/navigation_tileset.tres" id="3_50ywg"]
 [ext_resource type="PackedScene" uid="uid://dap0ih14qy4pi" path="res://ingame/player/player.tscn" id="3_pyw2e"]
 [ext_resource type="TileSet" uid="uid://c4vwq4xoys05c" path="res://ingame/tiles/wall_tileset.tres" id="3_wosq1"]
 [ext_resource type="PhysicsMaterial" uid="uid://dwflcy1oyadf7" path="res://ingame/tiles/maze_wall_physics_material.tres" id="4_qmdpg"]
 [ext_resource type="PackedScene" uid="uid://dt6pc3iwv8285" path="res://ingame/enemy/enemy.tscn" id="6_p1f1c"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_uasfe"]
+line_spacing = 0.0
+font_size = 20
+font_color = Color(0.470076, 0.470076, 0.470076, 1)
+shadow_size = 4
+shadow_color = Color(0.473976, 0.473976, 0.473976, 1)
+shadow_offset = Vector2(0, 0)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_qmdpg"]
 size = Vector2(1, 1)
@@ -16,6 +25,18 @@ size = Vector2(1, 1)
 
 [node name="Level1" type="Node"]
 script = ExtResource("1_bs34n")
+
+[node name="DimensionsGenerationNoise" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("2_uasfe")
+volume_db = -30.0
+pitch_scale = 0.1
+max_polyphony = 60
+
+[node name="MazeGenerationNoise" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("2_uasfe")
+volume_db = -23.0
+pitch_scale = 0.8
+max_polyphony = 5
 
 [node name="Camera" type="Camera2D" parent="."]
 metadata/_edit_lock_ = true
@@ -32,6 +53,17 @@ metadata/_edit_lock_ = true
 [node name="Ground" type="TileMapLayer" parent="Map"]
 scale = Vector2(8, 8)
 tile_set = ExtResource("2_6fw5i")
+metadata/_edit_lock_ = true
+
+[node name="MazeDimensionsLabel" type="Label" parent="Map/Ground"]
+offset_left = 0.5
+offset_top = 0.5
+offset_right = 130.5
+offset_bottom = 56.5
+scale = Vector2(0.09, 0.09)
+text = "Width: place
+Height: place"
+label_settings = SubResource("LabelSettings_uasfe")
 metadata/_edit_lock_ = true
 
 [node name="Walls" type="TileMapLayer" parent="Map"]

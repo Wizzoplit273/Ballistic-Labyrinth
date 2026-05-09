@@ -26,6 +26,19 @@ script = ExtResource("1_tb4yc")
 
 [node name="CurrentLevelContainer" type="Node" parent="."]
 
+[node name="MenusBackground" type="CanvasLayer" parent="."]
+layer = -128
+
+[node name="Background" type="TextureRect" parent="MenusBackground"]
+modulate = Color(0.716296, 0.716296, 0.716296, 0.482353)
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_wc1iw")
+metadata/_edit_lock_ = true
+
 [node name="DEBUG_MazeCheck" type="CanvasLayer" parent="."]
 layer = 128
 visible = false
@@ -113,14 +126,14 @@ size_flags_vertical = 3
 size_flags_stretch_ratio = 0.05
 metadata/_edit_lock_ = true
 
-[node name="MainMenu" type="TextureRect" parent="."]
+[node name="MainMenu" type="Control" parent="."]
 self_modulate = Color(0.168627, 0.168627, 0.168627, 0.419608)
+layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-texture = ExtResource("2_wc1iw")
 script = ExtResource("2_2me8q")
 metadata/_edit_lock_ = true
 

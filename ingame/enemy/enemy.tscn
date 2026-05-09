@@ -20,8 +20,8 @@ metadata/_edit_lock_ = true
 metadata/id = "player"
 
 [node name="NavigationAgent" type="NavigationAgent2D" parent="."]
-path_desired_distance = 25.0
-target_desired_distance = 150.0
+path_desired_distance = 50.0
+target_desired_distance = 200.0
 path_max_distance = 200.0
 avoidance_enabled = true
 

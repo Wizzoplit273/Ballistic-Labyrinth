@@ -3,11 +3,13 @@ extends Node
 ## this variable is modified by the parent scene, which is the origin scene(origin.tscn)
 var DEBUG_is_checking_maze: bool = false
 
+signal dimensions_finished
 signal maze_finished
 
 @onready var scale_ratio: int = $Map/Ground.scale.x / $Map/Walls.scale.x
 func _ready() -> void:
 	create_maze_ground_and_margins()
+	await dimensions_finished
 	generate_maze_with_randomized_prim()
 	await maze_finished
 	implement_maze_edges_physics()
@@ -20,7 +22,7 @@ func _process(_delta: float) -> void:
 	if is_queued_for_deletion(): return
 	var player_cell: Vector2i = $Map/Ground.local_to_map($Map/Ground.to_local($Player.position))
 	var enemy_cell: Vector2i = $Map/Ground.local_to_map($Map/Ground.to_local($Enemies/Enemy.position))
-	$Enemies/Enemy.is_adjacent_wall_to_player = is_wall_between_cells(player_cell, enemy_cell, true)
+	$Enemies/Enemy.is_adjacent_wall_to_player = is_wall_between_cells(player_cell, enemy_cell, 2, true)
 
 ## first vector entry is width, second is height
 const TILE_SIZE: int = 16
@@ -31,15 +33,19 @@ var maze_bottom_corner: Vector2i = Vector2i.ZERO
 func create_maze_ground_and_margins() -> void:
 	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 	maze_size = Vector2i(rng.randi_range(min_maze_size.x, max_maze_size.x), rng.randi_range(min_maze_size.y, max_maze_size.y))
-	
+	$Map/Ground/MazeDimensionsLabel.text = "Width: " + str(maze_size.x)
+	$Map/Ground/MazeDimensionsLabel.text += "\nHeight: " + str(maze_size.y)
 	for row: int in range(0, maze_size.y):
 		for column: int in range(0, maze_size.x):
+			await get_tree().create_timer(0.03).timeout
+			$DimensionsGenerationNoise.play()
 			$Map/Ground.set_cell(Vector2i(column, row), 0, Vector2i(0, 0), 1)
 			$Camera.position = maze_size * $Map/Ground.scale.x * TILE_SIZE / 2
 			create_maze_visual_wall(Vector2i(column, row), 3)
 			create_maze_visual_wall(Vector2i(column, row), 2)
 			create_maze_visual_wall(Vector2i(column, row), 1)
 			create_maze_visual_wall(Vector2i(column, row), 0)
+	dimensions_finished.emit()
 
 ## maze walls are accessed by two variables: one of the adjacent ground cells' map coordinates and
 ##	an integer that is 0, 1, 2 or 3 that marks on which direction the wall is positioned relative to the first variable
@@ -123,21 +129,30 @@ func modify_physics_wall_length(wall_node: StaticBody2D, wall_increment: int, di
 		wall_node.position.y += unit_wall_length * wall_increment / 2 * int_is_positive_axis
 		wall_node.scale.y += (unit_wall_length * wall_increment / 2 + magic_tile_offset) * int_is_positive_axis
 
-func is_wall_between_cells(cell_1: Vector2i, cell_2: Vector2i, include_diagonals: bool) -> bool:
+func is_wall_between_cells(cell_1: Vector2i, cell_2: Vector2i, range: int, include_diagonals: bool) -> bool:
 	if cell_1 == cell_2: return false ## slight optimisation just in case
-	if cell_1.x + 1 == cell_2.x: return maze_visual_wall_exists(cell_1, 0)
-	if cell_1.y + 1 == cell_2.y: return maze_visual_wall_exists(cell_1, 1)
-	if cell_1.x - 1 == cell_2.x: return maze_visual_wall_exists(cell_1, 2)
-	if cell_1.y - 1 == cell_2.y: return maze_visual_wall_exists(cell_1, 3)
+	for k: int in range(range):
+		if cell_1.x + k + 1 == cell_2.x:
+			if maze_visual_wall_exists(cell_1, 0) or maze_visual_wall_exists(cell_2, 2): return true
+		if cell_1.y + k + 1 == cell_2.y:
+			if maze_visual_wall_exists(cell_1, 1) or maze_visual_wall_exists(cell_2, 3): return true
+		if cell_1.x - k - 1 == cell_2.x:
+			if maze_visual_wall_exists(cell_1, 2) or maze_visual_wall_exists(cell_2, 0): return true
+		if cell_1.y - k - 1 == cell_2.y:
+			if maze_visual_wall_exists(cell_1, 3) or maze_visual_wall_exists(cell_2, 1): return true
 	if not include_diagonals: return false
 	if cell_1 + Vector2i(1, 1) == cell_2:
-		return maze_visual_wall_exists(cell_1, 0) or maze_visual_wall_exists(cell_1, 1)
+		if maze_visual_wall_exists(cell_1, 0) or maze_visual_wall_exists(cell_1, 1): return true
+		if maze_visual_wall_exists(cell_2, 2) or maze_visual_wall_exists(cell_2, 3): return true
 	if cell_1 + Vector2i(-1, 1) == cell_2:
-		return maze_visual_wall_exists(cell_1, 1) or maze_visual_wall_exists(cell_1, 2)
+		if maze_visual_wall_exists(cell_1, 1) or maze_visual_wall_exists(cell_1, 2): return true
+		if maze_visual_wall_exists(cell_2, 3) or maze_visual_wall_exists(cell_2, 0): return true
 	if cell_1 + Vector2i(-1, -1) == cell_2:
-		return maze_visual_wall_exists(cell_1, 2) or maze_visual_wall_exists(cell_1, 3)
+		if maze_visual_wall_exists(cell_1, 2) or maze_visual_wall_exists(cell_1, 3): return true
+		if maze_visual_wall_exists(cell_2, 0) or maze_visual_wall_exists(cell_2, 1): return true
 	if cell_1 + Vector2i(1, -1) == cell_2:
-		return maze_visual_wall_exists(cell_1, 3) or maze_visual_wall_exists(cell_1, 0)
+		if maze_visual_wall_exists(cell_1, 3) or maze_visual_wall_exists(cell_1, 0): return true
+		if maze_visual_wall_exists(cell_2, 1) or maze_visual_wall_exists(cell_2, 2): return true
 	return false
 
 ## Randomized Prim's Algorithm: it's the primary maze generating algorithm for this project
@@ -169,6 +184,7 @@ func generate_maze_with_randomized_prim() -> void:
 	var i: int = 0
 	while frontier_cells.size() != 0:
 		await get_tree().create_timer(0.02).timeout
+		$MazeGenerationNoise.play()
 		selected_frontier_cell_index = rng.randi_range(0, frontier_cells.size() - 1)
 		selected_cell = frontier_cells[selected_frontier_cell_index]
 		frontier_cells.remove_at(selected_frontier_cell_index)
