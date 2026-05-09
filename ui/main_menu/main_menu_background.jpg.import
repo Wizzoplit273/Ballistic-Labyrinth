@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dwgmno61o2h4k"
-path="res://.godot/imported/tile_maze_wall_triple.png-0c1bd43450ad1111977be5be9e2f66dd.ctex"
+uid="uid://bsnkweusjyp86"
+path="res://.godot/imported/main_menu_background.jpg-0e6b9f60d367e538f4e516d52fe5373e.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://ingame/tiles/tile_maze_wall_triple.png"
-dest_files=["res://.godot/imported/tile_maze_wall_triple.png-0c1bd43450ad1111977be5be9e2f66dd.ctex"]
+source_file="res://ui/main_menu/main_menu_background.jpg"
+dest_files=["res://.godot/imported/main_menu_background.jpg-0e6b9f60d367e538f4e516d52fe5373e.ctex"]
 
 [params]
 

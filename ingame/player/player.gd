@@ -1,7 +1,7 @@
 extends CharacterBody2D
 
-const LINEAR_SPEED: float = 0.2
-const ANGULAR_SPEED: float = 4.0
+const LINEAR_SPEED: float = 0.3
+const ANGULAR_SPEED: float = 5.0
 
 func _process(delta: float) -> void:
 	if Input.is_action_pressed("MoveForward"):

@@ -7,7 +7,7 @@
 size = Vector2(16, 13)
 
 [node name="Player" type="CharacterBody2D"]
-scale = Vector2(2, 2)
+scale = Vector2(3, 3)
 script = ExtResource("1_2w6dw")
 metadata/_edit_lock_ = true
 

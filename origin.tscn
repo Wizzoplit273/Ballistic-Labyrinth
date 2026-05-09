@@ -1,9 +1,249 @@
-[gd_scene load_steps=3 format=3 uid="uid://dl53xfp6aj77b"]
+[gd_scene load_steps=10 format=3 uid="uid://dl53xfp6aj77b"]
 
 [ext_resource type="Script" uid="uid://wgurxu8fyrnf" path="res://origin.gd" id="1_tb4yc"]
-[ext_resource type="PackedScene" uid="uid://dgtphg54tf63k" path="res://ingame/levels/mission_levels/level_1.tscn" id="2_2me8q"]
+[ext_resource type="Script" uid="uid://desjpxlp4d326" path="res://ui/main_menu/main_menu.gd" id="2_2me8q"]
+[ext_resource type="Texture2D" uid="uid://bsnkweusjyp86" path="res://ui/main_menu/main_menu_background.jpg" id="2_wc1iw"]
+[ext_resource type="Script" uid="uid://tecvb1bo3wnl" path="res://ui/pause_menu/pause_menu.gd" id="2_xyqw4"]
+[ext_resource type="Texture2D" uid="uid://cfp23f081i35a" path="res://ui/noise_texture_1.tres" id="4_xyqw4"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_ppsw1"]
+font_size = 70
+
+[sub_resource type="LabelSettings" id="LabelSettings_xyqw4"]
+font_size = 75
+
+[sub_resource type="LabelSettings" id="LabelSettings_wc1iw"]
+font_size = 100
+outline_size = 10
+shadow_size = 100
+shadow_color = Color(0, 0, 0, 0.639216)
+
+[sub_resource type="LabelSettings" id="LabelSettings_pqpuc"]
+font_size = 30
 
 [node name="Origin" type="Node"]
 script = ExtResource("1_tb4yc")
 
-[node name="Level1" parent="." instance=ExtResource("2_2me8q")]
+[node name="CurrentLevelContainer" type="Node" parent="."]
+
+[node name="PauseMenu" type="CanvasLayer" parent="."]
+process_mode = 3
+visible = false
+script = ExtResource("2_xyqw4")
+
+[node name="Background" type="TextureRect" parent="PauseMenu"]
+modulate = Color(1, 1, 1, 0.784314)
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("4_xyqw4")
+metadata/_edit_lock_ = true
+
+[node name="Frame" type="VBoxContainer" parent="PauseMenu"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+metadata/_edit_lock_ = true
+
+[node name="Title" type="Label" parent="PauseMenu/Frame"]
+layout_mode = 2
+size_flags_vertical = 10
+size_flags_stretch_ratio = 0.35
+text = "The game is paused.
+Press P, escape or resume to unpause"
+label_settings = SubResource("LabelSettings_ppsw1")
+horizontal_alignment = 1
+vertical_alignment = 2
+metadata/_edit_lock_ = true
+
+[node name="VSpacer1" type="Control" parent="PauseMenu/Frame"]
+layout_mode = 2
+size_flags_vertical = 3
+metadata/_edit_lock_ = true
+
+[node name="BurronContainer" type="HBoxContainer" parent="PauseMenu/Frame"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.2
+alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="ResumeButton" type="Button" parent="PauseMenu/Frame/BurronContainer"]
+layout_mode = 2
+size_flags_horizontal = 10
+text = "Resume"
+metadata/_edit_lock_ = true
+
+[node name="HSpacer" type="Control" parent="PauseMenu/Frame/BurronContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+metadata/_edit_lock_ = true
+
+[node name="BackToMainMenuButton" type="Button" parent="PauseMenu/Frame/BurronContainer"]
+layout_mode = 2
+size_flags_horizontal = 2
+text = "Back to Menu"
+metadata/_edit_lock_ = true
+
+[node name="VSpacer2" type="Control" parent="PauseMenu/Frame"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.05
+metadata/_edit_lock_ = true
+
+[node name="MainMenu" type="TextureRect" parent="."]
+self_modulate = Color(0.168627, 0.168627, 0.168627, 0.419608)
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_wc1iw")
+script = ExtResource("2_2me8q")
+metadata/_edit_lock_ = true
+
+[node name="ExitConfirmDialog" type="CanvasLayer" parent="MainMenu"]
+visible = false
+
+[node name="Background" type="TextureRect" parent="MainMenu/ExitConfirmDialog"]
+modulate = Color(1, 1, 1, 0.72549)
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("4_xyqw4")
+metadata/_edit_lock_ = true
+
+[node name="Frame" type="VBoxContainer" parent="MainMenu/ExitConfirmDialog"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+metadata/_edit_lock_ = true
+
+[node name="Title" type="Label" parent="MainMenu/ExitConfirmDialog/Frame"]
+layout_mode = 2
+size_flags_vertical = 10
+size_flags_stretch_ratio = 0.17
+text = "Are you sure you want to exit the game?"
+label_settings = SubResource("LabelSettings_xyqw4")
+horizontal_alignment = 1
+vertical_alignment = 2
+metadata/_edit_lock_ = true
+
+[node name="VSpacer1" type="Control" parent="MainMenu/ExitConfirmDialog/Frame"]
+layout_mode = 2
+size_flags_vertical = 3
+metadata/_edit_lock_ = true
+
+[node name="BurronContainer" type="HBoxContainer" parent="MainMenu/ExitConfirmDialog/Frame"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.2
+alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="DiscardButton" type="Button" parent="MainMenu/ExitConfirmDialog/Frame/BurronContainer"]
+layout_mode = 2
+size_flags_horizontal = 10
+text = "No"
+metadata/_edit_lock_ = true
+
+[node name="HSpacer" type="Control" parent="MainMenu/ExitConfirmDialog/Frame/BurronContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+metadata/_edit_lock_ = true
+
+[node name="ConfirmButton" type="Button" parent="MainMenu/ExitConfirmDialog/Frame/BurronContainer"]
+layout_mode = 2
+size_flags_horizontal = 2
+text = "Yes"
+metadata/_edit_lock_ = true
+
+[node name="VSpacer2" type="Control" parent="MainMenu/ExitConfirmDialog/Frame"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.05
+metadata/_edit_lock_ = true
+
+[node name="Frame" type="VBoxContainer" parent="MainMenu"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+metadata/_edit_lock_ = true
+
+[node name="Title" type="Label" parent="MainMenu/Frame"]
+layout_mode = 2
+size_flags_vertical = 10
+size_flags_stretch_ratio = 0.2
+text = "Ballistic Labyrinth"
+label_settings = SubResource("LabelSettings_wc1iw")
+horizontal_alignment = 1
+vertical_alignment = 2
+metadata/_edit_lock_ = true
+
+[node name="Version" type="Label" parent="MainMenu/Frame"]
+layout_mode = 2
+size_flags_vertical = 2
+size_flags_stretch_ratio = 0.07
+text = "Version xyp.yp.yp.yp"
+label_settings = SubResource("LabelSettings_pqpuc")
+horizontal_alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="VSpacer1" type="Control" parent="MainMenu/Frame"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.4
+metadata/_edit_lock_ = true
+
+[node name="StartMissionButton" type="Button" parent="MainMenu/Frame"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+text = "Start Mission"
+metadata/_edit_lock_ = true
+
+[node name="VSpacer2" type="Control" parent="MainMenu/Frame"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.05
+metadata/_edit_lock_ = true
+
+[node name="ExitGameButton" type="Button" parent="MainMenu/Frame"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+text = "Exit Game"
+metadata/_edit_lock_ = true
+
+[node name="VSpacer3" type="Control" parent="MainMenu/Frame"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.4
+metadata/_edit_lock_ = true
+
+[node name="Developers" type="Label" parent="MainMenu/Frame"]
+layout_mode = 2
+size_flags_vertical = 2
+size_flags_stretch_ratio = 0.07
+text = "Made by Qarmewvston and vcxiumtms"
+label_settings = SubResource("LabelSettings_pqpuc")
+horizontal_alignment = 1
+metadata/_edit_lock_ = true
+
+[connection signal="pressed" from="PauseMenu/Frame/BurronContainer/ResumeButton" to="PauseMenu" method="_on_resume_button_pressed"]
+[connection signal="pressed" from="PauseMenu/Frame/BurronContainer/BackToMainMenuButton" to="PauseMenu" method="_on_back_to_main_menu_button_pressed"]
+[connection signal="pressed" from="MainMenu/ExitConfirmDialog/Frame/BurronContainer/DiscardButton" to="MainMenu" method="_on_discard_button_pressed"]
+[connection signal="pressed" from="MainMenu/ExitConfirmDialog/Frame/BurronContainer/ConfirmButton" to="MainMenu" method="_on_confirm_button_pressed"]
+[connection signal="pressed" from="MainMenu/Frame/StartMissionButton" to="MainMenu" method="_on_start_mission_button_pressed"]
+[connection signal="pressed" from="MainMenu/Frame/ExitGameButton" to="MainMenu" method="_on_exit_game_button_pressed"]
