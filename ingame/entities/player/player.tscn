@@ -1,7 +1,7 @@
 [gd_scene load_steps=11 format=3 uid="uid://dap0ih14qy4pi"]
 
 [ext_resource type="Script" uid="uid://bjt002ahl8r3j" path="res://ingame/entities/player/player.gd" id="1_2w6dw"]
-[ext_resource type="Texture2D" uid="uid://bkmwr24uudlm6" path="res://ingame/entities/player/player.png" id="2_1etb5"]
+[ext_resource type="Texture2D" uid="uid://ufr4xvpydw1x" path="res://ingame/entities/player/player_regular.png" id="2_1etb5"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_1etb5"]
 friction = 0.0
@@ -11,7 +11,7 @@ size = Vector2(16, 13)
 
 [sub_resource type="Gradient" id="Gradient_ll50v"]
 offsets = PackedFloat32Array(0.188312, 0.545455, 0.883117)
-colors = PackedColorArray(0.863564, 0.630282, 0.377098, 1, 0.721906, 0.538626, 0.296133, 1, 0.94456, 0.830721, 0.650138, 1)
+colors = PackedColorArray(1, 1, 1, 1, 0.525101, 0.525101, 0.525101, 1, 0.728822, 0.728822, 0.728822, 1)
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_1vkw8"]
 seed = 2

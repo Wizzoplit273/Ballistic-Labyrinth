@@ -1,8 +1,9 @@
-[gd_scene load_steps=13 format=3 uid="uid://dgtphg54tf63k"]
+[gd_scene load_steps=18 format=3 uid="uid://dgtphg54tf63k"]
 
 [ext_resource type="Script" uid="uid://byehuv55tv13h" path="res://ingame/levels/mission_levels/level_1.gd" id="1_bs34n"]
 [ext_resource type="AudioStream" uid="uid://cy22uropw1uaf" path="res://ingame/entities/SHOOT_NORMAL_toy-gun-364850.mp3" id="2_1iybg"]
 [ext_resource type="TileSet" uid="uid://ddrdyvjlplhow" path="res://ingame/tiles/base_tileset.tres" id="2_6fw5i"]
+[ext_resource type="Texture2D" uid="uid://ccc8doq41megt" path="res://ingame/tiles/grass.png" id="2_15ocg"]
 [ext_resource type="AudioStream" uid="uid://dhoxj0irluo7u" path="res://ingame/tiles/MAZE_GENERATION_glitch-fx-transitions-10-311812.mp3" id="2_uasfe"]
 [ext_resource type="TileSet" uid="uid://dfsuj2j7xhgpg" path="res://ingame/tiles/navigation_tileset.tres" id="3_50ywg"]
 [ext_resource type="PackedScene" uid="uid://dap0ih14qy4pi" path="res://ingame/entities/player/player.tscn" id="3_pyw2e"]
@@ -12,9 +13,9 @@
 [sub_resource type="LabelSettings" id="LabelSettings_uasfe"]
 line_spacing = 0.0
 font_size = 20
-font_color = Color(0.470076, 0.470076, 0.470076, 1)
-shadow_size = 4
-shadow_color = Color(0.473976, 0.473976, 0.473976, 1)
+font_color = Color(0, 0, 0, 1)
+shadow_size = 15
+shadow_color = Color(1, 1, 1, 1)
 shadow_offset = Vector2(0, 0)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_qmdpg"]
@@ -24,10 +25,51 @@ size = Vector2(1, 1)
 size = Vector2(1, 1)
 
 [sub_resource type="LabelSettings" id="LabelSettings_1iybg"]
-font_size = 30
+shadow_size = 15
+shadow_color = Color(0, 0, 0, 1)
+shadow_offset = Vector2(0, 0)
+
+[sub_resource type="LabelSettings" id="LabelSettings_15ocg"]
+shadow_size = 15
+shadow_color = Color(0, 0, 0, 1)
+shadow_offset = Vector2(0, 0)
+
+[sub_resource type="LabelSettings" id="LabelSettings_kclq5"]
+font_size = 100
+shadow_size = 15
+shadow_color = Color(0, 0, 0, 1)
+shadow_offset = Vector2(0, 0)
+
+[sub_resource type="LabelSettings" id="LabelSettings_bsfgd"]
+shadow_size = 15
+shadow_color = Color(0, 0, 0, 1)
+shadow_offset = Vector2(0, 0)
+
+[sub_resource type="LabelSettings" id="LabelSettings_kgy77"]
+shadow_size = 15
+shadow_color = Color(0, 0, 0, 1)
+shadow_offset = Vector2(0, 0)
 
 [node name="Level1" type="Node"]
 script = ExtResource("1_bs34n")
+
+[node name="OutsideMaze" type="TextureRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -7500.0
+offset_top = -4000.0
+offset_right = -7500.0
+offset_bottom = -4000.0
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(8, 8)
+texture = ExtResource("2_15ocg")
+stretch_mode = 1
+metadata/_edit_lock_ = true
+
+[node name="CrateSpawnDelay" type="Timer" parent="."]
+wait_time = 10.0
 
 [node name="NextRoundDelay" type="Timer" parent="."]
 process_mode = 3
@@ -56,6 +98,24 @@ stream = ExtResource("2_uasfe")
 volume_db = -14.0
 pitch_scale = 7.0
 
+[node name="CrateSpawnNoise" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("2_uasfe")
+volume_db = -7.0
+pitch_scale = 0.65
+
+[node name="TrapPlaceNoise" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("2_1iybg")
+volume_db = -5.0
+pitch_scale = 1.5
+
+[node name="RocketShootNoise" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("2_1iybg")
+pitch_scale = 0.4
+
+[node name="LaserShootNoise" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("2_uasfe")
+pitch_scale = 0.7
+
 [node name="NormalShootNoise" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("2_1iybg")
 volume_db = -7.0
@@ -79,13 +139,13 @@ volume_db = -15.0
 pitch_scale = 0.1
 max_polyphony = 20
 
-[node name="HorizontalIntervalsNoise" type="AudioStreamPlayer" parent="."]
+[node name="DoubleIntervalNoise" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("2_uasfe")
 volume_db = -20.0
 pitch_scale = 1.1
 max_polyphony = 10
 
-[node name="VerticalIntervalsNoise" type="AudioStreamPlayer" parent="."]
+[node name="SingleIntervalNoise" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("2_uasfe")
 volume_db = -20.0
 max_polyphony = 10
@@ -97,12 +157,6 @@ pitch_scale = 0.1
 max_polyphony = 80
 
 [node name="Map" type="Node2D" parent="."]
-metadata/_edit_lock_ = true
-
-[node name="Navigation" type="TileMapLayer" parent="Map"]
-visible = false
-scale = Vector2(8, 8)
-tile_set = ExtResource("3_50ywg")
 metadata/_edit_lock_ = true
 
 [node name="Ground" type="TileMapLayer" parent="Map"]
@@ -181,6 +235,15 @@ metadata/_edit_lock_ = true
 scale = Vector2(8, 8)
 metadata/_edit_lock_ = true
 
+[node name="Navigation" type="TileMapLayer" parent="Map"]
+visible = false
+scale = Vector2(8, 8)
+tile_set = ExtResource("3_50ywg")
+metadata/_edit_lock_ = true
+
+[node name="Crates" type="Node2D" parent="."]
+metadata/_edit_lock_ = true
+
 [node name="Player" parent="." instance=ExtResource("3_pyw2e")]
 visible = false
 
@@ -193,75 +256,86 @@ metadata/_edit_lock_ = true
 [node name="Camera" type="Camera2D" parent="."]
 metadata/_edit_lock_ = true
 
-[node name="ScoresContainer" type="HBoxContainer" parent="Camera"]
+[node name="ScoresLayer" type="CanvasLayer" parent="."]
+
+[node name="ScoresContainer" type="HBoxContainer" parent="ScoresLayer"]
 custom_minimum_size = Vector2(500, 0)
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -949.0
-offset_top = 475.0
-offset_right = 949.0
-offset_bottom = 525.0
+offset_right = -20.0
+offset_bottom = 50.0
 grow_horizontal = 2
 grow_vertical = 2
+alignment = 1
 metadata/_edit_lock_ = true
 
-[node name="EnemyScoreContainer" type="VBoxContainer" parent="Camera/ScoresContainer"]
+[node name="EnemyScoreContainer" type="VBoxContainer" parent="ScoresLayer/ScoresContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
+alignment = 1
 metadata/_edit_lock_ = true
 
-[node name="EnemyTitle" type="Label" parent="Camera/ScoresContainer/EnemyScoreContainer"]
+[node name="EnemyTitle" type="Label" parent="ScoresLayer/ScoresContainer/EnemyScoreContainer"]
+unique_name_in_owner = true
 layout_mode = 2
 text = "Enemies"
-horizontal_alignment = 1
-vertical_alignment = 1
-metadata/_edit_lock_ = true
-
-[node name="EnemyScore" type="Label" parent="Camera/ScoresContainer/EnemyScoreContainer"]
-unique_name_in_owner = true
-layout_mode = 2
-text = "0"
-horizontal_alignment = 1
-vertical_alignment = 1
-metadata/_edit_lock_ = true
-
-[node name="DrawContainer" type="VBoxContainer" parent="Camera/ScoresContainer"]
-custom_minimum_size = Vector2(1775, 0)
-layout_mode = 2
-size_flags_horizontal = 3
-metadata/_edit_lock_ = true
-
-[node name="DrawTitle" type="Label" parent="Camera/ScoresContainer/DrawContainer"]
-unique_name_in_owner = true
-visible = false
-layout_mode = 2
-text = "DRAW"
 label_settings = SubResource("LabelSettings_1iybg")
 horizontal_alignment = 1
 vertical_alignment = 1
 metadata/_edit_lock_ = true
 
-[node name="PlayerScoreContainer" type="VBoxContainer" parent="Camera/ScoresContainer"]
-layout_mode = 2
-size_flags_horizontal = 3
-metadata/_edit_lock_ = true
-
-[node name="PlayerTitle" type="Label" parent="Camera/ScoresContainer/PlayerScoreContainer"]
-layout_mode = 2
-text = "Player"
-horizontal_alignment = 1
-vertical_alignment = 1
-metadata/_edit_lock_ = true
-
-[node name="PlayerScore" type="Label" parent="Camera/ScoresContainer/PlayerScoreContainer"]
+[node name="EnemyScore" type="Label" parent="ScoresLayer/ScoresContainer/EnemyScoreContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "0"
+label_settings = SubResource("LabelSettings_15ocg")
 horizontal_alignment = 1
 vertical_alignment = 1
 metadata/_edit_lock_ = true
 
+[node name="DrawContainer" type="VBoxContainer" parent="ScoresLayer/ScoresContainer"]
+custom_minimum_size = Vector2(1775, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="DrawTitle" type="Label" parent="ScoresLayer/ScoresContainer/DrawContainer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+text = "DRAW"
+label_settings = SubResource("LabelSettings_kclq5")
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="PlayerScoreContainer" type="VBoxContainer" parent="ScoresLayer/ScoresContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="PlayerTitle" type="Label" parent="ScoresLayer/ScoresContainer/PlayerScoreContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Player"
+label_settings = SubResource("LabelSettings_bsfgd")
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="PlayerScore" type="Label" parent="ScoresLayer/ScoresContainer/PlayerScoreContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "0"
+label_settings = SubResource("LabelSettings_kgy77")
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_lock_ = true
+
+[connection signal="timeout" from="CrateSpawnDelay" to="." method="_on_crate_spawn_delay_timeout"]
 [connection signal="timeout" from="NextRoundDelay" to="." method="_on_next_round_delay_timeout"]
 [connection signal="timeout" from="DeathDelay" to="." method="_on_death_delay_timeout"]
 [connection signal="level_die" from="Player" to="." method="_on_player_level_die"]

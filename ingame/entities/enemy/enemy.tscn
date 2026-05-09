@@ -1,7 +1,7 @@
 [gd_scene load_steps=13 format=3 uid="uid://dt6pc3iwv8285"]
 
 [ext_resource type="Script" uid="uid://crfjuwlcy81x2" path="res://ingame/entities/enemy/enemy.gd" id="1_02fao"]
-[ext_resource type="Texture2D" uid="uid://bkmwr24uudlm6" path="res://ingame/entities/player/player.png" id="2_ado2y"]
+[ext_resource type="Texture2D" uid="uid://ufr4xvpydw1x" path="res://ingame/entities/player/player_regular.png" id="2_ado2y"]
 [ext_resource type="Texture2D" uid="uid://xa5vxaptiwsv" path="res://ingame/entities/projectiles/bullet_normal.png" id="3_ado2y"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_1etb5"]
@@ -117,7 +117,7 @@ debug_color = Color(0.807088, 0.071692, 1, 0.42)
 metadata/_edit_lock_ = true
 
 [node name="Image" type="Sprite2D" parent="Rest"]
-modulate = Color(1, 0, 0, 1)
+modulate = Color(0.985421, 0, 0.284938, 1)
 texture = ExtResource("2_ado2y")
 metadata/_edit_lock_ = true
 

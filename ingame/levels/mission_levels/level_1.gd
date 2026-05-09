@@ -1,5 +1,9 @@
 extends Node
 
+const INGAME_CAMERA_ZOOM: float = 2.0
+
+var rng: RandomNumberGenerator = RandomNumberGenerator.new()
+
 ## those variables are modified by the origin scene(origin.tscn)
 var DEBUG_is_checking_maze: bool = false
 var DEBUG_is_showing_dodging: bool = false
@@ -8,11 +12,15 @@ var max_maze_size: Vector2i = Vector2i.ZERO
 var wall_remove_interval: Vector2i = Vector2i.ZERO
 var enemy_count_interval: Vector2i = Vector2i.ZERO
 var enemy_friendly_fire: bool = true
+var maze_carve_offset: Vector2i = Vector2i.ZERO
+var player_color: Color = Color.WHITE
 
 signal dimensions_finished
 signal carve_finished
 signal generation_finished
 signal wall_remove_finished
+
+var is_finished_loading: bool = false
 
 @onready var scale_ratio: int = $Map/Ground.scale.x / $Map/Walls.scale.x
 ## called by the origin scene after initial configuration
@@ -24,6 +32,7 @@ func modified_ready() -> void:
 	await carve_finished
 	generate_maze_with_randomized_prim()
 	await generation_finished
+	remove_remaining_maze_cells()
 	remove_random_maze_walls()
 	await wall_remove_finished
 	implement_maze_edges_physics()
@@ -31,10 +40,14 @@ func modified_ready() -> void:
 	implement_navigation()
 	place_player_on_map()
 	place_enemies_on_map()
+	is_finished_loading = true
+	$Camera.zoom = Vector2.ONE * INGAME_CAMERA_ZOOM
+	$CrateSpawnDelay.start()
 
 const SCROLL_VALUE: float = 1.1
 func _process(delta: float) -> void:
 	if is_queued_for_deletion(): return
+	if is_finished_loading: $Camera.position = $Player.position
 	if Input.is_action_just_pressed("ScrollUp"):
 		$Camera.zoom *= SCROLL_VALUE
 	if Input.is_action_just_pressed("ScrollDown"):
@@ -44,6 +57,9 @@ func _process(delta: float) -> void:
 		var player_cell: Vector2i = $Map/Ground.local_to_map($Map/Ground.to_local($Player.position))
 		var enemy_cell: Vector2i = $Map/Ground.local_to_map($Map/Ground.to_local(instance.position))
 		instance.is_adjacent_wall_to_player = is_wall_between_cells(player_cell, enemy_cell, 2, true)
+	# for debugging
+	#%PlayerTitle.text = str(alive_players_count)
+	#%EnemyTitle.text = str(alive_enemies_count)
 
 func initialize_score_ui() -> void:
 	%PlayerScore.text = str(player_score)
@@ -56,7 +72,6 @@ const TILE_SIZE: int = 16
 var maze_size: Vector2i = Vector2i.ZERO
 var maze_bottom_corner: Vector2i = Vector2i.ZERO
 func create_maze_rectangle() -> void:
-	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 	maze_size = Vector2i(rng.randi_range(min_maze_size.x, max_maze_size.x), rng.randi_range(min_maze_size.y, max_maze_size.y))
 	if maze_size.x < maze_size.y:
 		var auxiliary: int = maze_size.x
@@ -76,39 +91,39 @@ func create_maze_rectangle() -> void:
 	dimensions_finished.emit()
 
 var WAIT_TIME: float = 0.01
-const MAX_CARVE_CONSECUTIVE_INCREMENT: int = 2
 var maze_cells: Array[Vector2i] = []
 func carve_maze_rectangle() -> void:
 	var effective_vertical_margins: Array[Vector2i] = []
 	var effective_horizontal_margins: Array[Vector2i] = []
 	
 	## random crop at every margin: it doesn't keep track of the previous margin(neighbour) for now
-	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 	var MAX_CARVE_LENGTH: int = min(maze_size.x, maze_size.y) / 3
 	var random_offset: int = rng.randi_range(0, MAX_CARVE_LENGTH)
 	var result_interval: Vector2i
 	var result_cell: Vector2i
 	for x: int in range(0, maze_size.x):
-		random_offset = rng.randi_range(0, MAX_CARVE_CONSECUTIVE_INCREMENT)
+		random_offset = rng.randi_range(maze_carve_offset.x, maze_carve_offset.y)
 		result_interval.x = random_offset
-		random_offset = rng.randi_range(0, MAX_CARVE_CONSECUTIVE_INCREMENT)
+		random_offset = rng.randi_range(maze_carve_offset.x, maze_carve_offset.y)
 		result_interval.y = maze_size.y - 1 - random_offset
 		for y: int in range(result_interval.x, result_interval.y + 1):
 			result_cell = Vector2i(x, y)
 			effective_vertical_margins.append(result_cell)
 			$Map/VerticalIntervals.set_cell(result_cell, 0, Vector2i(0, 0), 3)
-			$VerticalIntervalsNoise.play()
+			$SingleIntervalNoise.play()
 			await get_tree().create_timer(WAIT_TIME).timeout
 	for y: int in range(0, maze_size.y):
-		random_offset = rng.randi_range(0, MAX_CARVE_CONSECUTIVE_INCREMENT)
+		random_offset = rng.randi_range(maze_carve_offset.x, maze_carve_offset.y)
 		result_interval.x = random_offset
-		random_offset = rng.randi_range(0, MAX_CARVE_CONSECUTIVE_INCREMENT)
+		random_offset = rng.randi_range(maze_carve_offset.x, maze_carve_offset.y)
 		result_interval.y = maze_size.x - 1 - random_offset
 		for x: int in range(result_interval.x, result_interval.y + 1):
 			result_cell = Vector2i(x, y)
 			effective_horizontal_margins.append(result_cell)
 			$Map/HorizontalIntervals.set_cell(result_cell, 0, Vector2i(0, 0), 3)
-			$HorizontalIntervalsNoise.play()
+			if effective_vertical_margins.find(result_cell) != -1:
+				$DoubleIntervalNoise.play()
+			else: $SingleIntervalNoise.play()
 			await get_tree().create_timer(WAIT_TIME).timeout
 	
 	$Map/VerticalIntervals.clear()
@@ -242,12 +257,11 @@ func is_wall_between_cells(cell_1: Vector2i, cell_2: Vector2i, range: int, inclu
 
 ## Randomized Prim's Algorithm: it's the primary maze generating algorithm for this project
 func generate_maze_with_randomized_prim() -> void:
-	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 	var selected_cell: Vector2i
 	## all vector entries should be integers, but this is what Godot offers for optimisation
 	var final_maze_cells: PackedVector2Array
 	var frontier_cells: PackedVector2Array
-	selected_cell = maze_cells[rng.randi_range(0, maze_cells.size() - 1)]
+	selected_cell = maze_size / 2 #maze_cells[rng.randi_range(0, maze_cells.size() - 1)]
 	if (selected_cell.x + selected_cell.y) % 2 == 0:
 		$Map/Ground.set_cell(selected_cell, 0, Vector2i(0, 0), 0)
 	else: $Map/Ground.set_cell(selected_cell, 0, Vector2i(1, 0), 0)
@@ -287,7 +301,6 @@ func configure_as_maze_cell(selected_cell: Vector2i, final_maze_cells: PackedVec
 	## it will always yield at least one because the selected cell is a former frontier cell
 	var num_neighboring_maze_cells: int = 0
 	var possible_directions: Array[int] ## min size should be 1, max size should be 4
-	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 	var neighboring_cell_offset: Vector2i = Vector2i.RIGHT
 	var selected_neighbor_cell: Vector2i
 	for index: int in range(4):
@@ -320,38 +333,58 @@ func rotate_integer_vector(vector: Vector2i) -> Vector2i:
 	if vector == Vector2i.UP: return Vector2i.RIGHT
 	return Vector2i.ZERO ## invalid input handler
 
+func remove_remaining_maze_cells() -> void:
+	var selected_cell: Vector2i
+	for x: int in range(0, maze_size.x):
+		for y: int in range(0, maze_size.y):
+			selected_cell = Vector2i(x, y)
+			var is_black_cell: bool = $Map/Ground.get_cell_alternative_tile(selected_cell) == 1
+			var is_visual_outside_cell: bool = $Map/Ground.get_cell_source_id(selected_cell) == 1
+			var is_array_maze_cell: bool = maze_cells.find(selected_cell) != -1
+			var is_invalid_outside_cell: bool = is_visual_outside_cell and is_array_maze_cell
+			if is_black_cell or is_invalid_outside_cell:
+				maze_cells.remove_at(maze_cells.find(selected_cell, 0))
+				$Map/Ground.set_cell(selected_cell, 1, Vector2i(0, 0))
+				for adjacency: int in range(4):
+					var neighbor_cell: Vector2i = get_maze_cell_neighbor(selected_cell, adjacency)
+					if maze_cells.find(neighbor_cell, 0) == -1:
+						delete_maze_visual_wall(selected_cell, 0)
+						delete_maze_visual_wall(selected_cell, 1)
+						delete_maze_visual_wall(selected_cell, 2)
+						delete_maze_visual_wall(selected_cell, 3)
+
 func remove_random_maze_walls() -> void:
-	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
-	#if maze_size.x + maze_size.y >= 32:
-		#wall_removed_interval = Vector2i(10, 25)
-	#elif maze_size.x + maze_size.y >= 20:
-		#removed_walls_interval = Vector2i(4, 10)
-	#else: #maze_size.x + maze_size.y <= 15:
-		#removed_walls_interval = Vector2i(0, 6)
 	var remove_count: int = rng.randi_range(wall_remove_interval.x, wall_remove_interval.y)
-	await get_tree().create_timer(0).timeout
-	if remove_count == 0: ## the for loop stops working when remove_count is 0 for some reason
+	await get_tree().create_timer(0.01).timeout
+	if remove_count == 0:
 		wall_remove_finished.emit()
 		return
-	for index: int in range(0, remove_count):
+	var removed: int = 0
+	while removed < remove_count:
 		await get_tree().create_timer(0.03).timeout
 		$WallRemoveNoise.play()
-		var random_cell: Vector2i = maze_size - Vector2i.ONE
-		var wall_does_not_exist: bool = true # temporarily modified so a cell has to have at least two adjacent walls
-		while wall_does_not_exist or random_cell == maze_size - Vector2i.ONE:
-			var wall_count: int = 0
-			for adjacency: int in range(0, 3):
-				if maze_visual_wall_exists(random_cell, adjacency): wall_count += 1
-			wall_does_not_exist = wall_count <= 1 # temporarily modified so a cell has to have at least two adjacent walls
-			random_cell = Vector2i(rng.randi_range(0, maze_size.x - 1), rng.randi_range(0, maze_size.y - 1))
-		if random_cell.x == maze_size.x - 1:
-			delete_maze_visual_wall(random_cell, 1)
-			continue
-		if random_cell.y == maze_size.y - 1:
-			delete_maze_visual_wall(random_cell, 0)
-			continue
-		delete_maze_visual_wall(random_cell, rng.randi_range(0, 1))
+		var selected_cell: Vector2i = maze_cells.get(rng.randi_range(0, maze_cells.size() - 1))
+		var possible_adjacencies: Array[int] = []
+		for selected_adjacency: int in range(4):
+			var selected_wall_exists: bool = maze_visual_wall_exists(selected_cell, selected_adjacency)
+			var selected_neighbor_is_maze_cell: bool = maze_cells.find(get_maze_cell_neighbor(selected_cell, selected_adjacency), 0) != -1
+			if selected_wall_exists and selected_neighbor_is_maze_cell:
+				possible_adjacencies.push_back(selected_adjacency)
+		if possible_adjacencies.size() == 0: continue
+		var deleted_adjacency: int = rng.randi_range(0, possible_adjacencies.size() - 1)
+		deleted_adjacency = possible_adjacencies[deleted_adjacency]
+		delete_maze_visual_wall(selected_cell, deleted_adjacency)
+		removed += 1
 	wall_remove_finished.emit()
+
+func get_maze_cell_neighbor(selected_cell: Vector2i, adjacency: int) -> Vector2i:
+	if adjacency < 0 or adjacency > 3: return Vector2i.ONE * -1
+	var result: Vector2i = selected_cell
+	if adjacency == 0: result += Vector2i.RIGHT
+	if adjacency == 1: result += Vector2i.DOWN
+	if adjacency == 2: result += Vector2i.LEFT
+	if adjacency == 3: result += Vector2i.UP
+	return result
 
 func implement_maze_edges_physics() -> void:
 	var maze_corner: Vector2
@@ -500,16 +533,20 @@ func implement_navigation() -> void:
 				continue
 			$Map/Navigation.set_cell(Vector2(column, row), 0, Vector2i(2, 1), 0)
 
+## the selected cell doesn't need to be part of the maze
+func maze_cell_to_world(selected_cell: Vector2i) -> Vector2:
+	var result: Vector2 = $Map/Ground.map_to_local(selected_cell)
+	result.x *= $Map/Ground.scale.x
+	result.y *= $Map/Ground.scale.y
+	return result
+
 const GROUND_TILE_SET: String = "res://ingame/tiles/base_tileset.tres"
 const OFFSET_SUBTRACT: float = 20.0
 func place_player_on_map() -> void:
-	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 	var selected_cell: Vector2i
 	var ground_tile_size: Vector2i = load(GROUND_TILE_SET).tile_size
 	selected_cell = maze_cells.get(rng.randi_range(0, maze_cells.size() - 1))
-	var selected_position: Vector2 = $Map/Ground.map_to_local(selected_cell)
-	selected_position.x *= $Map/Ground.scale.x
-	selected_position.y *= $Map/Ground.scale.y
+	var selected_position: Vector2 = maze_cell_to_world(selected_cell)
 	$Player.position = selected_position
 	var offset_vector: Vector2
 	var max_offset_scalar: Vector2 = $Map/Ground.scale / 2 - Vector2.ONE * OFFSET_SUBTRACT
@@ -519,20 +556,13 @@ func place_player_on_map() -> void:
 	$Player.rotation = rng.randf_range(0, PI * 2)
 	$Player.visible = true
 	$Player.process_mode = Node.PROCESS_MODE_INHERIT
+	$Player.modulate = player_color
 	alive_players_count = 1
 
 @export var MIN_SPAWNPOINT_DISTANCING: float = 400.0
 var enemy_count: int
 const NEW_ENEMY_INSTANCE_PATH: String = "res://ingame/entities/enemy/enemy.tscn"
 func place_enemies_on_map() -> void:
-	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
-	# enemy_count_interval selection is temporary, this can be optimised later
-	#if maze_size.x + maze_size.y >= 32:
-		#enemy_count_interval = Vector2i(6, 9)
-	#elif maze_size.x + maze_size.y >= 20:
-		#enemy_count_interval = Vector2i(3, 5)
-	#else: #maze_size.x + maze_size.y >= 15:
-		#enemy_count_interval = Vector2i(1, 3)
 	enemy_count = rng.randi_range(enemy_count_interval.x, enemy_count_interval.y)
 	var enemy_instance: RigidBody2D = null
 	for index: int in range(0, enemy_count):
@@ -545,9 +575,7 @@ func place_enemies_on_map() -> void:
 			var selected_cell: Vector2i
 			var ground_tile_size: Vector2i = load(GROUND_TILE_SET).tile_size
 			selected_cell = maze_cells.get(rng.randi_range(0, maze_cells.size() - 1))
-			var selected_position: Vector2 = $Map/Ground.map_to_local(selected_cell)
-			selected_position.x *= $Map/Ground.scale.x
-			selected_position.y *= $Map/Ground.scale.y
+			var selected_position: Vector2 = maze_cell_to_world(selected_cell)
 			enemy_instance.position = selected_position
 			var offset_vector: Vector2
 			var max_offset_scalar: Vector2 = $Map/Ground.scale / 2 - Vector2.ONE * OFFSET_SUBTRACT
@@ -567,20 +595,53 @@ func place_enemies_on_map() -> void:
 		alive_enemies_count = enemy_count
 
 const NEW_BULLET_PATH: String = "res://ingame/entities/projectiles/bullet.tscn"
+const REGULAR_SPAWN_OFFSET: float = 30.0
+const LASER_SPAWN_OFFSET: float = 30.0
+const LASER_SPEED: float = 4000.0
+const LASER_LIFESPAN: float = 1.0
+const ROCKET_SPAWN_OFFSET: float = 34.0
+const TRAP_SPAWN_OFFSET: float = 60.0
+
 var bullet_ins: RigidBody2D = null
-func _on_player_shoot() -> void:
-	if $Player.bullet_count >= $Player.MAX_BULLET_COUNT:
+func _on_player_shoot(weapon_type: String) -> void:
+	if weapon_type == "regular" and $Player.bullet_count >= $Player.MAX_BULLET_COUNT:
 		$NoAmmoNoise.play()
 		return
-	$NormalShootNoise.play()
+	if weapon_type != "regular":
+		$Player.equip_weapon("regular")
 	bullet_ins = load(NEW_BULLET_PATH).instantiate()
-	bullet_ins.initial_velocity_direction = $Player.rotation
+	var bullet_offset: float
+	var bullet_speed: float
+	if weapon_type == "regular":
+		bullet_offset = REGULAR_SPAWN_OFFSET
+		bullet_ins.initial_velocity_speed = $Player.BULLET_SPEED
+		bullet_ins.type = "regular"
+		$NormalShootNoise.play()
+	if weapon_type == "laser":
+		bullet_offset = LASER_SPAWN_OFFSET
+		bullet_ins.initial_velocity_speed = LASER_SPEED
+		bullet_ins.get_node("LifespanTimer").wait_time = LASER_LIFESPAN
+		bullet_ins.get_node("Rest/LaserTrail").emitting = true
+		bullet_ins.type = "laser"
+		$LaserShootNoise.play()
+	if weapon_type == "rocket":
+		bullet_offset = ROCKET_SPAWN_OFFSET
+		bullet_ins.initial_velocity_speed = $Player.BULLET_SPEED
+		bullet_ins.type = "rocket"
+		$RocketShootNoise.play()
+	if weapon_type == "trap":
+		bullet_offset = TRAP_SPAWN_OFFSET
+		bullet_ins.initial_velocity_speed = 0.0
+		bullet_ins.type = "trap"
+		$TrapPlaceNoise.play()
 	$Bullets.add_child(bullet_ins)
-	bullet_ins.position = $Player.position + Vector2($Player.BULLET_SPAWN_OFFSET, 0).rotated($Player.rotation)
-	bullet_ins.apply_central_impulse(Vector2($Player.BULLET_SPEED, 0).rotated($Player.rotation))
-	bullet_ins.connect("despawn", on_bullet_despawn)
 	bullet_ins.owner_node = $Player
-	$Player.bullet_count += 1
+	bullet_ins.initial_velocity_direction = $Player.rotation
+	bullet_ins.position = $Player.position + Vector2(bullet_offset, 0).rotated($Player.rotation)
+	if weapon_type != "trap": bullet_ins.connect("despawn", on_bullet_despawn)
+	if weapon_type == "regular": $Player.bullet_count += 1
+	bullet_ins.modified_ready()
+	bullet_ins.process_mode = Node.PROCESS_MODE_INHERIT
 
 func _on_enemy_shoot(enemy_node: RigidBody2D) -> void:
 	if enemy_node.bullet_count >= enemy_node.MAX_BULLET_COUNT:
@@ -588,21 +649,41 @@ func _on_enemy_shoot(enemy_node: RigidBody2D) -> void:
 		return
 	$NormalShootNoise.play()
 	bullet_ins = load(NEW_BULLET_PATH).instantiate()
+	bullet_ins.type = "regular"
 	bullet_ins.initial_velocity_direction = enemy_node.rotation
+	bullet_ins.initial_velocity_speed = $Player.BULLET_SPEED
 	$Bullets.add_child(bullet_ins)
 	bullet_ins.position = enemy_node.position + Vector2(enemy_node.BULLET_SPAWN_OFFSET, 0).rotated(enemy_node.rotation)
-	bullet_ins.apply_central_impulse(Vector2(enemy_node.BULLET_SPEED, 0).rotated(enemy_node.rotation))
 	bullet_ins.connect("despawn", on_bullet_despawn)
 	bullet_ins.owner_node = enemy_node
 	enemy_node.bullet_count += 1
+	bullet_ins.modified_ready()
+	bullet_ins.process_mode = Node.PROCESS_MODE_INHERIT
 
 ## connected to each bullet's despawn signal
 func on_bullet_despawn(bullet: RigidBody2D) -> void:
 	# it'll probably be a single if statement in the future, there is no good reason to distinguish between
 	# players and enemies inside this function
-	if bullet.owner_node.get_meta("type", "NULL") == "player": $Player.bullet_count -= 1
+	if bullet.owner_node.get_meta("type", "NULL") == "player":
+		if bullet.type == "regular":
+			$Player.bullet_count -= 1
 	if bullet.owner_node.get_meta("type", "NULL") == "enemy": bullet.owner_node.bullet_count -= 1
 	#node.queue_free()
+
+const NEW_CRATE_PATH: String = "res://ingame/entities/crates/crate.tscn"
+func _on_crate_spawn_delay_timeout() -> void:
+	$CrateSpawnNoise.play()
+	var crate_instance: Area2D = null
+	crate_instance = load(NEW_CRATE_PATH).instantiate()
+	var selected_maze_cell: Vector2i = maze_cells[rng.randi_range(0, maze_cells.size() - 1)]
+	crate_instance.position = maze_cell_to_world(selected_maze_cell)
+	$Crates.add_child(crate_instance)
+	crate_instance.connect("equip_weapon", equip_weapon)
+	crate_instance.modified_ready()
+
+## connected to crates when one of them gets picked up by the player
+func equip_weapon(player: RigidBody2D, type: String) -> void:
+	$Player.equip_weapon(type)
 
 var alive_players_count: int
 var alive_enemies_count: int
@@ -622,17 +703,17 @@ func _on_enemy_level_die() -> void:
 	$DeathDelay.start()
 
 func _on_death_delay_timeout() -> void:
-	if alive_players_count != 0 and alive_enemies_count != 0: return
-	if alive_players_count == alive_enemies_count and alive_players_count == 0:
+	if alive_players_count > 0 and alive_enemies_count > 0: return
+	if alive_players_count <= 0 and alive_enemies_count <= 0:
 		%DrawTitle.visible = true
 		$NextRoundDelay.start()
 		$NextRoundNoise.play()
 		process_mode = Node.PROCESS_MODE_DISABLED
 		return
-	if alive_players_count == 0:
+	if alive_players_count <= 0:
 		enemy_score += 1
 		%EnemyScore.text = str(enemy_score)
-	if alive_enemies_count == 0:
+	if alive_enemies_count <= 0:
 		player_score += 1
 		%PlayerScore.text = str(player_score)
 	$NextRoundDelay.start()

@@ -2,7 +2,7 @@ extends Node
 
 ## those variables may be changed by the player in the settings menu
 ## maze size(width first, then height)
-var min_maze_size: Vector2i = Vector2i(6, 6)
+var min_maze_size: Vector2i = Vector2i(12, 12)
 var max_maze_size: Vector2i = Vector2i(16, 16)
 ## random wall remove(after generating internal visual walls)
 var wall_remove_interval: Vector2i = Vector2i(0, 5)
@@ -10,6 +10,10 @@ var wall_remove_interval: Vector2i = Vector2i(0, 5)
 var enemy_count_interval: Vector2i = Vector2i(1, 3)
 ## friendly fire for enemies(i.e. enemies can kill themselves, but not necessarily individually)
 var enemy_friendly_fire: bool = true
+## maze carve offset
+var maze_carve_offset: Vector2i = Vector2i(0, 3)
+## player skin colour(corresponds to the player texture's modulation)
+var player_color: Color = Color.WHITE
 
 var player_score: int = 0
 var enemy_score: int = 0
@@ -58,9 +62,15 @@ func play_level(id: int) -> void:
 	if $CurrentLevelContainer.get_child_count() > 0 and current_level != null:
 		current_level.queue_free()
 	current_level = load(LEVEL_FILE_PREFIX + str(id + 1) + ".tscn").instantiate()
+	current_level.connect("next_round", next_round)
+	update_level_variables()
+	$CurrentLevelContainer.add_child(current_level)
+	current_level.modified_ready()
+
+func update_level_variables() -> void:
+	if current_level == null: return
 	current_level.DEBUG_is_checking_maze = DEBUG_is_checking_maze
 	current_level.DEBUG_is_showing_dodging = DEBUG_is_showing_dodging
-	current_level.connect("next_round", next_round)
 	current_level.min_maze_size = min_maze_size
 	current_level.max_maze_size = max_maze_size
 	current_level.wall_remove_interval = wall_remove_interval
@@ -68,8 +78,8 @@ func play_level(id: int) -> void:
 	current_level.enemy_friendly_fire = enemy_friendly_fire
 	current_level.player_score = player_score
 	current_level.enemy_score = enemy_score
-	$CurrentLevelContainer.add_child(current_level)
-	current_level.modified_ready()
+	current_level.maze_carve_offset = maze_carve_offset
+	current_level.player_color = player_color
 
 func next_round(player_increment: int, enemy_increment: int) -> void:
 	player_score = player_increment

@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://dl53xfp6aj77b"]
+[gd_scene load_steps=14 format=3 uid="uid://dl53xfp6aj77b"]
 
 [ext_resource type="Script" uid="uid://wgurxu8fyrnf" path="res://origin.gd" id="1_tb4yc"]
 [ext_resource type="Script" uid="uid://desjpxlp4d326" path="res://ui/main_menu/main_menu.gd" id="2_2me8q"]
@@ -6,6 +6,7 @@
 [ext_resource type="Script" uid="uid://tecvb1bo3wnl" path="res://ui/pause_menu/pause_menu.gd" id="2_xyqw4"]
 [ext_resource type="Texture2D" uid="uid://cfp23f081i35a" path="res://ui/noise_texture_1.tres" id="4_xyqw4"]
 [ext_resource type="Script" uid="uid://b41ev4xjlv5mx" path="res://ui/settings_menu/settings_menu.gd" id="6_ppsw1"]
+[ext_resource type="Texture2D" uid="uid://ufr4xvpydw1x" path="res://ingame/entities/player/player_regular.png" id="7_bao8v"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_ppsw1"]
 font_size = 70
@@ -267,7 +268,7 @@ metadata/_edit_lock_ = true
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
-text = "Maze Settings"
+text = "Settings"
 metadata/_edit_lock_ = true
 
 [node name="VSpacer3" type="Control" parent="MainMenu/Frame"]
@@ -355,15 +356,15 @@ layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
 min_value = 6.0
-max_value = 16.0
+max_value = 32.0
 step = 1.0
-value = 6.0
+value = 12.0
 metadata/_edit_lock_ = true
 
 [node name="MinWidthLabel" type="Label" parent="SettingsMenu/Frame/MazeSizeInterval/MinMazeSize/Width"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Width : 6"
+text = "Width : 12"
 label_settings = SubResource("LabelSettings_6o7oq")
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -381,15 +382,15 @@ layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
 min_value = 6.0
-max_value = 16.0
+max_value = 32.0
 step = 1.0
-value = 6.0
+value = 12.0
 metadata/_edit_lock_ = true
 
 [node name="MinHeightLabel" type="Label" parent="SettingsMenu/Frame/MazeSizeInterval/MinMazeSize/Height"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Height : 6"
+text = "Height : 12"
 label_settings = SubResource("LabelSettings_6o7oq")
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -421,7 +422,7 @@ layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
 min_value = 6.0
-max_value = 16.0
+max_value = 32.0
 step = 1.0
 value = 16.0
 metadata/_edit_lock_ = true
@@ -447,7 +448,7 @@ layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
 min_value = 6.0
-max_value = 16.0
+max_value = 32.0
 step = 1.0
 value = 16.0
 metadata/_edit_lock_ = true
@@ -574,7 +575,7 @@ custom_minimum_size = Vector2(800, 0)
 layout_mode = 2
 metadata/_edit_lock_ = true
 
-[node name="MaxEnemyCountCollider" type="HScrollBar" parent="SettingsMenu/Frame/EnemyAndWallRemove/EnemyCount/MaxEnemyCount"]
+[node name="MaxEnemyCountScroller" type="HScrollBar" parent="SettingsMenu/Frame/EnemyAndWallRemove/EnemyCount/MaxEnemyCount"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(500, 50)
 layout_mode = 2
@@ -633,6 +634,106 @@ horizontal_alignment = 1
 vertical_alignment = 1
 metadata/_edit_lock_ = true
 
+[node name="CarveOffset" type="VBoxContainer" parent="SettingsMenu/Frame/EnemyFriendlyFire1"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+metadata/_edit_lock_ = true
+
+[node name="CarveOffsetTitle" type="Label" parent="SettingsMenu/Frame/EnemyFriendlyFire1/CarveOffset"]
+layout_mode = 2
+text = "Carve Offset"
+label_settings = SubResource("LabelSettings_bao8v")
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="MinCarveOffset" type="HBoxContainer" parent="SettingsMenu/Frame/EnemyFriendlyFire1/CarveOffset"]
+custom_minimum_size = Vector2(800, 0)
+layout_mode = 2
+metadata/_edit_lock_ = true
+
+[node name="MinCarveOffsetScroller" type="HScrollBar" parent="SettingsMenu/Frame/EnemyFriendlyFire1/CarveOffset/MinCarveOffset"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(500, 50)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+max_value = 10.0
+step = 1.0
+metadata/_edit_lock_ = true
+
+[node name="MinCarveOffsetLabel" type="Label" parent="SettingsMenu/Frame/EnemyFriendlyFire1/CarveOffset/MinCarveOffset"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Minimum: 0"
+label_settings = SubResource("LabelSettings_6o7oq")
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="MaxCarveOffset" type="HBoxContainer" parent="SettingsMenu/Frame/EnemyFriendlyFire1/CarveOffset"]
+custom_minimum_size = Vector2(800, 0)
+layout_mode = 2
+metadata/_edit_lock_ = true
+
+[node name="MaxCarveOffsetScroller" type="HScrollBar" parent="SettingsMenu/Frame/EnemyFriendlyFire1/CarveOffset/MaxCarveOffset"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(500, 50)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+max_value = 10.0
+step = 1.0
+value = 3.0
+metadata/_edit_lock_ = true
+
+[node name="MaxCarveOffsetLabel" type="Label" parent="SettingsMenu/Frame/EnemyFriendlyFire1/CarveOffset/MaxCarveOffset"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Maximum: 3"
+label_settings = SubResource("LabelSettings_6o7oq")
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="PlayerColor" type="VBoxContainer" parent="SettingsMenu/Frame/EnemyFriendlyFire1"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+metadata/_edit_lock_ = true
+
+[node name="PlayerColorTitle" type="Label" parent="SettingsMenu/Frame/EnemyFriendlyFire1/PlayerColor"]
+layout_mode = 2
+text = "Player Colour"
+label_settings = SubResource("LabelSettings_bao8v")
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="PlayerColorContainer" type="HBoxContainer" parent="SettingsMenu/Frame/EnemyFriendlyFire1/PlayerColor"]
+layout_mode = 2
+size_flags_vertical = 0
+metadata/_edit_lock_ = true
+
+[node name="PlayerColorTest" type="TextureRect" parent="SettingsMenu/Frame/EnemyFriendlyFire1/PlayerColor/PlayerColorContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+texture = ExtResource("7_bao8v")
+metadata/_edit_lock_ = true
+
+[node name="PlayerColorPicker" type="ColorPicker" parent="SettingsMenu/Frame/EnemyFriendlyFire1/PlayerColor/PlayerColorContainer"]
+layout_mode = 2
+size_flags_vertical = 0
+edit_alpha = false
+sampler_visible = false
+color_modes_visible = false
+sliders_visible = false
+hex_visible = false
+presets_visible = false
+metadata/_edit_lock_ = true
+
 [node name="VSpacer2" type="Control" parent="SettingsMenu/Frame"]
 layout_mode = 2
 size_flags_vertical = 3
@@ -664,6 +765,9 @@ metadata/_edit_lock_ = true
 [connection signal="value_changed" from="SettingsMenu/Frame/EnemyAndWallRemove/MazeWallRemove/MinimumMazeWallRemove/MinMazeWallRemoveScroller" to="SettingsMenu" method="_on_min_maze_wall_remove_scroller_value_changed"]
 [connection signal="value_changed" from="SettingsMenu/Frame/EnemyAndWallRemove/MazeWallRemove/MaximumMazeWallRemove/MaxMazeWallRemoveScroller" to="SettingsMenu" method="_on_max_maze_wall_remove_scroller_value_changed"]
 [connection signal="value_changed" from="SettingsMenu/Frame/EnemyAndWallRemove/EnemyCount/MinEnemyCount/MinEnemyCountScroller" to="SettingsMenu" method="_on_min_enemy_count_scroller_value_changed"]
-[connection signal="value_changed" from="SettingsMenu/Frame/EnemyAndWallRemove/EnemyCount/MaxEnemyCount/MaxEnemyCountCollider" to="SettingsMenu" method="_on_max_enemy_count_collider_value_changed"]
+[connection signal="value_changed" from="SettingsMenu/Frame/EnemyAndWallRemove/EnemyCount/MaxEnemyCount/MaxEnemyCountScroller" to="SettingsMenu" method="_on_max_enemy_count_collider_value_changed"]
 [connection signal="toggled" from="SettingsMenu/Frame/EnemyFriendlyFire1/EnemyFriendlyFire2/EnemyFriendlyFire3/EnemyFriendlyFireCheck" to="SettingsMenu" method="_on_enemy_friendly_fire_check_toggled"]
+[connection signal="value_changed" from="SettingsMenu/Frame/EnemyFriendlyFire1/CarveOffset/MinCarveOffset/MinCarveOffsetScroller" to="SettingsMenu" method="_on_min_carve_offset_scroller_value_changed"]
+[connection signal="value_changed" from="SettingsMenu/Frame/EnemyFriendlyFire1/CarveOffset/MaxCarveOffset/MaxCarveOffsetScroller" to="SettingsMenu" method="_on_max_carve_offset_scroller_value_changed"]
+[connection signal="color_changed" from="SettingsMenu/Frame/EnemyFriendlyFire1/PlayerColor/PlayerColorContainer/PlayerColorPicker" to="SettingsMenu" method="_on_player_color_picker_color_changed"]
 [connection signal="pressed" from="SettingsMenu/Frame/SettingsToMainMenuButton" to="SettingsMenu" method="_on_settings_to_main_menu_button_pressed"]

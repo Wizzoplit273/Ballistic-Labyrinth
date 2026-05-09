@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://brkhd877byfrv"
-path="res://.godot/imported/tile_maze_ground_atlas.png-7c93ee9c8635d27fcfd861d7fb77ed1c.ctex"
+uid="uid://oupeuo5u8eex"
+path="res://.godot/imported/bullet_trap.png-85ec47015b58bb5af6e399bab33f4aa5.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://ingame/tiles/tile_maze_ground_atlas.png"
-dest_files=["res://.godot/imported/tile_maze_ground_atlas.png-7c93ee9c8635d27fcfd861d7fb77ed1c.ctex"]
+source_file="res://ingame/entities/projectiles/bullet_trap.png"
+dest_files=["res://.godot/imported/bullet_trap.png-85ec47015b58bb5af6e399bab33f4aa5.ctex"]
 
 [params]
 

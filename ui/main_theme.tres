@@ -49,3 +49,5 @@ Button/styles/focus = SubResource("StyleBoxFlat_tsbh2")
 Button/styles/hover = SubResource("StyleBoxFlat_g1fjd")
 Button/styles/normal = SubResource("StyleBoxFlat_6tukj")
 Button/styles/pressed = SubResource("StyleBoxFlat_3xb56")
+ColorPicker/constants/sv_height = 200
+ColorPicker/constants/sv_width = 200

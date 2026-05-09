@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://brkhd877byfrv"
-path="res://.godot/imported/tile_maze_ground_atlas.png-7c93ee9c8635d27fcfd861d7fb77ed1c.ctex"
+uid="uid://c204rae6syx0k"
+path="res://.godot/imported/player_rocket.png-817d634e1df4fc28a623e56b81fe7853.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://ingame/tiles/tile_maze_ground_atlas.png"
-dest_files=["res://.godot/imported/tile_maze_ground_atlas.png-7c93ee9c8635d27fcfd861d7fb77ed1c.ctex"]
+source_file="res://ingame/entities/player/player_rocket.png"
+dest_files=["res://.godot/imported/player_rocket.png-817d634e1df4fc28a623e56b81fe7853.ctex"]
 
 [params]
 

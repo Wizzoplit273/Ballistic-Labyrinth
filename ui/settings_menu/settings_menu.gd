@@ -55,6 +55,24 @@ func _on_enemy_friendly_fire_check_toggled(toggled_on: bool) -> void:
 	if toggled_on: %EnemyFriendlyFireLabel.text = "True"
 	else: %EnemyFriendlyFireLabel.text = "False"
 
+func _on_min_carve_offset_scroller_value_changed(value: float) -> void:
+	if int(value) > $"..".maze_carve_offset.y:
+		%MinCarveOffsetScroller.value = $"..".maze_carve_offset.y
+		return
+	$"..".maze_carve_offset.x = int(value)
+	%MinCarveOffsetLabel.text = "Minimum: " + str(int(value))
+
+func _on_max_carve_offset_scroller_value_changed(value: float) -> void:
+	if int(value) < $"..".maze_carve_offset.x:
+		%MaxCarveOffsetScroller.value = $"..".maze_carve_offset.x
+		return
+	$"..".maze_carve_offset.y = int(value)
+	%MaxCarveOffsetLabel.text = "Maximum: " + str(int(value))
+
+func _on_player_color_picker_color_changed(color: Color) -> void:
+	$"..".player_color = color
+	%PlayerColorTest.modulate = color
+
 func _on_settings_to_main_menu_button_pressed() -> void:
 	visible = false
 	$"../MainMenu".activate(true)

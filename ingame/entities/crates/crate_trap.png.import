@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bkmwr24uudlm6"
-path="res://.godot/imported/player.png-4f35517574a6e51f23493945837c0ea8.ctex"
+uid="uid://caaqq81ea8r0h"
+path="res://.godot/imported/crate_trap.png-967b27423823de0d05ff84594abdb591.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://ingame/entities/player/player.png"
-dest_files=["res://.godot/imported/player.png-4f35517574a6e51f23493945837c0ea8.ctex"]
+source_file="res://ingame/entities/crates/crate_trap.png"
+dest_files=["res://.godot/imported/crate_trap.png-967b27423823de0d05ff84594abdb591.ctex"]
 
 [params]
 

@@ -98,11 +98,13 @@ func check_nearby_bullets() -> void:
 @export var BULLET_DANGER_SENSITIVITY: float = 0.4
 #@export var DODGE_SPEED: float = 200.0
 func is_bullet_dangerous(bullet: RigidBody2D) -> bool:
+	if bullet == null: return false
 	if bullet.get_meta("type", "NULL") != "bullet": return false
 	if bullet.owner_node != self:
 		if bullet.owner_node.get_meta("type", "NULL") == "enemy":
 			if not enemy_friendly_fire: return false
 	if (previous_position - position).length() == 0.0:
+		if not bullet.has_node("VelocityRaycast"): return false
 		var is_raycast_hitting_enemy: bool = bullet.get_node("VelocityRaycast").get_collider() == self
 		if not is_raycast_hitting_enemy: return false
 	var distance_to_enemy: Vector2 = global_position - bullet.global_position
