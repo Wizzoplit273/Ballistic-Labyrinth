@@ -26,16 +26,16 @@ func _on_max_maze_size_scroller_y_value_changed(value: float) -> void:
 	%MaxHeightLabel.text = "Height: " + str(int(value))
 
 func _on_min_enemy_count_scroller_value_changed(value: float) -> void:
-	if int(value) > $"..".enemy_count_interval.y:
-		%MinEnemyCountScroller.value = $"..".enemy_count_interval.y
+	if int(value) > $"..".bot_count_interval.y:
+		%MinEnemyCountScroller.value = $"..".bot_count_interval.y
 		return
-	$"..".enemy_count_interval.x = int(value)
+	$"..".bot_count_interval.x = int(value)
 	%MinEnemyCountLabel.text = "Minimum: " + str(int(value))
 func _on_max_enemy_count_collider_value_changed(value: float) -> void:
-	if int(value) < $"..".enemy_count_interval.x:
-		%MaxEnemyCountScroller.value = $"..".enemy_count_interval.x
+	if int(value) < $"..".bot_count_interval.x:
+		%MaxEnemyCountScroller.value = $"..".bot_count_interval.x
 		return
-	$"..".enemy_count_interval.y = int(value)
+	$"..".bot_count_interval.y = int(value)
 	%MaxEnemyCountLabel.text = "Maximum: " + str(int(value))
 func _on_min_maze_wall_remove_scroller_value_changed(value: float) -> void:
 	if int(value) > $"..".wall_remove_interval.y:
@@ -50,8 +50,8 @@ func _on_max_maze_wall_remove_scroller_value_changed(value: float) -> void:
 	$"..".wall_remove_interval.y = int(value)
 	%MaxMazeWallRemoveLabel.text = "Maximum: " + str(int(value))
 
-func _on_enemy_friendly_fire_check_toggled(toggled_on: bool) -> void:
-	$"..".enemy_friendly_fire = toggled_on
+func _on_bot_friendly_fire_check_toggled(toggled_on: bool) -> void:
+	$"..".bot_friendly_fire = toggled_on
 	if toggled_on: %EnemyFriendlyFireLabel.text = "True"
 	else: %EnemyFriendlyFireLabel.text = "False"
 
@@ -68,10 +68,6 @@ func _on_max_carve_offset_scroller_value_changed(value: float) -> void:
 		return
 	$"..".maze_carve_offset.y = int(value)
 	%MaxCarveOffsetLabel.text = "Maximum: " + str(int(value))
-
-func _on_player_color_picker_color_changed(color: Color) -> void:
-	$"..".player_color = color
-	%PlayerColorTest.modulate = color
 
 func _on_settings_to_main_menu_button_pressed() -> void:
 	visible = false

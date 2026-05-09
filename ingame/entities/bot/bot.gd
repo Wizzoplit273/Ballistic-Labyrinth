@@ -1,21 +1,20 @@
 extends RigidBody2D
 
 ## those variables are only used outside this script, in the level scene node
-@export var BULLET_SPEED: float = 300.0
-var enemy_friendly_fire: bool = true
+var bot_friendly_fire: bool = true
 
 @export var LINEAR_SPEED: float = 200.0
 @export var ANGULAR_SPEED: float = 320.0
 @export var BULLET_SPAWN_OFFSET: float = 30.0
 @export var MAX_BULLET_COUNT: int = 5
-@export var ROTATION_INTERPOLATION_WEIGHT: float = 0.1
+@export var ROTATION_INTERPOLATION_WEIGHT: float = 0.15
 @export var ANGLE_DILATION: float = 0.1
 
 @onready var TARGET_DESIRED_DISTANCE: float = $NavigationAgent.target_desired_distance
 
 ## updated by the parent level scene
 var bullet_count: int = 0
-var player_node: RigidBody2D
+var player_node: RigidBody2D = null
 var is_adjacent_wall_to_player: bool = false
 var is_dodging_bullets: bool = false
 var DEBUG_is_showing_dodging: bool = false
@@ -37,13 +36,15 @@ var previous_rotation: float = 0.0
 
 var is_reversing: bool = false
 func _physics_process(_delta: float) -> void:
+	if not multiplayer.is_server(): return
 	if not visible: return
+	$Rest/FixedRotation.rotation = -rotation
 	linear_velocity = Vector2.ZERO
 	angular_velocity = 0.0
 	$NavigationAgent.target_position = player_node.global_position
 	
-	if player_node.get_node("Rest").visible: $NavigationAgent.process_mode = Node.PROCESS_MODE_INHERIT
-	else: $NavigationAgent.process_mode = Node.PROCESS_MODE_DISABLED
+	#if player_node.get_node("Rest").visible: $NavigationAgent.process_mode = Node.PROCESS_MODE_INHERIT
+	#else: $NavigationAgent.process_mode = Node.PROCESS_MODE_DISABLED
 	$Rest/DEBUGLeftBulletDot.visible = false
 	$Rest/DEBUGRightBulletDot.visible = false
 	check_nearby_bullets()
@@ -75,7 +76,7 @@ func _physics_process(_delta: float) -> void:
 		rotation = lerp_angle(rotation, direction_to_player, ROTATION_INTERPOLATION_WEIGHT * 2)
 		if abs(rotation - direction_to_player) <= MAX_SHOOT_ANGLE_DIFFERENCE and $ShootingCooldown.is_stopped():
 			$ShootingCooldown.start()
-			shoot.emit(self)
+			shoot.emit(self, "regular")
 		return
 	var next_point: Vector2 = $NavigationAgent.get_next_path_position()
 	var direction: Vector2 = (next_point - global_position).normalized()
@@ -102,7 +103,7 @@ func is_bullet_dangerous(bullet: RigidBody2D) -> bool:
 	if bullet.get_meta("type", "NULL") != "bullet": return false
 	if bullet.owner_node != self:
 		if bullet.owner_node.get_meta("type", "NULL") == "enemy":
-			if not enemy_friendly_fire: return false
+			if not bot_friendly_fire: return false
 	if (previous_position - position).length() == 0.0:
 		if not bullet.has_node("VelocityRaycast"): return false
 		var is_raycast_hitting_enemy: bool = bullet.get_node("VelocityRaycast").get_collider() == self
@@ -113,7 +114,7 @@ func is_bullet_dangerous(bullet: RigidBody2D) -> bool:
 	return distance_to_enemy.normalized().dot(bullet_velocity_direction) > BULLET_DANGER_SENSITIVITY
 
 ## whether it's a bullet is verified by the is_bullet_dangerous() function
-const PERPENDICULAR_VELOCITY_DOT_OFFSET: float = 75.0
+const PERPENDICULAR_VELOCITY_DOT_OFFSET: float = 50.0
 #const MAX_BULLET_STOP_DISTANCE: float = 20.0
 func dodge_bullet(bullet: RigidBody2D) -> void:
 	var bullet_velocity_direction: Vector2 = bullet.linear_velocity.normalized()
@@ -264,8 +265,10 @@ func dodge_bullet(bullet: RigidBody2D) -> void:
 
 signal level_die
 ## called by bullet scenes that hit the enemy
+@rpc("reliable", "any_peer")
 func die() -> void:
+	if multiplayer.is_server(): rpc("die")
 	$Rest.visible = false
 	process_mode = Node.PROCESS_MODE_DISABLED
 	$DeathParticles.restart()
-	level_die.emit()
+	if multiplayer.is_server(): level_die.emit()

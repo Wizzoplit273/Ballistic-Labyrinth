@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dlcktv10duwwe"
-path="res://.godot/imported/tile_maze_ground_atlas.png-7c93ee9c8635d27fcfd861d7fb77ed1c.ctex"
+uid="uid://bhhcwtjv5rek6"
+path="res://.godot/imported/tile_maze_ground_4.png-55d400bc34d3f365e15b7cfbb3aa2b5e.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://ingame/tiles/tile_maze_ground_atlas.png"
-dest_files=["res://.godot/imported/tile_maze_ground_atlas.png-7c93ee9c8635d27fcfd861d7fb77ed1c.ctex"]
+source_file="res://ingame/tiles/tile_maze_ground_4.png"
+dest_files=["res://.godot/imported/tile_maze_ground_4.png-55d400bc34d3f365e15b7cfbb3aa2b5e.ctex"]
 
 [params]
 

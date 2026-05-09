@@ -1,4 +1,4 @@
-[gd_resource type="TileSet" load_steps=3 format=3 uid="uid://c4vwq4xoys05c"]
+[gd_resource type="TileSet" format=3 uid="uid://c4vwq4xoys05c"]
 
 [ext_resource type="Texture2D" uid="uid://ded4kr4lkfdqf" path="res://ingame/tiles/tile_maze_wall.png" id="1_40juw"]
 
