@@ -27,14 +27,21 @@ func _ready() -> void:
 const MAX_STUCK_POSITION_CHANGE: float = 2.0
 const MAX_STUCK_ROTATION_CHANGE: float = 0.1
 const MAX_SHOOT_ANGLE_DIFFERENCE: float = 0.4
+
+#const BASE_WEIGHT: float = 1.0
+#const ENEMY_WEIGHT: float = 2.0
+#var current_navigation_region: RID = RID()
+
 var previous_position: Vector2 = Vector2.ZERO
 var previous_rotation: float = 0.0
+
 var is_reversing: bool = false
 func _physics_process(_delta: float) -> void:
 	if not visible: return
 	linear_velocity = Vector2.ZERO
 	angular_velocity = 0.0
 	$NavigationAgent.target_position = player_node.global_position
+	
 	if player_node.get_node("Rest").visible: $NavigationAgent.process_mode = Node.PROCESS_MODE_INHERIT
 	else: $NavigationAgent.process_mode = Node.PROCESS_MODE_DISABLED
 	$Rest/DEBUGLeftBulletDot.visible = false

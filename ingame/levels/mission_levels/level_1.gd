@@ -10,6 +10,7 @@ var enemy_count_interval: Vector2i = Vector2i.ZERO
 var enemy_friendly_fire: bool = true
 
 signal dimensions_finished
+signal carve_finished
 signal generation_finished
 signal wall_remove_finished
 
@@ -17,8 +18,10 @@ signal wall_remove_finished
 ## called by the origin scene after initial configuration
 func modified_ready() -> void:
 	initialize_score_ui()
-	create_maze_ground_and_margins()
+	create_maze_rectangle()
 	await dimensions_finished
+	carve_maze_rectangle()
+	await carve_finished
 	generate_maze_with_randomized_prim()
 	await generation_finished
 	remove_random_maze_walls()
@@ -52,7 +55,7 @@ const TILE_SIZE: int = 16
 ## first vector entry is width, second is height
 var maze_size: Vector2i = Vector2i.ZERO
 var maze_bottom_corner: Vector2i = Vector2i.ZERO
-func create_maze_ground_and_margins() -> void:
+func create_maze_rectangle() -> void:
 	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 	maze_size = Vector2i(rng.randi_range(min_maze_size.x, max_maze_size.x), rng.randi_range(min_maze_size.y, max_maze_size.y))
 	if maze_size.x < maze_size.y:
@@ -70,11 +73,64 @@ func create_maze_ground_and_margins() -> void:
 			$DimensionsGenerationNoise.play()
 			$Map/Ground.set_cell(Vector2i(column, row), 0, Vector2i(0, 0), 1)
 			$Camera.position = maze_size * $Map/Ground.scale.x * TILE_SIZE / 2
-			create_maze_visual_wall(Vector2i(column, row), 3)
-			create_maze_visual_wall(Vector2i(column, row), 2)
-			create_maze_visual_wall(Vector2i(column, row), 1)
-			create_maze_visual_wall(Vector2i(column, row), 0)
 	dimensions_finished.emit()
+
+var WAIT_TIME: float = 0.01
+const MAX_CARVE_CONSECUTIVE_INCREMENT: int = 2
+var maze_cells: Array[Vector2i] = []
+func carve_maze_rectangle() -> void:
+	var effective_vertical_margins: Array[Vector2i] = []
+	var effective_horizontal_margins: Array[Vector2i] = []
+	
+	## random crop at every margin: it doesn't keep track of the previous margin(neighbour) for now
+	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
+	var MAX_CARVE_LENGTH: int = min(maze_size.x, maze_size.y) / 3
+	var random_offset: int = rng.randi_range(0, MAX_CARVE_LENGTH)
+	var result_interval: Vector2i
+	var result_cell: Vector2i
+	for x: int in range(0, maze_size.x):
+		random_offset = rng.randi_range(0, MAX_CARVE_CONSECUTIVE_INCREMENT)
+		result_interval.x = random_offset
+		random_offset = rng.randi_range(0, MAX_CARVE_CONSECUTIVE_INCREMENT)
+		result_interval.y = maze_size.y - 1 - random_offset
+		for y: int in range(result_interval.x, result_interval.y + 1):
+			result_cell = Vector2i(x, y)
+			effective_vertical_margins.append(result_cell)
+			$Map/VerticalIntervals.set_cell(result_cell, 0, Vector2i(0, 0), 3)
+			$VerticalIntervalsNoise.play()
+			await get_tree().create_timer(WAIT_TIME).timeout
+	for y: int in range(0, maze_size.y):
+		random_offset = rng.randi_range(0, MAX_CARVE_CONSECUTIVE_INCREMENT)
+		result_interval.x = random_offset
+		random_offset = rng.randi_range(0, MAX_CARVE_CONSECUTIVE_INCREMENT)
+		result_interval.y = maze_size.x - 1 - random_offset
+		for x: int in range(result_interval.x, result_interval.y + 1):
+			result_cell = Vector2i(x, y)
+			effective_horizontal_margins.append(result_cell)
+			$Map/HorizontalIntervals.set_cell(result_cell, 0, Vector2i(0, 0), 3)
+			$HorizontalIntervalsNoise.play()
+			await get_tree().create_timer(WAIT_TIME).timeout
+	
+	$Map/VerticalIntervals.clear()
+	$Map/HorizontalIntervals.clear()
+	for x: int in range(0, maze_size.x):
+		for y: int in range(0, maze_size.y):
+			var selected_cell: Vector2i = Vector2i(x, y)
+			await get_tree().create_timer(WAIT_TIME).timeout
+			$TerrainGenerationNoise.play()
+			if effective_vertical_margins.find(selected_cell) != -1:
+				if effective_horizontal_margins.find(selected_cell) != -1:
+					maze_cells.append(selected_cell)
+					#$Map/Ground.set_cell(current_cell, 0, Vector2i(0, 0), 1) # redundant
+					create_maze_visual_wall(selected_cell, 0)
+					create_maze_visual_wall(selected_cell, 1)
+					create_maze_visual_wall(selected_cell, 2)
+					create_maze_visual_wall(selected_cell, 3)
+					continue
+			var random_index: int = rng.randi_range(0, 1)
+			$Map/Ground.set_cell(selected_cell, 1, Vector2i(random_index, 0))
+	
+	carve_finished.emit()
 
 ## maze walls are accessed by two variables: one of the adjacent ground cells' map coordinates and
 ##	an integer that is 0, 1, 2 or 3 that marks on which direction the wall is positioned relative to the first variable
@@ -189,24 +245,23 @@ func generate_maze_with_randomized_prim() -> void:
 	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 	var selected_cell: Vector2i
 	## all vector entries should be integers, but this is what Godot offers for optimisation
-	var maze_cells: PackedVector2Array
+	var final_maze_cells: PackedVector2Array
 	var frontier_cells: PackedVector2Array
-	selected_cell.x = rng.randi_range(0, maze_size.x - 1)
-	selected_cell.y = rng.randi_range(0, maze_size.y - 1)
+	selected_cell = maze_cells[rng.randi_range(0, maze_cells.size() - 1)]
 	if (selected_cell.x + selected_cell.y) % 2 == 0:
 		$Map/Ground.set_cell(selected_cell, 0, Vector2i(0, 0), 0)
 	else: $Map/Ground.set_cell(selected_cell, 0, Vector2i(1, 0), 0)
-	maze_cells.append(selected_cell)
-	if $Map/Ground.get_cell_source_id(selected_cell + Vector2i.RIGHT) != -1:
+	final_maze_cells.append(selected_cell)
+	if maze_cells.find(selected_cell + Vector2i.RIGHT) != -1:
 		frontier_cells.append(selected_cell + Vector2i.RIGHT)
 		delete_maze_visual_wall(selected_cell, 0)
-	if $Map/Ground.get_cell_source_id(selected_cell + Vector2i.DOWN) != -1:
+	if maze_cells.find(selected_cell + Vector2i.DOWN) != -1:
 		frontier_cells.append(selected_cell + Vector2i.DOWN)
 		delete_maze_visual_wall(selected_cell, 1)
-	if $Map/Ground.get_cell_source_id(selected_cell + Vector2i.LEFT) != -1:
+	if maze_cells.find(selected_cell + Vector2i.LEFT) != -1:
 		frontier_cells.append(selected_cell + Vector2i.LEFT)
 		delete_maze_visual_wall(selected_cell, 2)
-	if $Map/Ground.get_cell_source_id(selected_cell + Vector2i.UP) != -1:
+	if maze_cells.find(selected_cell + Vector2i.UP) != -1:
 		frontier_cells.append(selected_cell + Vector2i.UP)
 		delete_maze_visual_wall(selected_cell, 3)
 	var selected_frontier_cell_index: int
@@ -217,12 +272,12 @@ func generate_maze_with_randomized_prim() -> void:
 		selected_frontier_cell_index = rng.randi_range(0, frontier_cells.size() - 1)
 		selected_cell = frontier_cells[selected_frontier_cell_index]
 		frontier_cells.remove_at(selected_frontier_cell_index)
-		configure_as_maze_cell(selected_cell, maze_cells, frontier_cells)
+		configure_as_maze_cell(selected_cell, final_maze_cells, frontier_cells)
 		i += 1
 	generation_finished.emit()
 
-func configure_as_maze_cell(selected_cell: Vector2i, maze_cells: PackedVector2Array, frontier_cells: PackedVector2Array) -> void:
-	maze_cells.append(selected_cell)
+func configure_as_maze_cell(selected_cell: Vector2i, final_maze_cells: PackedVector2Array, frontier_cells: PackedVector2Array) -> void:
+	final_maze_cells.append(selected_cell)
 	if (selected_cell.x + selected_cell.y) % 2 == 0:
 		$Map/Ground.set_cell(selected_cell, 0, Vector2i(0, 0), 0)
 	else: $Map/Ground.set_cell(selected_cell, 0, Vector2i(1, 0), 0)
@@ -237,8 +292,8 @@ func configure_as_maze_cell(selected_cell: Vector2i, maze_cells: PackedVector2Ar
 	var selected_neighbor_cell: Vector2i
 	for index: int in range(4):
 		selected_neighbor_cell = selected_cell + Vector2i(neighboring_cell_offset)
-		if $Map/Ground.get_cell_source_id(selected_neighbor_cell) != -1:
-			if maze_cells.find(selected_neighbor_cell) != -1:
+		if maze_cells.find(selected_neighbor_cell) != -1:
+			if final_maze_cells.find(selected_neighbor_cell) != -1:
 				num_neighboring_maze_cells += 1
 				possible_directions.append(index)
 		neighboring_cell_offset = rotate_integer_vector(neighboring_cell_offset)
@@ -249,11 +304,11 @@ func configure_as_maze_cell(selected_cell: Vector2i, maze_cells: PackedVector2Ar
 	neighboring_cell_offset = Vector2i.RIGHT
 	for i: int in range(4):
 		selected_neighbor_cell = selected_cell + neighboring_cell_offset
-		if $Map/Ground.get_cell_source_id(selected_neighbor_cell) != -1:
+		if maze_cells.find(selected_neighbor_cell) != -1:
 			if frontier_cells.find(selected_neighbor_cell) == -1:
 				# this third if statement is a temporary fix for the problem of frontier cells not being removed when
 				#	transformed to maze cells
-				if maze_cells.find(selected_neighbor_cell) == -1:
+				if final_maze_cells.find(selected_neighbor_cell) == -1:
 					$Map/Ground.set_cell(selected_neighbor_cell, 0, Vector2i(0, 0), 2)
 					frontier_cells.append(selected_neighbor_cell)
 		neighboring_cell_offset = rotate_integer_vector(neighboring_cell_offset)
@@ -445,14 +500,13 @@ func implement_navigation() -> void:
 				continue
 			$Map/Navigation.set_cell(Vector2(column, row), 0, Vector2i(2, 1), 0)
 
-const GROUND_TILE_SET: String = "res://ingame/tiles/ground_tileset.tres"
+const GROUND_TILE_SET: String = "res://ingame/tiles/base_tileset.tres"
 const OFFSET_SUBTRACT: float = 20.0
 func place_player_on_map() -> void:
 	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 	var selected_cell: Vector2i
 	var ground_tile_size: Vector2i = load(GROUND_TILE_SET).tile_size
-	selected_cell.x = rng.randi_range(0, maze_size.x - 1)
-	selected_cell.y = rng.randi_range(0, maze_size.y - 1)
+	selected_cell = maze_cells.get(rng.randi_range(0, maze_cells.size() - 1))
 	var selected_position: Vector2 = $Map/Ground.map_to_local(selected_cell)
 	selected_position.x *= $Map/Ground.scale.x
 	selected_position.y *= $Map/Ground.scale.y
@@ -490,8 +544,7 @@ func place_enemies_on_map() -> void:
 			enemy_instance.visible = false
 			var selected_cell: Vector2i
 			var ground_tile_size: Vector2i = load(GROUND_TILE_SET).tile_size
-			selected_cell.x = rng.randi_range(0, maze_size.x - 1)
-			selected_cell.y = rng.randi_range(0, maze_size.y - 1)
+			selected_cell = maze_cells.get(rng.randi_range(0, maze_cells.size() - 1))
 			var selected_position: Vector2 = $Map/Ground.map_to_local(selected_cell)
 			selected_position.x *= $Map/Ground.scale.x
 			selected_position.y *= $Map/Ground.scale.y

@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://byehuv55tv13h" path="res://ingame/levels/mission_levels/level_1.gd" id="1_bs34n"]
 [ext_resource type="AudioStream" uid="uid://cy22uropw1uaf" path="res://ingame/entities/SHOOT_NORMAL_toy-gun-364850.mp3" id="2_1iybg"]
-[ext_resource type="TileSet" uid="uid://ddrdyvjlplhow" path="res://ingame/tiles/ground_tileset.tres" id="2_6fw5i"]
+[ext_resource type="TileSet" uid="uid://ddrdyvjlplhow" path="res://ingame/tiles/base_tileset.tres" id="2_6fw5i"]
 [ext_resource type="AudioStream" uid="uid://dhoxj0irluo7u" path="res://ingame/tiles/MAZE_GENERATION_glitch-fx-transitions-10-311812.mp3" id="2_uasfe"]
 [ext_resource type="TileSet" uid="uid://dfsuj2j7xhgpg" path="res://ingame/tiles/navigation_tileset.tres" id="3_50ywg"]
 [ext_resource type="PackedScene" uid="uid://dap0ih14qy4pi" path="res://ingame/entities/player/player.tscn" id="3_pyw2e"]
@@ -73,6 +73,23 @@ volume_db = -22.0
 pitch_scale = 0.8
 max_polyphony = 10
 
+[node name="TerrainGenerationNoise" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("2_1iybg")
+volume_db = -15.0
+pitch_scale = 0.1
+max_polyphony = 20
+
+[node name="HorizontalIntervalsNoise" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("2_uasfe")
+volume_db = -20.0
+pitch_scale = 1.1
+max_polyphony = 10
+
+[node name="VerticalIntervalsNoise" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("2_uasfe")
+volume_db = -20.0
+max_polyphony = 10
+
 [node name="DimensionsGenerationNoise" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("2_uasfe")
 volume_db = -28.0
@@ -102,6 +119,16 @@ scale = Vector2(0.09, 0.09)
 text = "Width: place
 Height: place"
 label_settings = SubResource("LabelSettings_uasfe")
+metadata/_edit_lock_ = true
+
+[node name="VerticalIntervals" type="TileMapLayer" parent="Map"]
+scale = Vector2(8, 8)
+tile_set = ExtResource("2_6fw5i")
+metadata/_edit_lock_ = true
+
+[node name="HorizontalIntervals" type="TileMapLayer" parent="Map"]
+scale = Vector2(8, 8)
+tile_set = ExtResource("2_6fw5i")
 metadata/_edit_lock_ = true
 
 [node name="Walls" type="TileMapLayer" parent="Map"]

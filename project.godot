@@ -10,8 +10,8 @@ config_version=5
 
 [application]
 
-config/name="Ballistic Labyrinth a1.4.2"
-config/version="a1.4.2"
+config/name="Ballistic Labyrinth a1.4.3"
+config/version="a1.4.3"
 run/main_scene="uid://dl53xfp6aj77b"
 config/features=PackedStringArray("4.4", "Forward Plus")
 config/icon="uid://df5mouvis1adw"
