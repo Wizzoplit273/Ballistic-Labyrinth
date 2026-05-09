@@ -24,8 +24,13 @@ func modified_ready() -> void:
 	place_player_on_map()
 	place_enemies_on_map()
 
-func _process(_delta: float) -> void:
+const SCROLL_VALUE: float = 1.1
+func _process(delta: float) -> void:
 	if is_queued_for_deletion(): return
+	if Input.is_action_just_pressed("ScrollUp"):
+		$Camera.zoom *= SCROLL_VALUE
+	if Input.is_action_just_pressed("ScrollDown"):
+		$Camera.zoom /= SCROLL_VALUE
 	for instance: RigidBody2D in $Enemies.get_children():
 		instance.DEBUG_is_showing_dodging = DEBUG_is_showing_dodging
 		var player_cell: Vector2i = $Map/Ground.local_to_map($Map/Ground.to_local($Player.position))
@@ -38,18 +43,25 @@ func initialize_score_ui() -> void:
 
 ## first vector entry is width, second is height
 const TILE_SIZE: int = 16
-@export var min_maze_size: Vector2i = Vector2i(10, 6)
-@export var max_maze_size: Vector2i = Vector2i(14, 7)
+@export var min_maze_size: Vector2i = Vector2i(6, 6)
+@export var max_maze_size: Vector2i = Vector2i(16, 16)
 var maze_size: Vector2i = Vector2i.ZERO
 var maze_bottom_corner: Vector2i = Vector2i.ZERO
 func create_maze_ground_and_margins() -> void:
 	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 	maze_size = Vector2i(rng.randi_range(min_maze_size.x, max_maze_size.x), rng.randi_range(min_maze_size.y, max_maze_size.y))
+	if maze_size.x < maze_size.y:
+		var auxiliary: int = maze_size.x
+		maze_size.x = maze_size.y
+		maze_size.y = auxiliary
 	$Map/Ground/MazeDimensionsLabel.text = "Width: " + str(maze_size.x)
 	$Map/Ground/MazeDimensionsLabel.text += "\nHeight: " + str(maze_size.y)
+	$Camera.zoom = Vector2.ONE / maze_size.y * 6
+	$Camera.scale.x = 1 / $Camera.zoom.x
+	$Camera.scale.y = 1 / $Camera.zoom.y
 	for row: int in range(0, maze_size.y):
 		for column: int in range(0, maze_size.x):
-			await get_tree().create_timer(0.03).timeout
+			await get_tree().create_timer(0.01).timeout
 			$DimensionsGenerationNoise.play()
 			$Map/Ground.set_cell(Vector2i(column, row), 0, Vector2i(0, 0), 1)
 			$Camera.position = maze_size * $Map/Ground.scale.x * TILE_SIZE / 2
@@ -195,7 +207,7 @@ func generate_maze_with_randomized_prim() -> void:
 	var selected_frontier_cell_index: int
 	var i: int = 0
 	while frontier_cells.size() != 0:
-		await get_tree().create_timer(0.02).timeout
+		await get_tree().create_timer(0.01).timeout
 		$MazeGenerationNoise.play()
 		selected_frontier_cell_index = rng.randi_range(0, frontier_cells.size() - 1)
 		selected_cell = frontier_cells[selected_frontier_cell_index]
@@ -248,17 +260,30 @@ func rotate_integer_vector(vector: Vector2i) -> Vector2i:
 	if vector == Vector2i.UP: return Vector2i.RIGHT
 	return Vector2i.ZERO ## invalid input handler
 
-@export var REMOVED_WALLS_INTERVAL: Vector2i = Vector2i(0, 10)
+@export var removed_walls_interval: Vector2i = Vector2i(0, 30) # overwritten by maze dimensions for now
 func remove_random_maze_walls() -> void:
 	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
-	var remove_count: int = rng.randi_range(REMOVED_WALLS_INTERVAL.x, REMOVED_WALLS_INTERVAL.y)
+	if maze_size.x + maze_size.y >= 32:
+		removed_walls_interval = Vector2i(10, 25)
+	elif maze_size.x + maze_size.y >= 20:
+		removed_walls_interval = Vector2i(4, 10)
+	else: #maze_size.x + maze_size.y <= 15:
+		removed_walls_interval = Vector2i(0, 6)
+	var remove_count: int = rng.randi_range(removed_walls_interval.x, removed_walls_interval.y)
+	await get_tree().create_timer(0).timeout
+	if remove_count == 0: ## the for loop stops working when remove_count is 0 for some reason
+		wall_remove_finished.emit()
+		return
 	for index: int in range(0, remove_count):
 		await get_tree().create_timer(0.03).timeout
 		$WallRemoveNoise.play()
 		var random_cell: Vector2i = maze_size - Vector2i.ONE
-		var wall_does_not_exist: bool = true
+		var wall_does_not_exist: bool = true # temporarily modified so a cell has to have at least two adjacent walls
 		while wall_does_not_exist or random_cell == maze_size - Vector2i.ONE:
-			wall_does_not_exist = not maze_visual_wall_exists(random_cell, 0) and not maze_visual_wall_exists(random_cell, 1)
+			var wall_count: int = 0
+			for adjacency: int in range(0, 3):
+				if maze_visual_wall_exists(random_cell, adjacency): wall_count += 1
+			wall_does_not_exist = wall_count <= 1 # temporarily modified so a cell has to have at least two adjacent walls
 			random_cell = Vector2i(rng.randi_range(0, maze_size.x - 1), rng.randi_range(0, maze_size.y - 1))
 		if random_cell.x == maze_size.x - 1:
 			delete_maze_visual_wall(random_cell, 1)
@@ -439,11 +464,18 @@ func place_player_on_map() -> void:
 	alive_players_count = 1
 
 @export var MIN_SPAWNPOINT_DISTANCING: float = 400.0
-@export var enemy_count_interval: Vector2i = Vector2i(1, 3)
+@export var enemy_count_interval: Vector2i = Vector2i(1, 6) # overwritten by maze dimensions for now
 var enemy_count: int
 const NEW_ENEMY_INSTANCE_PATH: String = "res://ingame/entities/enemy/enemy.tscn"
 func place_enemies_on_map() -> void:
 	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
+	# enemy_count_interval selection is temporary, this can be optimised later
+	if maze_size.x + maze_size.y >= 32:
+		enemy_count_interval = Vector2i(6, 9)
+	elif maze_size.x + maze_size.y >= 20:
+		enemy_count_interval = Vector2i(3, 5)
+	else: #maze_size.x + maze_size.y >= 15:
+		enemy_count_interval = Vector2i(1, 3)
 	enemy_count = rng.randi_range(enemy_count_interval.x, enemy_count_interval.y)
 	var enemy_instance: RigidBody2D = null
 	for index: int in range(0, enemy_count):
@@ -469,8 +501,10 @@ func place_enemies_on_map() -> void:
 			enemy_instance.rotation = rng.randf_range(0, PI * 2)
 			enemy_instance.visible = true
 			enemy_instance.player_node = $Player
-			enemy_instance.connect("shoot", _on_enemy_shoot)
-			enemy_instance.connect("level_die", _on_enemy_level_die)
+			if not enemy_instance.is_connected("shoot", _on_enemy_shoot):
+				enemy_instance.connect("shoot", _on_enemy_shoot)
+			if not enemy_instance.is_connected("level_die", _on_enemy_level_die):
+				enemy_instance.connect("level_die", _on_enemy_level_die)
 			enemy_instance.process_mode = Node.PROCESS_MODE_INHERIT
 			#enemy_instance.get_node("Rest/Image").scale += Vector2.ONE * rng.randf_range(-0.1, 0.1)
 		alive_enemies_count = enemy_count

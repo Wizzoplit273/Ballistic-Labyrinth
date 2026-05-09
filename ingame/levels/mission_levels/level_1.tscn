@@ -67,17 +67,17 @@ volume_db = -10.0
 pitch_scale = 0.4
 max_polyphony = 60
 
-[node name="DimensionsGenerationNoise" type="AudioStreamPlayer" parent="."]
-stream = ExtResource("2_uasfe")
-volume_db = -28.0
-pitch_scale = 0.1
-max_polyphony = 60
-
 [node name="MazeGenerationNoise" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("2_uasfe")
 volume_db = -22.0
 pitch_scale = 0.8
-max_polyphony = 5
+max_polyphony = 10
+
+[node name="DimensionsGenerationNoise" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("2_uasfe")
+volume_db = -28.0
+pitch_scale = 0.1
+max_polyphony = 80
 
 [node name="Map" type="Node2D" parent="."]
 metadata/_edit_lock_ = true
@@ -171,9 +171,9 @@ custom_minimum_size = Vector2(500, 0)
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -250.0
+offset_left = -949.0
 offset_top = 475.0
-offset_right = 250.0
+offset_right = 949.0
 offset_bottom = 525.0
 grow_horizontal = 2
 grow_vertical = 2
@@ -200,6 +200,7 @@ vertical_alignment = 1
 metadata/_edit_lock_ = true
 
 [node name="DrawContainer" type="VBoxContainer" parent="Camera/ScoresContainer"]
+custom_minimum_size = Vector2(1775, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 metadata/_edit_lock_ = true
