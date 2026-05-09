@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bagbrl1prrp1o"
-path="res://.godot/imported/tile_maze_corner.png-775e8be045431cfd4377781cfa7b0eea.ctex"
+uid="uid://kyvd456c3tkf"
+path="res://.godot/imported/tile_maze_navigation_atlas.png-33785f15683176b245b7ae48ac7d802f.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://ingame/tiles/tile_maze_corner.png"
-dest_files=["res://.godot/imported/tile_maze_corner.png-775e8be045431cfd4377781cfa7b0eea.ctex"]
+source_file="res://ingame/tiles/tile_maze_navigation_atlas.png"
+dest_files=["res://.godot/imported/tile_maze_navigation_atlas.png-33785f15683176b245b7ae48ac7d802f.ctex"]
 
 [params]
 

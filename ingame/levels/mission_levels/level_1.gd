@@ -5,15 +5,22 @@ var DEBUG_is_checking_maze: bool = false
 
 signal maze_finished
 
+@onready var scale_ratio: int = $Map/Ground.scale.x / $Map/Walls.scale.x
 func _ready() -> void:
 	create_maze_ground_and_margins()
 	generate_maze_with_randomized_prim()
 	await maze_finished
 	implement_maze_edges_physics()
 	implement_maze_walls_physics()
+	implement_navigation()
 	place_player_on_map()
+	place_enemies_on_map()
 
-func _process(_delta: float) -> void: pass
+func _process(_delta: float) -> void:
+	if is_queued_for_deletion(): return
+	var player_cell: Vector2i = $Map/Ground.local_to_map($Map/Ground.to_local($Player.position))
+	var enemy_cell: Vector2i = $Map/Ground.local_to_map($Map/Ground.to_local($Enemies/Enemy.position))
+	$Enemies/Enemy.is_adjacent_wall_to_player = is_wall_between_cells(player_cell, enemy_cell, true)
 
 ## first vector entry is width, second is height
 const TILE_SIZE: int = 16
@@ -46,7 +53,6 @@ func create_maze_ground_and_margins() -> void:
 func get_maze_primary_wall(map_coordinates: Vector2i, adjacency: int) -> Vector2i:
 	if adjacency <= -1 or adjacency >= 4: return Vector2i.ONE * -1
 	# scale ratio has to effectively be an integer(for now, at least)
-	var scale_ratio: int = $Map/Ground.scale.x / $Map/Walls.scale.x
 	var wall_coordinates: Vector2i
 	wall_coordinates.x = (map_coordinates.x - map_coordinates.y) * scale_ratio
 	wall_coordinates.y = (map_coordinates.x + map_coordinates.y) * scale_ratio
@@ -92,7 +98,6 @@ func maze_visual_wall_exists(map_coordinates: Vector2i, adjacency: int) -> bool:
 
 func get_visual_wall_world_coordinates(map_coordinates: Vector2i, adjacency: int) -> Vector2:
 	if adjacency <= -1 or adjacency >= 4: return Vector2.ONE * -1
-	var scale_ratio: int = $Map/Ground.scale.x / $Map/Walls.scale.x
 	var primary_wall: Vector2 = get_maze_primary_wall(map_coordinates, adjacency)
 	var secondary_wall: Vector2 = Vector2i(primary_wall) + get_maze_primary_wall_increment(adjacency)
 	primary_wall = $Map/Walls.map_to_local(primary_wall) / scale_ratio - Vector2(0, scale_ratio * 2)
@@ -117,6 +122,23 @@ func modify_physics_wall_length(wall_node: StaticBody2D, wall_increment: int, di
 	if direction == 0 or direction == 2:
 		wall_node.position.y += unit_wall_length * wall_increment / 2 * int_is_positive_axis
 		wall_node.scale.y += (unit_wall_length * wall_increment / 2 + magic_tile_offset) * int_is_positive_axis
+
+func is_wall_between_cells(cell_1: Vector2i, cell_2: Vector2i, include_diagonals: bool) -> bool:
+	if cell_1 == cell_2: return false ## slight optimisation just in case
+	if cell_1.x + 1 == cell_2.x: return maze_visual_wall_exists(cell_1, 0)
+	if cell_1.y + 1 == cell_2.y: return maze_visual_wall_exists(cell_1, 1)
+	if cell_1.x - 1 == cell_2.x: return maze_visual_wall_exists(cell_1, 2)
+	if cell_1.y - 1 == cell_2.y: return maze_visual_wall_exists(cell_1, 3)
+	if not include_diagonals: return false
+	if cell_1 + Vector2i(1, 1) == cell_2:
+		return maze_visual_wall_exists(cell_1, 0) or maze_visual_wall_exists(cell_1, 1)
+	if cell_1 + Vector2i(-1, 1) == cell_2:
+		return maze_visual_wall_exists(cell_1, 1) or maze_visual_wall_exists(cell_1, 2)
+	if cell_1 + Vector2i(-1, -1) == cell_2:
+		return maze_visual_wall_exists(cell_1, 2) or maze_visual_wall_exists(cell_1, 3)
+	if cell_1 + Vector2i(1, -1) == cell_2:
+		return maze_visual_wall_exists(cell_1, 3) or maze_visual_wall_exists(cell_1, 0)
+	return false
 
 ## Randomized Prim's Algorithm: it's the primary maze generating algorithm for this project
 func generate_maze_with_randomized_prim() -> void:
@@ -197,27 +219,6 @@ func rotate_integer_vector(vector: Vector2i) -> Vector2i:
 	if vector == Vector2i.LEFT: return Vector2i.UP
 	if vector == Vector2i.UP: return Vector2i.RIGHT
 	return Vector2i.ZERO ## invalid input handler
-
-const GROUND_TILE_SET: String = "res://ingame/tiles/ground_tileset.tres"
-const OFFSET_SUBTRACT: float = 20.0
-func place_player_on_map() -> void:
-	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
-	var selected_cell: Vector2i
-	var ground_tile_size: Vector2i = load(GROUND_TILE_SET).tile_size
-	selected_cell.x = rng.randi_range(0, maze_size.x - 1)
-	selected_cell.y = rng.randi_range(0, maze_size.y - 1)
-	var selected_position: Vector2 = $Map/Ground.map_to_local(selected_cell)
-	selected_position.x *= $Map/Ground.scale.x
-	selected_position.y *= $Map/Ground.scale.y
-	$Player.position = selected_position
-	var offset_vector: Vector2
-	var max_offset_scalar: Vector2 = $Map/Ground.scale / 2 - Vector2.ONE * OFFSET_SUBTRACT
-	offset_vector.x = rng.randf_range(-max_offset_scalar.x, max_offset_scalar.x)
-	offset_vector.y = rng.randf_range(-max_offset_scalar.y, max_offset_scalar.y)
-	$Player.position += offset_vector
-	$Player.rotation = rng.randf_range(0, PI * 2)
-	$Player.visible = true
-	$Player.process_mode = Node.PROCESS_MODE_INHERIT
 
 func implement_maze_edges_physics() -> void:
 	var maze_corner: Vector2
@@ -329,18 +330,93 @@ func implement_maze_vertical_walls_physics() -> void:
 					print("\t\t\tVISUAL WALL DOESN'T EXIST HERE...")
 				is_extending_wall = false
 
+# this function presupposes that at every maze cell has at least one accessible neighbour
+# probably could be optimised
+func implement_navigation() -> void:
+	for row: int in range(0, maze_size.y):
+		for column: int in range(0, maze_size.x):
+			var directions: Array[bool]
+			for i: int in range(4):
+				directions.push_back(not maze_visual_wall_exists(Vector2i(column, row), i))
+			var occurences: Array[int]
+			occurences.push_back(directions.find(true, 0))
+			occurences.push_back(directions.find(true, occurences[0] + 1))
+			if occurences[1] == -1:
+				$Map/Navigation.set_cell(Vector2(column, row), 0, Vector2i(1, 0), occurences[0])
+				continue
+			occurences.push_back(directions.find(true, occurences[1] + 1))
+			if occurences[2] == -1:
+				if (occurences[1] - occurences[0]) % 2 == 0:
+					var is_alternative_tile: bool = (occurences[1] + occurences[0]) % 4 == 0
+					$Map/Navigation.set_cell(Vector2(column, row), 0, Vector2i(0, 1), is_alternative_tile)
+				else:
+					if occurences[0] == 0 and occurences[1] == 3: ## because of looping, this is an exception to the rule
+						$Map/Navigation.set_cell(Vector2(column, row), 0, Vector2i(2, 0), 0)
+					else: $Map/Navigation.set_cell(Vector2(column, row), 0, Vector2i(2, 0), occurences[1])
+				continue
+			occurences.push_back(directions.find(true, occurences[2] + 1))
+			if occurences[3] == -1:
+				if occurences[0] == 0 and occurences[1] == 2 and occurences[2] == 3: ## because of looping, this is an exception to the rule
+					$Map/Navigation.set_cell(Vector2(column, row), 0, Vector2i(1, 1), 0)
+				elif occurences[0] == 0 and occurences[1] == 1 and occurences[2] == 3: ## because of looping, this is an exception to the rule
+					$Map/Navigation.set_cell(Vector2(column, row), 0, Vector2i(1, 1), 1)
+				else: $Map/Navigation.set_cell(Vector2(column, row), 0, Vector2i(1, 1), occurences[2])
+				continue
+			$Map/Navigation.set_cell(Vector2(column, row), 0, Vector2i(2, 1), 0)
+
+const GROUND_TILE_SET: String = "res://ingame/tiles/ground_tileset.tres"
+const OFFSET_SUBTRACT: float = 20.0
+func place_player_on_map() -> void:
+	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
+	var selected_cell: Vector2i
+	var ground_tile_size: Vector2i = load(GROUND_TILE_SET).tile_size
+	selected_cell.x = rng.randi_range(0, maze_size.x - 1)
+	selected_cell.y = rng.randi_range(0, maze_size.y - 1)
+	var selected_position: Vector2 = $Map/Ground.map_to_local(selected_cell)
+	selected_position.x *= $Map/Ground.scale.x
+	selected_position.y *= $Map/Ground.scale.y
+	$Player.position = selected_position
+	var offset_vector: Vector2
+	var max_offset_scalar: Vector2 = $Map/Ground.scale / 2 - Vector2.ONE * OFFSET_SUBTRACT
+	offset_vector.x = rng.randf_range(-max_offset_scalar.x, max_offset_scalar.x)
+	offset_vector.y = rng.randf_range(-max_offset_scalar.y, max_offset_scalar.y)
+	$Player.position += offset_vector
+	$Player.rotation = rng.randf_range(0, PI * 2)
+	$Player.visible = true
+	$Player.process_mode = Node.PROCESS_MODE_INHERIT
+
+func place_enemies_on_map() -> void:
+	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
+	var selected_cell: Vector2i
+	var ground_tile_size: Vector2i = load(GROUND_TILE_SET).tile_size
+	selected_cell.x = rng.randi_range(0, maze_size.x - 1)
+	selected_cell.y = rng.randi_range(0, maze_size.y - 1)
+	var selected_position: Vector2 = $Map/Ground.map_to_local(selected_cell)
+	selected_position.x *= $Map/Ground.scale.x
+	selected_position.y *= $Map/Ground.scale.y
+	$Enemies/Enemy.position = selected_position
+	var offset_vector: Vector2
+	var max_offset_scalar: Vector2 = $Map/Ground.scale / 2 - Vector2.ONE * OFFSET_SUBTRACT
+	offset_vector.x = rng.randf_range(-max_offset_scalar.x, max_offset_scalar.x)
+	offset_vector.y = rng.randf_range(-max_offset_scalar.y, max_offset_scalar.y)
+	$Enemies/Enemy.position += offset_vector
+	$Enemies/Enemy.rotation = rng.randf_range(0, PI * 2)
+	$Enemies/Enemy.visible = true
+	$Enemies/Enemy.player_node = $Player
+	$Enemies/Enemy.process_mode = Node.PROCESS_MODE_INHERIT
+
 const NEW_BULLET_PATH: String = "res://ingame/projectiles/bullet.tscn"
 var bullet_ins: RigidBody2D = null
 func _on_player_shoot() -> void:
 	if $Player.bullet_count >= $Player.MAX_BULLET_COUNT: return
 	bullet_ins = load(NEW_BULLET_PATH).instantiate()
+	bullet_ins.initial_velocity_direction = $Player.rotation
 	$Bullets.add_child(bullet_ins)
 	bullet_ins.position = $Player.position + Vector2($Player.BULLET_SPAWN_OFFSET, 0).rotated($Player.rotation)
 	bullet_ins.apply_central_impulse(Vector2($Player.BULLET_SPEED, 0).rotated($Player.rotation))
 	bullet_ins.connect("despawn", on_bullet_despawn)
 	bullet_ins.set_meta("owner_id", "player")
 	$Player.bullet_count += 1
-	
 
 ## connected to each bullet's despawn signal
 func on_bullet_despawn(node: RigidBody2D) -> void:

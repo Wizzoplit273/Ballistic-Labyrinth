@@ -1,10 +1,12 @@
-[gd_scene load_steps=8 format=3 uid="uid://dgtphg54tf63k"]
+[gd_scene load_steps=10 format=3 uid="uid://dgtphg54tf63k"]
 
 [ext_resource type="Script" uid="uid://byehuv55tv13h" path="res://ingame/levels/mission_levels/level_1.gd" id="1_bs34n"]
 [ext_resource type="TileSet" uid="uid://ddrdyvjlplhow" path="res://ingame/tiles/ground_tileset.tres" id="2_6fw5i"]
+[ext_resource type="TileSet" uid="uid://dfsuj2j7xhgpg" path="res://ingame/tiles/navigation_tileset.tres" id="3_50ywg"]
 [ext_resource type="PackedScene" uid="uid://dap0ih14qy4pi" path="res://ingame/player/player.tscn" id="3_pyw2e"]
 [ext_resource type="TileSet" uid="uid://c4vwq4xoys05c" path="res://ingame/tiles/wall_tileset.tres" id="3_wosq1"]
 [ext_resource type="PhysicsMaterial" uid="uid://dwflcy1oyadf7" path="res://ingame/tiles/maze_wall_physics_material.tres" id="4_qmdpg"]
+[ext_resource type="PackedScene" uid="uid://dt6pc3iwv8285" path="res://ingame/enemy/enemy.tscn" id="6_p1f1c"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_qmdpg"]
 size = Vector2(1, 1)
@@ -19,6 +21,12 @@ script = ExtResource("1_bs34n")
 metadata/_edit_lock_ = true
 
 [node name="Map" type="Node2D" parent="."]
+metadata/_edit_lock_ = true
+
+[node name="Navigation" type="TileMapLayer" parent="Map"]
+visible = false
+scale = Vector2(8, 8)
+tile_set = ExtResource("3_50ywg")
 metadata/_edit_lock_ = true
 
 [node name="Ground" type="TileMapLayer" parent="Map"]
@@ -81,5 +89,11 @@ visible = false
 
 [node name="Bullets" type="Node2D" parent="."]
 metadata/_edit_lock_ = true
+
+[node name="Enemies" type="Node2D" parent="."]
+metadata/_edit_lock_ = true
+
+[node name="Enemy" parent="Enemies" instance=ExtResource("6_p1f1c")]
+visible = false
 
 [connection signal="shoot" from="Player" to="." method="_on_player_shoot"]
