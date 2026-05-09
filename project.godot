@@ -10,8 +10,8 @@ config_version=5
 
 [application]
 
-config/name="Ballistic Labyrinth a1.4.1"
-config/version="a1.4.1"
+config/name="Ballistic Labyrinth a1.4.2"
+config/version="a1.4.2"
 run/main_scene="uid://dl53xfp6aj77b"
 config/features=PackedStringArray("4.4", "Forward Plus")
 config/icon="uid://df5mouvis1adw"
@@ -20,7 +20,6 @@ config/icon="uid://df5mouvis1adw"
 
 window/size/viewport_width=1920
 window/size/viewport_height=1080
-window/size/resizable=false
 window/stretch/mode="viewport"
 window/vsync/vsync_mode=0
 

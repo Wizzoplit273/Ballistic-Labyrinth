@@ -19,8 +19,12 @@ func _on_body_entered(body: Node) -> void:
 	if not $Rest.visible: return
 	if body.get_meta("type", "NULL") == "wall":
 		$Bounce.play()
-	if body.get_meta("type", "NULL") == "player" or body.get_meta("type", "NULL") == "enemy":
+	if body.get_meta("type", "NULL") == "player":
 		body.die()
+		die("tank")
+	if body.get_meta("type", "NULL") == "enemy":
+		if body.enemy_friendly_fire == true or owner_node == body or owner_node.get_meta("type", "NULL") == "player":
+			body.die()
 		die("tank")
 	if body.get_meta("type", "NULL") == "bullet":
 		body.die("bullet")

@@ -1,8 +1,13 @@
 extends Node
 
-## those variables are modified by the parent scene, which is the origin scene(origin.tscn)
+## those variables are modified by the origin scene(origin.tscn)
 var DEBUG_is_checking_maze: bool = false
 var DEBUG_is_showing_dodging: bool = false
+var min_maze_size: Vector2i = Vector2i.ZERO
+var max_maze_size: Vector2i = Vector2i.ZERO
+var wall_remove_interval: Vector2i = Vector2i.ZERO
+var enemy_count_interval: Vector2i = Vector2i.ZERO
+var enemy_friendly_fire: bool = true
 
 signal dimensions_finished
 signal generation_finished
@@ -41,10 +46,10 @@ func initialize_score_ui() -> void:
 	%PlayerScore.text = str(player_score)
 	%EnemyScore.text = str(enemy_score)
 
-## first vector entry is width, second is height
+
 const TILE_SIZE: int = 16
-@export var min_maze_size: Vector2i = Vector2i(6, 6)
-@export var max_maze_size: Vector2i = Vector2i(16, 16)
+
+## first vector entry is width, second is height
 var maze_size: Vector2i = Vector2i.ZERO
 var maze_bottom_corner: Vector2i = Vector2i.ZERO
 func create_maze_ground_and_margins() -> void:
@@ -260,16 +265,15 @@ func rotate_integer_vector(vector: Vector2i) -> Vector2i:
 	if vector == Vector2i.UP: return Vector2i.RIGHT
 	return Vector2i.ZERO ## invalid input handler
 
-@export var removed_walls_interval: Vector2i = Vector2i(0, 30) # overwritten by maze dimensions for now
 func remove_random_maze_walls() -> void:
 	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
-	if maze_size.x + maze_size.y >= 32:
-		removed_walls_interval = Vector2i(10, 25)
-	elif maze_size.x + maze_size.y >= 20:
-		removed_walls_interval = Vector2i(4, 10)
-	else: #maze_size.x + maze_size.y <= 15:
-		removed_walls_interval = Vector2i(0, 6)
-	var remove_count: int = rng.randi_range(removed_walls_interval.x, removed_walls_interval.y)
+	#if maze_size.x + maze_size.y >= 32:
+		#wall_removed_interval = Vector2i(10, 25)
+	#elif maze_size.x + maze_size.y >= 20:
+		#removed_walls_interval = Vector2i(4, 10)
+	#else: #maze_size.x + maze_size.y <= 15:
+		#removed_walls_interval = Vector2i(0, 6)
+	var remove_count: int = rng.randi_range(wall_remove_interval.x, wall_remove_interval.y)
 	await get_tree().create_timer(0).timeout
 	if remove_count == 0: ## the for loop stops working when remove_count is 0 for some reason
 		wall_remove_finished.emit()
@@ -464,18 +468,17 @@ func place_player_on_map() -> void:
 	alive_players_count = 1
 
 @export var MIN_SPAWNPOINT_DISTANCING: float = 400.0
-@export var enemy_count_interval: Vector2i = Vector2i(1, 6) # overwritten by maze dimensions for now
 var enemy_count: int
 const NEW_ENEMY_INSTANCE_PATH: String = "res://ingame/entities/enemy/enemy.tscn"
 func place_enemies_on_map() -> void:
 	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 	# enemy_count_interval selection is temporary, this can be optimised later
-	if maze_size.x + maze_size.y >= 32:
-		enemy_count_interval = Vector2i(6, 9)
-	elif maze_size.x + maze_size.y >= 20:
-		enemy_count_interval = Vector2i(3, 5)
-	else: #maze_size.x + maze_size.y >= 15:
-		enemy_count_interval = Vector2i(1, 3)
+	#if maze_size.x + maze_size.y >= 32:
+		#enemy_count_interval = Vector2i(6, 9)
+	#elif maze_size.x + maze_size.y >= 20:
+		#enemy_count_interval = Vector2i(3, 5)
+	#else: #maze_size.x + maze_size.y >= 15:
+		#enemy_count_interval = Vector2i(1, 3)
 	enemy_count = rng.randi_range(enemy_count_interval.x, enemy_count_interval.y)
 	var enemy_instance: RigidBody2D = null
 	for index: int in range(0, enemy_count):
@@ -501,6 +504,7 @@ func place_enemies_on_map() -> void:
 			enemy_instance.rotation = rng.randf_range(0, PI * 2)
 			enemy_instance.visible = true
 			enemy_instance.player_node = $Player
+			enemy_instance.enemy_friendly_fire = enemy_friendly_fire
 			if not enemy_instance.is_connected("shoot", _on_enemy_shoot):
 				enemy_instance.connect("shoot", _on_enemy_shoot)
 			if not enemy_instance.is_connected("level_die", _on_enemy_level_die):

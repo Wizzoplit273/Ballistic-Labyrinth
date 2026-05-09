@@ -1,5 +1,16 @@
 extends Node
 
+## those variables may be changed by the player in the settings menu
+## maze size(width first, then height)
+var min_maze_size: Vector2i = Vector2i(6, 6)
+var max_maze_size: Vector2i = Vector2i(16, 16)
+## random wall remove(after generating internal visual walls)
+var wall_remove_interval: Vector2i = Vector2i(0, 5)
+## enemy count
+var enemy_count_interval: Vector2i = Vector2i(1, 3)
+## friendly fire for enemies(i.e. enemies can kill themselves, but not necessarily individually)
+var enemy_friendly_fire: bool = true
+
 var player_score: int = 0
 var enemy_score: int = 0
 
@@ -50,6 +61,11 @@ func play_level(id: int) -> void:
 	current_level.DEBUG_is_checking_maze = DEBUG_is_checking_maze
 	current_level.DEBUG_is_showing_dodging = DEBUG_is_showing_dodging
 	current_level.connect("next_round", next_round)
+	current_level.min_maze_size = min_maze_size
+	current_level.max_maze_size = max_maze_size
+	current_level.wall_remove_interval = wall_remove_interval
+	current_level.enemy_count_interval = enemy_count_interval
+	current_level.enemy_friendly_fire = enemy_friendly_fire
 	current_level.player_score = player_score
 	current_level.enemy_score = enemy_score
 	$CurrentLevelContainer.add_child(current_level)

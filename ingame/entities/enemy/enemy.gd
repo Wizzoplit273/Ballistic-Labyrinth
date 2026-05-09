@@ -2,6 +2,7 @@ extends RigidBody2D
 
 ## those variables are only used outside this script, in the level scene node
 @export var BULLET_SPEED: float = 300.0
+var enemy_friendly_fire: bool = true
 
 @export var LINEAR_SPEED: float = 200.0
 @export var ANGULAR_SPEED: float = 320.0
@@ -82,15 +83,18 @@ func _physics_process(_delta: float) -> void:
 
 func check_nearby_bullets() -> void:
 	is_dodging_bullets = false
-	for body: CollisionObject2D in $Rest/BulletDetectionArea.get_overlapping_bodies():
-		if is_bullet_dangerous(body):
+	for bullet: CollisionObject2D in $Rest/BulletDetectionArea.get_overlapping_bodies():
+		if is_bullet_dangerous(bullet):
 			is_dodging_bullets = true
-			dodge_bullet(body)
+			dodge_bullet(bullet)
 
 @export var BULLET_DANGER_SENSITIVITY: float = 0.4
 #@export var DODGE_SPEED: float = 200.0
 func is_bullet_dangerous(bullet: RigidBody2D) -> bool:
 	if bullet.get_meta("type", "NULL") != "bullet": return false
+	if bullet.owner_node != self:
+		if bullet.owner_node.get_meta("type", "NULL") == "enemy":
+			if not enemy_friendly_fire: return false
 	if (previous_position - position).length() == 0.0:
 		var is_raycast_hitting_enemy: bool = bullet.get_node("VelocityRaycast").get_collider() == self
 		if not is_raycast_hitting_enemy: return false
