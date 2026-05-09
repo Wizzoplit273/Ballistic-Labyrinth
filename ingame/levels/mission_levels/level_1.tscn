@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://dgtphg54tf63k"]
+[gd_scene load_steps=13 format=3 uid="uid://dgtphg54tf63k"]
 
 [ext_resource type="Script" uid="uid://byehuv55tv13h" path="res://ingame/levels/mission_levels/level_1.gd" id="1_bs34n"]
 [ext_resource type="AudioStream" uid="uid://cy22uropw1uaf" path="res://ingame/entities/SHOOT_NORMAL_toy-gun-364850.mp3" id="2_1iybg"]
@@ -8,7 +8,6 @@
 [ext_resource type="PackedScene" uid="uid://dap0ih14qy4pi" path="res://ingame/entities/player/player.tscn" id="3_pyw2e"]
 [ext_resource type="TileSet" uid="uid://c4vwq4xoys05c" path="res://ingame/tiles/wall_tileset.tres" id="3_wosq1"]
 [ext_resource type="PhysicsMaterial" uid="uid://dwflcy1oyadf7" path="res://ingame/tiles/maze_wall_physics_material.tres" id="4_qmdpg"]
-[ext_resource type="PackedScene" uid="uid://dt6pc3iwv8285" path="res://ingame/entities/enemy/enemy.tscn" id="6_p1f1c"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_uasfe"]
 line_spacing = 0.0
@@ -50,26 +49,33 @@ pitch_scale = 0.2
 stream = ExtResource("2_1iybg")
 volume_db = -4.0
 pitch_scale = 0.2
+max_polyphony = 5
 
 [node name="NoAmmoNoise" type="AudioStreamPlayer" parent="."]
-stream = ExtResource("2_1iybg")
-volume_db = -6.0
-pitch_scale = 2.0
+stream = ExtResource("2_uasfe")
+volume_db = -14.0
+pitch_scale = 7.0
 
 [node name="NormalShootNoise" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("2_1iybg")
-volume_db = -8.0
-pitch_scale = 0.6
+volume_db = -7.0
+pitch_scale = 0.65
+
+[node name="WallRemoveNoise" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("2_uasfe")
+volume_db = -10.0
+pitch_scale = 0.4
+max_polyphony = 60
 
 [node name="DimensionsGenerationNoise" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("2_uasfe")
-volume_db = -30.0
+volume_db = -28.0
 pitch_scale = 0.1
 max_polyphony = 60
 
 [node name="MazeGenerationNoise" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("2_uasfe")
-volume_db = -23.0
+volume_db = -22.0
 pitch_scale = 0.8
 max_polyphony = 5
 
@@ -157,9 +163,6 @@ metadata/_edit_lock_ = true
 [node name="Enemies" type="Node2D" parent="."]
 metadata/_edit_lock_ = true
 
-[node name="Enemy" parent="Enemies" instance=ExtResource("6_p1f1c")]
-visible = false
-
 [node name="Camera" type="Camera2D" parent="."]
 metadata/_edit_lock_ = true
 
@@ -183,7 +186,7 @@ metadata/_edit_lock_ = true
 
 [node name="EnemyTitle" type="Label" parent="Camera/ScoresContainer/EnemyScoreContainer"]
 layout_mode = 2
-text = "Enemy"
+text = "Enemies"
 horizontal_alignment = 1
 vertical_alignment = 1
 metadata/_edit_lock_ = true
@@ -235,5 +238,3 @@ metadata/_edit_lock_ = true
 [connection signal="timeout" from="DeathDelay" to="." method="_on_death_delay_timeout"]
 [connection signal="level_die" from="Player" to="." method="_on_player_level_die"]
 [connection signal="shoot" from="Player" to="." method="_on_player_shoot"]
-[connection signal="level_die" from="Enemies/Enemy" to="." method="_on_enemy_level_die"]
-[connection signal="shoot" from="Enemies/Enemy" to="." method="_on_enemy_shoot"]

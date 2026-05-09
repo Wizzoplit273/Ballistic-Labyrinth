@@ -39,11 +39,10 @@ grow_vertical = 2
 texture = ExtResource("2_wc1iw")
 metadata/_edit_lock_ = true
 
-[node name="DEBUG_MazeCheck" type="CanvasLayer" parent="."]
+[node name="DEBUG_Screen" type="CanvasLayer" parent="."]
 layer = 128
-visible = false
 
-[node name="Frame" type="VBoxContainer" parent="DEBUG_MazeCheck"]
+[node name="Frame" type="VBoxContainer" parent="DEBUG_Screen"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -52,9 +51,16 @@ grow_vertical = 2
 mouse_filter = 2
 metadata/_edit_lock_ = true
 
-[node name="Title" type="Label" parent="DEBUG_MazeCheck/Frame"]
+[node name="DEBUG_MazeCheck" type="Label" parent="DEBUG_Screen/Frame"]
+visible = false
 layout_mode = 2
 text = "Debug maze generation log messages are on. Press SHIFT + G to toggle it."
+metadata/_edit_lock_ = true
+
+[node name="DEBUG_DodgeCheck" type="Label" parent="DEBUG_Screen/Frame"]
+visible = false
+layout_mode = 2
+text = "Debug enemy dodge points are shown. Press SHIFT + V to toggle it."
 metadata/_edit_lock_ = true
 
 [node name="PauseMenu" type="CanvasLayer" parent="."]

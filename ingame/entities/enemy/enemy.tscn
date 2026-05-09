@@ -48,7 +48,7 @@ scale_min = 0.5
 color_ramp = SubResource("GradientTexture1D_kclq5")
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_02fao"]
-radius = 175.0
+radius = 225.0
 
 [node name="Enemy" type="RigidBody2D"]
 process_mode = 4
@@ -60,7 +60,7 @@ contact_monitor = true
 max_contacts_reported = 5
 script = ExtResource("1_02fao")
 metadata/_edit_lock_ = true
-metadata/id = "player"
+metadata/type = "enemy"
 
 [node name="WallStuckCooldown" type="Timer" parent="."]
 wait_time = 0.25
@@ -76,7 +76,7 @@ one_shot = true
 
 [node name="NavigationAgent" type="NavigationAgent2D" parent="."]
 path_desired_distance = 50.0
-target_desired_distance = 250.0
+target_desired_distance = 300.0
 path_max_distance = 200.0
 avoidance_enabled = true
 debug_use_custom = true
@@ -89,7 +89,7 @@ shape = SubResource("RectangleShape2D_2w6dw")
 metadata/_edit_lock_ = true
 
 [node name="DeathParticles" type="GPUParticles2D" parent="."]
-process_mode = 3
+process_mode = 1
 scale = Vector2(0.333333, 0.333333)
 emitting = false
 amount = 100

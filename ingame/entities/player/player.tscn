@@ -54,7 +54,11 @@ physics_material_override = SubResource("PhysicsMaterial_1etb5")
 gravity_scale = 0.0
 script = ExtResource("1_2w6dw")
 metadata/_edit_lock_ = true
-metadata/id = "player"
+metadata/type = "player"
+
+[node name="ShootCooldown" type="Timer" parent="."]
+wait_time = 0.05
+one_shot = true
 
 [node name="Hitbox" type="CollisionShape2D" parent="."]
 scale = Vector2(3, 3)
@@ -62,7 +66,7 @@ shape = SubResource("RectangleShape2D_2w6dw")
 metadata/_edit_lock_ = true
 
 [node name="DeathParticles" type="GPUParticles2D" parent="."]
-process_mode = 3
+process_mode = 1
 emitting = false
 amount = 100
 texture = SubResource("NoiseTexture2D_ll50v")

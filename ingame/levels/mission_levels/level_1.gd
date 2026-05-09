@@ -1,12 +1,12 @@
 extends Node
 
-## this variable is modified by the parent scene, which is the origin scene(origin.tscn)
+## those variables are modified by the parent scene, which is the origin scene(origin.tscn)
 var DEBUG_is_checking_maze: bool = false
+var DEBUG_is_showing_dodging: bool = false
 
 signal dimensions_finished
-signal maze_finished
-
-
+signal generation_finished
+signal wall_remove_finished
 
 @onready var scale_ratio: int = $Map/Ground.scale.x / $Map/Walls.scale.x
 ## called by the origin scene after initial configuration
@@ -15,7 +15,9 @@ func modified_ready() -> void:
 	create_maze_ground_and_margins()
 	await dimensions_finished
 	generate_maze_with_randomized_prim()
-	await maze_finished
+	await generation_finished
+	remove_random_maze_walls()
+	await wall_remove_finished
 	implement_maze_edges_physics()
 	implement_maze_walls_physics()
 	implement_navigation()
@@ -24,9 +26,11 @@ func modified_ready() -> void:
 
 func _process(_delta: float) -> void:
 	if is_queued_for_deletion(): return
-	var player_cell: Vector2i = $Map/Ground.local_to_map($Map/Ground.to_local($Player.position))
-	var enemy_cell: Vector2i = $Map/Ground.local_to_map($Map/Ground.to_local($Enemies/Enemy.position))
-	$Enemies/Enemy.is_adjacent_wall_to_player = is_wall_between_cells(player_cell, enemy_cell, 2, true)
+	for instance: RigidBody2D in $Enemies.get_children():
+		instance.DEBUG_is_showing_dodging = DEBUG_is_showing_dodging
+		var player_cell: Vector2i = $Map/Ground.local_to_map($Map/Ground.to_local($Player.position))
+		var enemy_cell: Vector2i = $Map/Ground.local_to_map($Map/Ground.to_local(instance.position))
+		instance.is_adjacent_wall_to_player = is_wall_between_cells(player_cell, enemy_cell, 2, true)
 
 func initialize_score_ui() -> void:
 	%PlayerScore.text = str(player_score)
@@ -198,7 +202,7 @@ func generate_maze_with_randomized_prim() -> void:
 		frontier_cells.remove_at(selected_frontier_cell_index)
 		configure_as_maze_cell(selected_cell, maze_cells, frontier_cells)
 		i += 1
-	maze_finished.emit()
+	generation_finished.emit()
 
 func configure_as_maze_cell(selected_cell: Vector2i, maze_cells: PackedVector2Array, frontier_cells: PackedVector2Array) -> void:
 	maze_cells.append(selected_cell)
@@ -244,6 +248,27 @@ func rotate_integer_vector(vector: Vector2i) -> Vector2i:
 	if vector == Vector2i.UP: return Vector2i.RIGHT
 	return Vector2i.ZERO ## invalid input handler
 
+@export var REMOVED_WALLS_INTERVAL: Vector2i = Vector2i(0, 10)
+func remove_random_maze_walls() -> void:
+	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
+	var remove_count: int = rng.randi_range(REMOVED_WALLS_INTERVAL.x, REMOVED_WALLS_INTERVAL.y)
+	for index: int in range(0, remove_count):
+		await get_tree().create_timer(0.03).timeout
+		$WallRemoveNoise.play()
+		var random_cell: Vector2i = maze_size - Vector2i.ONE
+		var wall_does_not_exist: bool = true
+		while wall_does_not_exist or random_cell == maze_size - Vector2i.ONE:
+			wall_does_not_exist = not maze_visual_wall_exists(random_cell, 0) and not maze_visual_wall_exists(random_cell, 1)
+			random_cell = Vector2i(rng.randi_range(0, maze_size.x - 1), rng.randi_range(0, maze_size.y - 1))
+		if random_cell.x == maze_size.x - 1:
+			delete_maze_visual_wall(random_cell, 1)
+			continue
+		if random_cell.y == maze_size.y - 1:
+			delete_maze_visual_wall(random_cell, 0)
+			continue
+		delete_maze_visual_wall(random_cell, rng.randi_range(0, 1))
+	wall_remove_finished.emit()
+
 func implement_maze_edges_physics() -> void:
 	var maze_corner: Vector2
 	maze_corner.x = maze_size.x * $Map/Ground.scale.x * $Map/Ground.scale.x / $Map/Walls.scale.x
@@ -265,7 +290,7 @@ func implement_maze_edges_physics() -> void:
 	%UpEdgeWall.position.y = 0
 	%UpEdgeWall.scale.x = maze_size.x * $Map/Ground.scale.x * $Map/Ground.scale.x / $Map/Walls.scale.x
 	for body: StaticBody2D in $Map/Edges.get_children():
-		body.set_meta("id", "wall")
+		body.set_meta("type", "wall")
 
 const TILE_MAZE_WALL_PATH: String = "res://ingame/tiles/tile_maze_wall.png"
 var EFFECTIVE_TILE_WIDTH: int = load(TILE_MAZE_WALL_PATH).get_width() - 1
@@ -273,7 +298,7 @@ func implement_maze_walls_physics() -> void:
 	implement_maze_horizontal_walls_physics()
 	implement_maze_vertical_walls_physics()
 	for body: StaticBody2D in $Map/PhysicsWalls.get_children():
-		body.set_meta("id", "wall")
+		body.set_meta("type", "wall")
 
 func new_collision_shape() -> CollisionShape2D:
 	var physics_shape_ref: CollisionShape2D = CollisionShape2D.new()
@@ -411,31 +436,44 @@ func place_player_on_map() -> void:
 	$Player.rotation = rng.randf_range(0, PI * 2)
 	$Player.visible = true
 	$Player.process_mode = Node.PROCESS_MODE_INHERIT
+	alive_players_count = 1
 
-@export var MIN_SPAWNPOINT_DISTANCING: float = 200.0
+@export var MIN_SPAWNPOINT_DISTANCING: float = 400.0
+@export var enemy_count_interval: Vector2i = Vector2i(1, 3)
+var enemy_count: int
+const NEW_ENEMY_INSTANCE_PATH: String = "res://ingame/entities/enemy/enemy.tscn"
 func place_enemies_on_map() -> void:
-	$Enemies/Enemy.global_position = $Player.global_position
-	while ($Player.global_position - $Enemies/Enemy.global_position).length() <= MIN_SPAWNPOINT_DISTANCING:
-		$Enemies/Enemy.process_mode = Node.PROCESS_MODE_DISABLED
-		$Enemies/Enemy.visible = false
-		var rng: RandomNumberGenerator = RandomNumberGenerator.new()
-		var selected_cell: Vector2i
-		var ground_tile_size: Vector2i = load(GROUND_TILE_SET).tile_size
-		selected_cell.x = rng.randi_range(0, maze_size.x - 1)
-		selected_cell.y = rng.randi_range(0, maze_size.y - 1)
-		var selected_position: Vector2 = $Map/Ground.map_to_local(selected_cell)
-		selected_position.x *= $Map/Ground.scale.x
-		selected_position.y *= $Map/Ground.scale.y
-		$Enemies/Enemy.position = selected_position
-		var offset_vector: Vector2
-		var max_offset_scalar: Vector2 = $Map/Ground.scale / 2 - Vector2.ONE * OFFSET_SUBTRACT
-		offset_vector.x = rng.randf_range(-max_offset_scalar.x, max_offset_scalar.x)
-		offset_vector.y = rng.randf_range(-max_offset_scalar.y, max_offset_scalar.y)
-		$Enemies/Enemy.position += offset_vector
-		$Enemies/Enemy.rotation = rng.randf_range(0, PI * 2)
-		$Enemies/Enemy.visible = true
-		$Enemies/Enemy.player_node = $Player
-		$Enemies/Enemy.process_mode = Node.PROCESS_MODE_INHERIT
+	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
+	enemy_count = rng.randi_range(enemy_count_interval.x, enemy_count_interval.y)
+	var enemy_instance: RigidBody2D = null
+	for index: int in range(0, enemy_count):
+		enemy_instance = load(NEW_ENEMY_INSTANCE_PATH).instantiate()
+		$Enemies.add_child(enemy_instance)
+		enemy_instance.global_position = $Player.global_position
+		while ($Player.global_position - enemy_instance.global_position).length() <= MIN_SPAWNPOINT_DISTANCING:
+			enemy_instance.process_mode = Node.PROCESS_MODE_DISABLED
+			enemy_instance.visible = false
+			var selected_cell: Vector2i
+			var ground_tile_size: Vector2i = load(GROUND_TILE_SET).tile_size
+			selected_cell.x = rng.randi_range(0, maze_size.x - 1)
+			selected_cell.y = rng.randi_range(0, maze_size.y - 1)
+			var selected_position: Vector2 = $Map/Ground.map_to_local(selected_cell)
+			selected_position.x *= $Map/Ground.scale.x
+			selected_position.y *= $Map/Ground.scale.y
+			enemy_instance.position = selected_position
+			var offset_vector: Vector2
+			var max_offset_scalar: Vector2 = $Map/Ground.scale / 2 - Vector2.ONE * OFFSET_SUBTRACT
+			offset_vector.x = rng.randf_range(-max_offset_scalar.x, max_offset_scalar.x)
+			offset_vector.y = rng.randf_range(-max_offset_scalar.y, max_offset_scalar.y)
+			enemy_instance.position += offset_vector
+			enemy_instance.rotation = rng.randf_range(0, PI * 2)
+			enemy_instance.visible = true
+			enemy_instance.player_node = $Player
+			enemy_instance.connect("shoot", _on_enemy_shoot)
+			enemy_instance.connect("level_die", _on_enemy_level_die)
+			enemy_instance.process_mode = Node.PROCESS_MODE_INHERIT
+			#enemy_instance.get_node("Rest/Image").scale += Vector2.ONE * rng.randf_range(-0.1, 0.1)
+		alive_enemies_count = enemy_count
 
 const NEW_BULLET_PATH: String = "res://ingame/entities/projectiles/bullet.tscn"
 var bullet_ins: RigidBody2D = null
@@ -450,57 +488,62 @@ func _on_player_shoot() -> void:
 	bullet_ins.position = $Player.position + Vector2($Player.BULLET_SPAWN_OFFSET, 0).rotated($Player.rotation)
 	bullet_ins.apply_central_impulse(Vector2($Player.BULLET_SPEED, 0).rotated($Player.rotation))
 	bullet_ins.connect("despawn", on_bullet_despawn)
-	bullet_ins.set_meta("owner_id", "player")
+	bullet_ins.owner_node = $Player
 	$Player.bullet_count += 1
 
-func _on_enemy_shoot() -> void:
-	if $Enemies/Enemy.bullet_count >= $Enemies/Enemy.MAX_BULLET_COUNT:
+func _on_enemy_shoot(enemy_node: RigidBody2D) -> void:
+	if enemy_node.bullet_count >= enemy_node.MAX_BULLET_COUNT:
 		$NoAmmoNoise.play()
 		return
 	$NormalShootNoise.play()
 	bullet_ins = load(NEW_BULLET_PATH).instantiate()
-	bullet_ins.initial_velocity_direction = $Enemies/Enemy.rotation
+	bullet_ins.initial_velocity_direction = enemy_node.rotation
 	$Bullets.add_child(bullet_ins)
-	bullet_ins.position = $Enemies/Enemy.position + Vector2($Enemies/Enemy.BULLET_SPAWN_OFFSET, 0).rotated($Enemies/Enemy.rotation)
-	bullet_ins.apply_central_impulse(Vector2($Enemies/Enemy.BULLET_SPEED, 0).rotated($Enemies/Enemy.rotation))
+	bullet_ins.position = enemy_node.position + Vector2(enemy_node.BULLET_SPAWN_OFFSET, 0).rotated(enemy_node.rotation)
+	bullet_ins.apply_central_impulse(Vector2(enemy_node.BULLET_SPEED, 0).rotated(enemy_node.rotation))
 	bullet_ins.connect("despawn", on_bullet_despawn)
-	bullet_ins.set_meta("owner_id", "enemy")
-	$Enemies/Enemy.bullet_count += 1
+	bullet_ins.owner_node = enemy_node
+	enemy_node.bullet_count += 1
 
 ## connected to each bullet's despawn signal
-func on_bullet_despawn(node: RigidBody2D) -> void:
-	if node.get_meta("owner_id", "NULL") == "player": $Player.bullet_count -= 1
-	if node.get_meta("owner_id", "NULL") == "enemy": $Enemies/Enemy.bullet_count -= 1
-	node.queue_free()
+func on_bullet_despawn(bullet: RigidBody2D) -> void:
+	# it'll probably be a single if statement in the future, there is no good reason to distinguish between
+	# players and enemies inside this function
+	if bullet.owner_node.get_meta("type", "NULL") == "player": $Player.bullet_count -= 1
+	if bullet.owner_node.get_meta("type", "NULL") == "enemy": bullet.owner_node.bullet_count -= 1
+	#node.queue_free()
 
-## winning implementation(for now):
-## -1 means the enemies won
-## 0 means draw
-## 1 means the player won
-var round_win: int = 0
+var alive_players_count: int
+var alive_enemies_count: int
 
 ## scores are initialised by the origin scene
 var player_score: int = 0
 var enemy_score: int = 0
 
 func _on_player_level_die() -> void:
-	round_win -= 1
+	alive_players_count -= 1
 	$DeathNoise.play()
 	$DeathDelay.start()
 
 func _on_enemy_level_die() -> void:
-	round_win += 1
+	alive_enemies_count -= 1
 	$DeathNoise.play()
 	$DeathDelay.start()
 
 func _on_death_delay_timeout() -> void:
-	if round_win == 1:
-		player_score += 1
-		%PlayerScore.text = str(player_score)
-	if round_win == 0: %DrawTitle.visible = true
-	if round_win == -1:
+	if alive_players_count != 0 and alive_enemies_count != 0: return
+	if alive_players_count == alive_enemies_count and alive_players_count == 0:
+		%DrawTitle.visible = true
+		$NextRoundDelay.start()
+		$NextRoundNoise.play()
+		process_mode = Node.PROCESS_MODE_DISABLED
+		return
+	if alive_players_count == 0:
 		enemy_score += 1
 		%EnemyScore.text = str(enemy_score)
+	if alive_enemies_count == 0:
+		player_score += 1
+		%PlayerScore.text = str(player_score)
 	$NextRoundDelay.start()
 	$NextRoundNoise.play()
 	process_mode = Node.PROCESS_MODE_DISABLED

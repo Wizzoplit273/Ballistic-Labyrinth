@@ -1,11 +1,13 @@
 extends RigidBody2D
 
-signal shoot
+signal shoot(owner_node: RigidBody2D)
+
+## those variables are only used outside this script, in the level scene node
+const BULLET_SPEED: float = 300.0
 
 const LINEAR_SPEED: float = 200.0
 const ANGULAR_SPEED: float = 300.0
 const BULLET_SPAWN_OFFSET: float = 30.0
-const BULLET_SPEED: float = 350.0
 const MAX_BULLET_COUNT: int = 5
 
 ## updated by the parent level scene
@@ -29,8 +31,9 @@ func _physics_process(delta: float) -> void:
 	if Input.is_action_pressed("RotateCounterclockwise"):
 		angular_velocity = -ANGULAR_SPEED * delta
 	
-	if Input.is_action_just_pressed("Shoot"):
+	if Input.is_action_just_pressed("Shoot") and $ShootCooldown.is_stopped():
 		shoot.emit()
+		$ShootCooldown.start()
 
 signal level_die
 ## called by bullet scenes that hit the player
