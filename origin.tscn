@@ -35,8 +35,8 @@ seamless = true
 seamless_blend_skirt = 1.0
 
 [sub_resource type="Gradient" id="Gradient_qx50x"]
-offsets = PackedFloat32Array(0, 0.6217949)
-colors = PackedColorArray(0.28627452, 0.28627452, 0.28627452, 0, 1, 1, 1, 0.30980393)
+offsets = PackedFloat32Array(0, 0.33734939, 0.55421686, 0.7710843, 1)
+colors = PackedColorArray(0.72464263, 0.72464263, 0.72464246, 0, 0.5489626, 0.5489626, 0.54896253, 0.6431373, 0.83889705, 0.83889705, 0.838897, 0, 0.34033942, 0.34033927, 0.3403393, 0.7411765, 1, 1, 1, 0)
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_m0p68"]
 frequency = 0.03
@@ -109,89 +109,93 @@ process_mode = 4
 script = ExtResource("2_qx50x")
 metadata/_edit_lock_ = true
 
-[node name="CrateSpawnDelay" type="Timer" parent="Ingame" unique_id=1956955021]
+[node name="Timers" type="Node" parent="Ingame" unique_id=923564029]
+
+[node name="CrateSpawnDelay" type="Timer" parent="Ingame/Timers" unique_id=1956955021]
 wait_time = 8.0
 
-[node name="NextRoundDelay" type="Timer" parent="Ingame" unique_id=735916723]
+[node name="NextRoundDelay" type="Timer" parent="Ingame/Timers" unique_id=735916723]
 process_mode = 3
 wait_time = 3.0
 one_shot = true
 
-[node name="DeathDelay" type="Timer" parent="Ingame" unique_id=1238920557]
+[node name="DeathDelay" type="Timer" parent="Ingame/Timers" unique_id=1238920557]
 process_mode = 3
 wait_time = 3.0
 one_shot = true
 
-[node name="NextRoundNoise" type="AudioStreamPlayer" parent="Ingame" unique_id=299681334]
+[node name="Sounds" type="Node" parent="Ingame" unique_id=329427148]
+
+[node name="NextRoundNoise" type="AudioStreamPlayer" parent="Ingame/Sounds" unique_id=299681334]
 process_mode = 3
 stream = ExtResource("3_m0p68")
 volume_db = -4.0
 pitch_scale = 0.2
 
-[node name="DeathNoise" type="AudioStreamPlayer" parent="Ingame" unique_id=1287621800]
+[node name="DeathNoise" type="AudioStreamPlayer" parent="Ingame/Sounds" unique_id=1287621800]
 stream = ExtResource("4_6g7ql")
 volume_db = -4.0
 pitch_scale = 0.2
 max_polyphony = 5
 
-[node name="NoAmmoNoise" type="AudioStreamPlayer" parent="Ingame" unique_id=1725279671]
+[node name="NoAmmoNoise" type="AudioStreamPlayer" parent="Ingame/Sounds" unique_id=1725279671]
 stream = ExtResource("3_m0p68")
 volume_db = -14.0
 pitch_scale = 7.0
 
-[node name="CrateSpawnNoise" type="AudioStreamPlayer" parent="Ingame" unique_id=1745265858]
+[node name="CrateSpawnNoise" type="AudioStreamPlayer" parent="Ingame/Sounds" unique_id=1745265858]
 stream = ExtResource("3_m0p68")
 volume_db = -7.0
 pitch_scale = 0.65
 
-[node name="TrapPlaceNoise" type="AudioStreamPlayer" parent="Ingame" unique_id=120593405]
+[node name="TrapPlaceNoise" type="AudioStreamPlayer" parent="Ingame/Sounds" unique_id=120593405]
 stream = ExtResource("4_6g7ql")
 volume_db = -5.0
 pitch_scale = 1.5
 
-[node name="RocketShootNoise" type="AudioStreamPlayer" parent="Ingame" unique_id=51752612]
+[node name="RocketShootNoise" type="AudioStreamPlayer" parent="Ingame/Sounds" unique_id=51752612]
 stream = ExtResource("4_6g7ql")
 pitch_scale = 0.4
 
-[node name="LaserShootNoise" type="AudioStreamPlayer" parent="Ingame" unique_id=1406787630]
+[node name="LaserShootNoise" type="AudioStreamPlayer" parent="Ingame/Sounds" unique_id=1406787630]
 stream = ExtResource("3_m0p68")
 pitch_scale = 0.7
 
-[node name="NormalShootNoise" type="AudioStreamPlayer" parent="Ingame" unique_id=1931118463]
+[node name="NormalShootNoise" type="AudioStreamPlayer" parent="Ingame/Sounds" unique_id=1931118463]
 stream = ExtResource("4_6g7ql")
 volume_db = -7.0
 pitch_scale = 0.65
 
-[node name="WallRemoveNoise" type="AudioStreamPlayer" parent="Ingame" unique_id=877349288]
+[node name="WallRemoveNoise" type="AudioStreamPlayer" parent="Ingame/Sounds" unique_id=877349288]
 stream = ExtResource("3_m0p68")
 volume_db = -10.0
 pitch_scale = 0.4
 max_polyphony = 60
 
-[node name="MazeGenerationNoise" type="AudioStreamPlayer" parent="Ingame" unique_id=394377598]
+[node name="MazeGenerationNoise" type="AudioStreamPlayer" parent="Ingame/Sounds" unique_id=394377598]
 stream = ExtResource("3_m0p68")
 volume_db = -22.0
 pitch_scale = 0.8
 max_polyphony = 10
 
-[node name="TerrainGenerationNoise" type="AudioStreamPlayer" parent="Ingame" unique_id=320376654]
+[node name="TerrainGenerationNoise" type="AudioStreamPlayer" parent="Ingame/Sounds" unique_id=320376654]
 stream = ExtResource("4_6g7ql")
 volume_db = -15.0
 pitch_scale = 0.1
 max_polyphony = 20
 
-[node name="DoubleIntervalNoise" type="AudioStreamPlayer" parent="Ingame" unique_id=278268498]
+[node name="DoubleIntervalNoise" type="AudioStreamPlayer" parent="Ingame/Sounds" unique_id=278268498]
 stream = ExtResource("3_m0p68")
 volume_db = -20.0
 pitch_scale = 1.1
 max_polyphony = 10
 
-[node name="SingleIntervalNoise" type="AudioStreamPlayer" parent="Ingame" unique_id=2039414238]
+[node name="SingleIntervalNoise" type="AudioStreamPlayer" parent="Ingame/Sounds" unique_id=2039414238]
 stream = ExtResource("3_m0p68")
 volume_db = -20.0
 max_polyphony = 10
 
-[node name="DimensionsGenerationNoise" type="AudioStreamPlayer" parent="Ingame" unique_id=688218995]
+[node name="DimensionsGenerationNoise" type="AudioStreamPlayer" parent="Ingame/Sounds" unique_id=688218995]
 stream = ExtResource("3_m0p68")
 volume_db = -28.0
 pitch_scale = 0.1
@@ -390,6 +394,7 @@ metadata/_edit_lock_ = true
 
 [node name="DEBUG_Screen" type="CanvasLayer" parent="." unique_id=1923287359]
 layer = 128
+visible = false
 
 [node name="Frame" type="VBoxContainer" parent="DEBUG_Screen" unique_id=2141505860]
 anchors_preset = 15
@@ -1094,9 +1099,9 @@ size_flags_vertical = 3
 size_flags_stretch_ratio = 0.05
 metadata/_edit_lock_ = true
 
-[connection signal="timeout" from="Ingame/CrateSpawnDelay" to="Ingame" method="_on_crate_spawn_delay_timeout"]
-[connection signal="timeout" from="Ingame/NextRoundDelay" to="Ingame" method="_on_next_round_delay_timeout"]
-[connection signal="timeout" from="Ingame/DeathDelay" to="Ingame" method="_on_death_delay_timeout"]
+[connection signal="timeout" from="Ingame/Timers/CrateSpawnDelay" to="Ingame" method="_on_crate_spawn_delay_timeout"]
+[connection signal="timeout" from="Ingame/Timers/NextRoundDelay" to="Ingame" method="_on_next_round_delay_timeout"]
+[connection signal="timeout" from="Ingame/Timers/DeathDelay" to="Ingame" method="_on_death_delay_timeout"]
 [connection signal="level_die" from="Ingame/Player" to="Ingame" method="_on_player_level_die"]
 [connection signal="shoot" from="Ingame/Player" to="Ingame" method="_on_player_shoot"]
 [connection signal="pressed" from="PauseMenu/Frame/BurronContainer/ResumeButton" to="PauseMenu" method="_on_resume_button_pressed"]

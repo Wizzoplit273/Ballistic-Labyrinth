@@ -48,7 +48,7 @@ func modified_ready() -> void:
 	$Player.process_mode = Node.PROCESS_MODE_INHERIT
 	$Player.visible = true
 	$Player/Rest.visible = true
-	$CrateSpawnDelay.start()
+	$Timers/CrateSpawnDelay.start()
 
 const SCROLL_VALUE: float = 1.1
 func _process(_delta: float) -> void:
@@ -90,7 +90,7 @@ func create_maze_rectangle() -> void:
 	for row: int in range(0, MAZE_SIZE.y):
 		for column: int in range(0, MAZE_SIZE.x):
 			await get_tree().create_timer(WAIT_TIME).timeout
-			$DimensionsGenerationNoise.play()
+			$Sounds/DimensionsGenerationNoise.play()
 			var selected_cell: Vector2i = Vector2i(column, row)
 			$Map/Ground.set_cell(selected_cell, 0, Vector2i(0, 0), 1)
 			maze_cells.push_back(selected_cell)
@@ -291,7 +291,7 @@ func generate_maze_with_randomized_prim() -> void:
 	#var i: int = 0
 	while frontier_cells.size() != 0:
 		await get_tree().create_timer(WAIT_TIME).timeout
-		$MazeGenerationNoise.play()
+		$Sounds/MazeGenerationNoise.play()
 		if randi_range(0, 2) == 0:
 			selected_frontier_cell_index = 0
 		elif randi_range(0, 2) == 0:
@@ -378,7 +378,7 @@ func remove_random_maze_walls() -> void:
 	var removed: int = 0
 	while removed < remove_count:
 		await get_tree().create_timer(0.03).timeout
-		$WallRemoveNoise.play()
+		$Sounds/WallRemoveNoise.play()
 		var selected_cell: Vector2i = maze_cells.get(rng.randi_range(0, maze_cells.size() - 1))
 		var possible_adjacencies: Array[int] = []
 		for selected_adjacency: int in range(4):
@@ -644,7 +644,7 @@ const TRAP_SPAWN_OFFSET: float = 60.0
 var bullet_ins: RigidBody2D = null
 func _on_player_shoot(weapon_type: String) -> void:
 	if weapon_type == "regular" and $Player.bullet_count >= $Player.MAX_BULLET_COUNT:
-		$NoAmmoNoise.play()
+		$Sounds/NoAmmoNoise.play()
 		return
 	if weapon_type != "regular":
 		$Player.equip_weapon("regular")
@@ -655,24 +655,24 @@ func _on_player_shoot(weapon_type: String) -> void:
 		bullet_offset = REGULAR_SPAWN_OFFSET
 		bullet_ins.initial_velocity_speed = $Player.BULLET_SPEED
 		bullet_ins.type = "regular"
-		$NormalShootNoise.play()
+		$Sounds/NormalShootNoise.play()
 	if weapon_type == "laser":
 		bullet_offset = LASER_SPAWN_OFFSET
 		bullet_ins.initial_velocity_speed = LASER_SPEED
 		bullet_ins.get_node("LifespanTimer").wait_time = LASER_LIFESPAN
 		bullet_ins.get_node("Rest/LaserTrail").emitting = true
 		bullet_ins.type = "laser"
-		$LaserShootNoise.play()
+		$Sounds/LaserShootNoise.play()
 	if weapon_type == "rocket":
 		bullet_offset = ROCKET_SPAWN_OFFSET
 		bullet_ins.initial_velocity_speed = $Player.BULLET_SPEED
 		bullet_ins.type = "rocket"
-		$RocketShootNoise.play()
+		$Sounds/RocketShootNoise.play()
 	if weapon_type == "trap":
 		bullet_offset = TRAP_SPAWN_OFFSET
 		bullet_ins.initial_velocity_speed = 0.0
 		bullet_ins.type = "trap"
-		$TrapPlaceNoise.play()
+		$Sounds/TrapPlaceNoise.play()
 	$Bullets.add_child(bullet_ins)
 	bullet_ins.owner_node = $Player
 	bullet_ins.initial_velocity_direction = $Player.rotation
@@ -684,9 +684,9 @@ func _on_player_shoot(weapon_type: String) -> void:
 
 func _on_enemy_shoot(enemy_node: RigidBody2D) -> void:
 	if enemy_node.bullet_count >= enemy_node.MAX_BULLET_COUNT:
-		$NoAmmoNoise.play()
+		$Sounds/NoAmmoNoise.play()
 		return
-	$NormalShootNoise.play()
+	$Sounds/NormalShootNoise.play()
 	bullet_ins = load(NEW_BULLET_PATH).instantiate()
 	bullet_ins.type = "regular"
 	bullet_ins.initial_velocity_direction = enemy_node.rotation
@@ -711,7 +711,7 @@ func on_bullet_despawn(bullet: RigidBody2D) -> void:
 
 const NEW_CRATE_PATH: String = "res://ingame/entities/crates/crate.tscn"
 func _on_crate_spawn_delay_timeout() -> void:
-	$CrateSpawnNoise.play()
+	$Sounds/CrateSpawnNoise.play()
 	var crate_instance: Area2D = null
 	crate_instance = load(NEW_CRATE_PATH).instantiate()
 	var selected_maze_cell: Vector2i = maze_cells[rng.randi_range(0, maze_cells.size() - 1)]
@@ -732,20 +732,20 @@ var enemy_score: int = 0
 
 func _on_player_level_die() -> void:
 	alive_players_count -= 1
-	$DeathNoise.play()
-	$DeathDelay.start()
+	$Sounds/DeathNoise.play()
+	$Timers/DeathDelay.start()
 
 func _on_enemy_level_die() -> void:
 	alive_enemies_count -= 1
-	$DeathNoise.play()
-	$DeathDelay.start()
+	$Sounds/DeathNoise.play()
+	$Timers/DeathDelay.start()
 
 func _on_death_delay_timeout() -> void:
 	if alive_players_count > 0 and alive_enemies_count > 0: return
 	if alive_players_count <= 0 and alive_enemies_count <= 0:
 		%DrawTitle.visible = true
-		$NextRoundDelay.start()
-		$NextRoundNoise.play()
+		$Timers/NextRoundDelay.start()
+		$Sounds/NextRoundNoise.play()
 		process_mode = Node.PROCESS_MODE_DISABLED
 		return
 	if alive_players_count <= 0:
@@ -754,8 +754,8 @@ func _on_death_delay_timeout() -> void:
 	if alive_enemies_count <= 0:
 		player_score += 1
 		%PlayerScore.text = str(player_score)
-	$NextRoundDelay.start()
-	$NextRoundNoise.play()
+	$Timers/NextRoundDelay.start()
+	$Sounds/NextRoundNoise.play()
 	process_mode = Node.PROCESS_MODE_DISABLED
 
 func reset() -> void:
@@ -763,7 +763,7 @@ func reset() -> void:
 	$Player.process_mode = Node.PROCESS_MODE_DISABLED
 	$Player.visible = false
 	maze_cells.clear()
-	$CrateSpawnDelay.stop()
+	$Timers/CrateSpawnDelay.stop()
 	
 	for node: Node in $Map.get_children():
 		if not node is TileMapLayer: continue

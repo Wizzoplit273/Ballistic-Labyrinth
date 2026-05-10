@@ -53,7 +53,7 @@ radius = 225.0
 [node name="Enemy" type="RigidBody2D" unique_id=1362450737]
 process_mode = 4
 collision_layer = 16
-collision_mask = 3
+collision_mask = 19
 physics_material_override = SubResource("PhysicsMaterial_1etb5")
 gravity_scale = 0.0
 contact_monitor = true

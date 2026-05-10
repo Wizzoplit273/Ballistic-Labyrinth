@@ -27,7 +27,7 @@ func _physics_process(delta: float) -> void:
 	if Input.is_action_pressed("MoveForward") and not Input.is_action_pressed("Drift"):
 		apply_central_impulse((Vector2.RIGHT * LINEAR_SPEED).rotated(rotation))
 	elif Input.is_action_pressed("MoveBackward") and not Input.is_action_pressed("Drift"):
-		apply_central_impulse(-(Vector2.RIGHT * LINEAR_SPEED).rotated(rotation))
+		apply_central_impulse(-(Vector2.RIGHT * LINEAR_SPEED/1.5).rotated(rotation))
 	if Input.is_action_pressed("RotateClockwise"):
 		angular_velocity = ANGULAR_SPEED * delta
 	if Input.is_action_pressed("RotateCounterclockwise"):

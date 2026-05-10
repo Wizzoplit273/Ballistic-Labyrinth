@@ -7,9 +7,9 @@ func _ready() -> void:
 	main_menu()
 
 func reset_level() -> void:
-	$Ingame/CrateSpawnDelay.stop()
-	$Ingame/DeathDelay.stop()
-	$Ingame/NextRoundDelay.stop()
+	$Ingame/Timers/CrateSpawnDelay.stop()
+	$Ingame/Timers/DeathDelay.stop()
+	$Ingame/Timers/NextRoundDelay.stop()
 	for enemy: Node in $Ingame/Enemies.get_children():
 		enemy.queue_free()
 	for bullet: Node in $Ingame/Bullets.get_children():
