@@ -6,10 +6,7 @@ This project was made a few months before organising into a Git repository, the 
 A long time ago, I tried implementing multiplayer on the legacy_exp branch, but it's unfinished and unplayable. You can still check it out if you want to.
 Since this project is made using the GDScript language, I would like it to remain like that for the sake of consistency.
 
-Controls:
---- WASD or arrow keys for movement
---- Space to shoot
---- Hold shift to drift: current velocity will persist regardless of controls; useful for shooting backwards or sideways while moving in a direction
+Link to itch.io: https://wizzoplit273.itch.io/ballistic-labyrinth
 
 Screenshots:
 <img width="1920" height="1200" alt="Screenshot_20250830_001913" src="https://github.com/user-attachments/assets/86745bbb-7d79-4dae-bb36-40e51317517b" />
