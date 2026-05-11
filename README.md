@@ -10,3 +10,13 @@ Controls:
 --- WASD or arrow keys for movement
 --- Space to shoot
 --- Hold shift to drift: current velocity will persist regardless of controls; useful for shooting backwards or sideways while moving in a direction
+
+Screenshots:
+<img width="1920" height="1200" alt="Screenshot_20250830_001913" src="https://github.com/user-attachments/assets/86745bbb-7d79-4dae-bb36-40e51317517b" />
+<img width="1920" height="1200" alt="Screenshot_20250830_002226" src="https://github.com/user-attachments/assets/fcf8c421-9559-4830-b8a9-b260d7f73644" />
+<img width="1920" height="1200" alt="Screenshot_20250824_002151" src="https://github.com/user-attachments/assets/17d1e6a1-b53b-4fdb-88c3-b7cdd77a2cd7" />
+<img width="1920" height="1065" alt="Screenshot from 2026-05-11 23-30-35" src="https://github.com/user-attachments/assets/b19da06d-305c-4612-8560-46644a06db4e" />
+<img width="1920" height="1065" alt="Screenshot from 2026-05-11 23-30-52" src="https://github.com/user-attachments/assets/b2493194-2e67-4d58-8b90-ce9b246993d2" />
+<img width="1920" height="1065" alt="Screenshot from 2026-05-11 23-31-16" src="https://github.com/user-attachments/assets/a8ab9037-11c9-4815-b388-fc4618177795" />
+<img width="1561" height="676" alt="Screenshot from 2026-05-11 23-33-13" src="https://github.com/user-attachments/assets/1d362b70-e09e-4f91-b80d-cb5d611e6cb2" />
+<img width="1632" height="837" alt="Screenshot from 2026-05-11 23-33-01" src="https://github.com/user-attachments/assets/f47bf7c7-7ee2-4e1d-8925-efe28530c918" />
