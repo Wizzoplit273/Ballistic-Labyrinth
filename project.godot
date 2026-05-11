@@ -14,8 +14,8 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 
 [application]
 
-config/name="Ballistic Labyrinth 1.0"
-config/version="1.0"
+config/name="Ballistic Labyrinth 1.0.1"
+config/version="1.0.1"
 run/main_scene="uid://dl53xfp6aj77b"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="uid://bsnkweusjyp86"

@@ -35,8 +35,8 @@ seamless = true
 seamless_blend_skirt = 1.0
 
 [sub_resource type="Gradient" id="Gradient_qx50x"]
-offsets = PackedFloat32Array(0, 0.33734939, 0.55421686, 0.7710843, 1)
-colors = PackedColorArray(0.72464263, 0.72464263, 0.72464246, 0, 0.5489626, 0.5489626, 0.54896253, 0.6431373, 0.83889705, 0.83889705, 0.838897, 0, 0.34033942, 0.34033927, 0.3403393, 0.7411765, 1, 1, 1, 0)
+offsets = PackedFloat32Array(0, 0.30722892, 0.5301205, 0.77710843, 1)
+colors = PackedColorArray(0.72464263, 0.72464263, 0.72464246, 0, 0.43134022, 0.43134025, 0.43134025, 0.6431373, 0.69965345, 0.6996535, 0.69965315, 0, 0.27752784, 0.2775277, 0.27752772, 0.7411765, 1, 1, 1, 0)
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_m0p68"]
 frequency = 0.03
@@ -79,6 +79,9 @@ shadow_offset = Vector2(0, 0)
 shadow_size = 15
 shadow_color = Color(0, 0, 0, 1)
 shadow_offset = Vector2(0, 0)
+
+[sub_resource type="LabelSettings" id="LabelSettings_qx50x"]
+font_size = 20
 
 [sub_resource type="LabelSettings" id="LabelSettings_ppsw1"]
 font_size = 70
@@ -377,6 +380,15 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "0"
 label_settings = SubResource("LabelSettings_kgy77")
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="RoomHashLabel" type="Label" parent="Ingame/ScoresLayer" unique_id=954266645]
+offset_right = 162.0
+offset_bottom = 42.0
+text = "seed: place"
+label_settings = SubResource("LabelSettings_qx50x")
 horizontal_alignment = 1
 vertical_alignment = 1
 metadata/_edit_lock_ = true

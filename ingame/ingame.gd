@@ -2,8 +2,6 @@ extends Node
 
 const INGAME_CAMERA_ZOOM: float = 2.0
 
-var rng: RandomNumberGenerator = RandomNumberGenerator.new()
-
 ## those variables are modified by the origin scene(origin.tscn)
 var DEBUG_is_checking_maze: bool = false
 var DEBUG_is_showing_dodging: bool = false
@@ -23,10 +21,11 @@ var is_finished_loading: bool = false
 #const TILE_SIZE: int = 16
 ## called by the origin scene after initial configuration
 func modified_ready() -> void:
+	set_seeded_rng("")
 	$Camera.position.x = $Map/Ground.tile_set.tile_size.x * $Map/Ground.scale.x * MAZE_SIZE.x / 2
 	$Camera.position.y = $Map/Ground.tile_set.tile_size.y * $Map/Ground.scale.y * MAZE_SIZE.y / 2
 	$Map/GroundNoise.position = $Camera.position
-	$Map/GroundNoise.texture.noise.seed = randi_range(0, 1000)
+	$Map/GroundNoise.texture.noise.seed = SEEDED_RNG.randi_range(0, 10000)
 	initialize_score_ui()
 	create_maze_rectangle()
 	await dimensions_finished
@@ -49,6 +48,11 @@ func modified_ready() -> void:
 	$Player.visible = true
 	$Player/Rest.visible = true
 	$Timers/CrateSpawnDelay.start()
+
+var SEEDED_RNG: RandomNumberGenerator = RandomNumberGenerator.new()
+func set_seeded_rng(string: String) -> void:
+	if string != "": SEEDED_RNG.seed = string.hash()
+	$ScoresLayer/RoomHashLabel.text = "seed: " + str(SEEDED_RNG.state)
 
 const SCROLL_VALUE: float = 1.1
 func _process(_delta: float) -> void:
@@ -108,13 +112,13 @@ var maze_cells: Array[Vector2i] = []
 	#
 	### random crop at every margin: it doesn't keep track of the previous margin(neighbour) for now
 	#var MAX_CARVE_LENGTH: int = min(MAZE_SIZE.x, MAZE_SIZE.y) / 3
-	#var random_offset: int = rng.randi_range(0, MAX_CARVE_LENGTH)
+	#var random_offset: int = SEEDED_RNG.randi_range(0, MAX_CARVE_LENGTH)
 	#var result_interval: Vector2i
 	#var result_cell: Vector2i
 	#for x: int in range(0, MAZE_SIZE.x):
-		#random_offset = rng.randi_range(maze_carve_offset.x, maze_carve_offset.y)
+		#random_offset = SEEDED_RNG.randi_range(maze_carve_offset.x, maze_carve_offset.y)
 		#result_interval.x = random_offset
-		#random_offset = rng.randi_range(maze_carve_offset.x, maze_carve_offset.y)
+		#random_offset = SEEDED_RNG.randi_range(maze_carve_offset.x, maze_carve_offset.y)
 		#result_interval.y = MAZE_SIZE.y - 1 - random_offset
 		#for y: int in range(result_interval.x, result_interval.y + 1):
 			#result_cell = Vector2i(x, y)
@@ -123,9 +127,9 @@ var maze_cells: Array[Vector2i] = []
 			#$SingleIntervalNoise.play()
 			#await get_tree().create_timer(WAIT_TIME).timeout
 	#for y: int in range(0, MAZE_SIZE.y):
-		#random_offset = rng.randi_range(maze_carve_offset.x, maze_carve_offset.y)
+		#random_offset = SEEDED_RNG.randi_range(maze_carve_offset.x, maze_carve_offset.y)
 		#result_interval.x = random_offset
-		#random_offset = rng.randi_range(maze_carve_offset.x, maze_carve_offset.y)
+		#random_offset = SEEDED_RNG.randi_range(maze_carve_offset.x, maze_carve_offset.y)
 		#result_interval.y = MAZE_SIZE.x - 1 - random_offset
 		#for x: int in range(result_interval.x, result_interval.y + 1):
 			#result_cell = Vector2i(x, y)
@@ -152,7 +156,7 @@ var maze_cells: Array[Vector2i] = []
 					#create_maze_visual_wall(selected_cell, 2)
 					#create_maze_visual_wall(selected_cell, 3)
 					#continue
-			#var random_index: int = rng.randi_range(0, 1)
+			#var random_index: int = SEEDED_RNG.randi_range(0, 1)
 			#$Map/Ground.set_cell(selected_cell, 1, Vector2i(random_index, 0))
 	#
 	#carve_finished.emit()
@@ -272,7 +276,7 @@ func generate_maze_with_randomized_prim() -> void:
 	## all vector entries should be integers, but this is what Godot offers for optimisation
 	var final_maze_cells: PackedVector2Array
 	var frontier_cells: PackedVector2Array
-	selected_cell = maze_cells[rng.randi_range(0, maze_cells.size() - 1)]
+	selected_cell = maze_cells[SEEDED_RNG.randi_range(0, maze_cells.size() - 1)]
 	$Map/Ground.set_cell(selected_cell, 0, Vector2i((selected_cell.x + selected_cell.y) % 3, 0), 0)
 	final_maze_cells.append(selected_cell)
 	if maze_cells.find(selected_cell + Vector2i.RIGHT) != -1:
@@ -292,18 +296,18 @@ func generate_maze_with_randomized_prim() -> void:
 	while frontier_cells.size() != 0:
 		await get_tree().create_timer(WAIT_TIME).timeout
 		$Sounds/MazeGenerationNoise.play()
-		if randi_range(0, 2) == 0:
+		if SEEDED_RNG.randi_range(0, 2) == 0:
 			selected_frontier_cell_index = 0
-		elif randi_range(0, 2) == 0:
+		elif SEEDED_RNG.randi_range(0, 2) == 0:
 			selected_frontier_cell_index = frontier_cells.size() - 1
-		else: selected_frontier_cell_index = rng.randi_range(0, frontier_cells.size() - 1)
+		else: selected_frontier_cell_index = SEEDED_RNG.randi_range(0, frontier_cells.size() - 1)
 		selected_cell = frontier_cells[selected_frontier_cell_index]
 		frontier_cells.remove_at(selected_frontier_cell_index)
 		configure_as_maze_cell(selected_cell, final_maze_cells, frontier_cells)
 		if frontier_cells.size() == 0: break
-		if randi_range(0, 4) == 0: continue
+		if SEEDED_RNG.randi_range(0, 4) == 0: continue
 		## for removing some extra walls for more loops and space
-		configure_as_maze_cell(frontier_cells[rng.randi_range(0, frontier_cells.size() - 1)], final_maze_cells, frontier_cells)
+		configure_as_maze_cell(frontier_cells[SEEDED_RNG.randi_range(0, frontier_cells.size() - 1)], final_maze_cells, frontier_cells)
 		#i += 1
 	generation_finished.emit()
 
@@ -325,7 +329,7 @@ func configure_as_maze_cell(selected_cell: Vector2i, final_maze_cells: PackedVec
 				num_neighboring_maze_cells += 1
 				possible_directions.append(index)
 		neighboring_cell_offset = rotate_integer_vector(neighboring_cell_offset)
-	var random_direction: int = possible_directions[rng.randi_range(0, num_neighboring_maze_cells - 1)]
+	var random_direction: int = possible_directions[SEEDED_RNG.randi_range(0, num_neighboring_maze_cells - 1)]
 	delete_maze_visual_wall(selected_cell, random_direction)
 	
 	## mark neighboring cells as frontier cells
@@ -370,7 +374,7 @@ func remove_remaining_maze_cells() -> void:
 
 var wall_remove_interval: Vector2i = Vector2i(0, 0)
 func remove_random_maze_walls() -> void:
-	var remove_count: int = rng.randi_range(wall_remove_interval.x, wall_remove_interval.y)
+	var remove_count: int = SEEDED_RNG.randi_range(wall_remove_interval.x, wall_remove_interval.y)
 	await get_tree().create_timer(0.01).timeout
 	if remove_count == 0:
 		wall_remove_finished.emit()
@@ -379,7 +383,7 @@ func remove_random_maze_walls() -> void:
 	while removed < remove_count:
 		await get_tree().create_timer(0.03).timeout
 		$Sounds/WallRemoveNoise.play()
-		var selected_cell: Vector2i = maze_cells.get(rng.randi_range(0, maze_cells.size() - 1))
+		var selected_cell: Vector2i = maze_cells.get(SEEDED_RNG.randi_range(0, maze_cells.size() - 1))
 		var possible_adjacencies: Array[int] = []
 		for selected_adjacency: int in range(4):
 			var selected_wall_exists: bool = maze_visual_wall_exists(selected_cell, selected_adjacency)
@@ -387,7 +391,7 @@ func remove_random_maze_walls() -> void:
 			if selected_wall_exists and selected_neighbor_is_maze_cell:
 				possible_adjacencies.push_back(selected_adjacency)
 		if possible_adjacencies.size() == 0: continue
-		var deleted_adjacency: int = rng.randi_range(0, possible_adjacencies.size() - 1)
+		var deleted_adjacency: int = SEEDED_RNG.randi_range(0, possible_adjacencies.size() - 1)
 		deleted_adjacency = possible_adjacencies[deleted_adjacency]
 		delete_maze_visual_wall(selected_cell, deleted_adjacency)
 		removed += 1
@@ -561,15 +565,15 @@ const OFFSET_SUBTRACT: float = 20.0
 func place_player_on_map() -> void:
 	var selected_cell: Vector2i
 	#var ground_tile_size: Vector2i = load(GROUND_TILE_SET).tile_size
-	selected_cell = maze_cells.get(rng.randi_range(0, maze_cells.size() - 1))
+	selected_cell = maze_cells.get(SEEDED_RNG.randi_range(0, maze_cells.size() - 1))
 	var selected_position: Vector2 = maze_cell_to_world(selected_cell)
 	$Player.position = selected_position
 	var offset_vector: Vector2
 	var max_offset_scalar: Vector2 = $Map/Ground.scale / 2 - Vector2.ONE * OFFSET_SUBTRACT
-	offset_vector.x = rng.randf_range(-max_offset_scalar.x, max_offset_scalar.x)
-	offset_vector.y = rng.randf_range(-max_offset_scalar.y, max_offset_scalar.y)
+	offset_vector.x = SEEDED_RNG.randf_range(-max_offset_scalar.x, max_offset_scalar.x)
+	offset_vector.y = SEEDED_RNG.randf_range(-max_offset_scalar.y, max_offset_scalar.y)
 	$Player.position += offset_vector
-	$Player.rotation = rng.randf_range(0, PI * 2)
+	$Player.rotation = SEEDED_RNG.randf_range(0, PI * 2)
 	$Player.visible = true
 	$Player.process_mode = Node.PROCESS_MODE_INHERIT
 	#$Player.modulate = player_color
@@ -601,7 +605,7 @@ var enemy_count: int
 const NEW_ENEMY_INSTANCE_PATH: String = "res://ingame/entities/enemy/enemy.tscn"
 var enemy_count_interval: Vector2i = Vector2i(3, 5)
 func place_enemies_on_map() -> void:
-	enemy_count = rng.randi_range(enemy_count_interval.x, enemy_count_interval.y)
+	enemy_count = SEEDED_RNG.randi_range(enemy_count_interval.x, enemy_count_interval.y)
 	var enemy_instance: RigidBody2D = null
 	for index: int in range(0, enemy_count):
 		enemy_instance = load(NEW_ENEMY_INSTANCE_PATH).instantiate()
@@ -613,15 +617,15 @@ func place_enemies_on_map() -> void:
 			enemy_instance.visible = false
 			var selected_cell: Vector2i
 			#var ground_tile_size: Vector2i = load(GROUND_TILE_SET).tile_size
-			selected_cell = maze_cells.get(rng.randi_range(0, maze_cells.size() - 1))
+			selected_cell = maze_cells.get(SEEDED_RNG.randi_range(0, maze_cells.size() - 1))
 			var selected_position: Vector2 = maze_cell_to_world(selected_cell)
 			enemy_instance.position = selected_position
 			var offset_vector: Vector2
 			var max_offset_scalar: Vector2 = $Map/Ground.scale / 2 - Vector2.ONE * OFFSET_SUBTRACT
-			offset_vector.x = rng.randf_range(-max_offset_scalar.x, max_offset_scalar.x)
-			offset_vector.y = rng.randf_range(-max_offset_scalar.y, max_offset_scalar.y)
+			offset_vector.x = SEEDED_RNG.randf_range(-max_offset_scalar.x, max_offset_scalar.x)
+			offset_vector.y = SEEDED_RNG.randf_range(-max_offset_scalar.y, max_offset_scalar.y)
 			enemy_instance.position += offset_vector
-			enemy_instance.rotation = rng.randf_range(0, PI * 2)
+			enemy_instance.rotation = SEEDED_RNG.randf_range(0, PI * 2)
 			enemy_instance.visible = true
 			enemy_instance.player_node = $Player
 			enemy_instance.enemy_friendly_fire = enemy_friendly_fire
@@ -630,7 +634,7 @@ func place_enemies_on_map() -> void:
 			if not enemy_instance.is_connected("level_die", _on_enemy_level_die):
 				enemy_instance.connect("level_die", _on_enemy_level_die)
 			enemy_instance.process_mode = Node.PROCESS_MODE_INHERIT
-			#enemy_instance.get_node("Rest/Image").scale += Vector2.ONE * rng.randf_range(-0.1, 0.1)
+			#enemy_instance.get_node("Rest/Image").scale += Vector2.ONE * SEEDED_RNG.randf_range(-0.1, 0.1)
 		alive_enemies_count = enemy_count
 
 const NEW_BULLET_PATH: String = "res://ingame/entities/projectiles/bullet.tscn"
@@ -714,7 +718,7 @@ func _on_crate_spawn_delay_timeout() -> void:
 	$Sounds/CrateSpawnNoise.play()
 	var crate_instance: Area2D = null
 	crate_instance = load(NEW_CRATE_PATH).instantiate()
-	var selected_maze_cell: Vector2i = maze_cells[rng.randi_range(0, maze_cells.size() - 1)]
+	var selected_maze_cell: Vector2i = maze_cells[SEEDED_RNG.randi_range(0, maze_cells.size() - 1)]
 	crate_instance.position = maze_cell_to_world(selected_maze_cell)
 	$Crates.add_child(crate_instance)
 	crate_instance.connect("equip_weapon", equip_weapon)
