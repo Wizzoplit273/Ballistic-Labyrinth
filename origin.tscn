@@ -499,7 +499,6 @@ size_flags_stretch_ratio = 0.05
 metadata/_edit_lock_ = true
 
 [node name="MainMenu" type="Control" parent="." unique_id=331948460]
-visible = false
 self_modulate = Color(0.168627, 0.168627, 0.168627, 0.419608)
 layout_mode = 3
 anchors_preset = 15
@@ -614,7 +613,7 @@ metadata/_edit_lock_ = true
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
-text = "Start Mission"
+text = "Start Game"
 metadata/_edit_lock_ = true
 
 [node name="VSpacer2" type="Control" parent="MainMenu/Frame" unique_id=725221564]
@@ -624,6 +623,7 @@ size_flags_stretch_ratio = 0.05
 metadata/_edit_lock_ = true
 
 [node name="SettingsButton" type="Button" parent="MainMenu/Frame" unique_id=340932476]
+visible = false
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
