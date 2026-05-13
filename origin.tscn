@@ -114,6 +114,10 @@ metadata/_edit_lock_ = true
 
 [node name="Timers" type="Node" parent="Ingame" unique_id=923564029]
 
+[node name="Await" type="Timer" parent="Ingame/Timers" unique_id=739735164]
+wait_time = 0.009999999999999998
+one_shot = true
+
 [node name="CrateSpawnDelay" type="Timer" parent="Ingame/Timers" unique_id=1956955021]
 wait_time = 8.0
 
@@ -123,7 +127,6 @@ wait_time = 3.0
 one_shot = true
 
 [node name="DeathDelay" type="Timer" parent="Ingame/Timers" unique_id=1238920557]
-process_mode = 3
 wait_time = 3.0
 one_shot = true
 
@@ -1111,6 +1114,7 @@ size_flags_vertical = 3
 size_flags_stretch_ratio = 0.05
 metadata/_edit_lock_ = true
 
+[connection signal="timeout" from="Ingame/Timers/Await" to="Ingame" method="_on_await_timeout"]
 [connection signal="timeout" from="Ingame/Timers/CrateSpawnDelay" to="Ingame" method="_on_crate_spawn_delay_timeout"]
 [connection signal="timeout" from="Ingame/Timers/NextRoundDelay" to="Ingame" method="_on_next_round_delay_timeout"]
 [connection signal="timeout" from="Ingame/Timers/DeathDelay" to="Ingame" method="_on_death_delay_timeout"]
@@ -1118,6 +1122,7 @@ metadata/_edit_lock_ = true
 [connection signal="shoot" from="Ingame/Player" to="Ingame" method="_on_player_shoot"]
 [connection signal="pressed" from="PauseMenu/Frame/BurronContainer/ResumeButton" to="PauseMenu" method="_on_resume_button_pressed"]
 [connection signal="pressed" from="PauseMenu/Frame/BurronContainer/BackToMainMenuButton" to="PauseMenu" method="_on_back_to_main_menu_button_pressed"]
+[connection signal="visibility_changed" from="MainMenu" to="Ingame" method="_on_main_menu_visibility_changed"]
 [connection signal="pressed" from="MainMenu/ExitConfirmDialog/Frame/BurronContainer/DiscardButton" to="MainMenu" method="_on_discard_button_pressed"]
 [connection signal="pressed" from="MainMenu/ExitConfirmDialog/Frame/BurronContainer/ConfirmButton" to="MainMenu" method="_on_confirm_button_pressed"]
 [connection signal="pressed" from="MainMenu/Frame/StartMissionButton" to="MainMenu" method="_on_start_mission_button_pressed"]

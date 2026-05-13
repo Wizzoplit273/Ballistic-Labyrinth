@@ -87,13 +87,21 @@ func initialize_score_ui() -> void:
 	%PlayerScore.text = str(player_score)
 	%EnemyScore.text = str(enemy_score)
 
+signal finish_await
+func _on_await_timeout() -> void:
+	finish_await.emit()
+func _on_main_menu_visibility_changed() -> void:
+	finish_await.emit()
+
 ## first vector entry is width, second is height
 const MAZE_SIZE: Vector2i = Vector2i(20, 12)
 var maze_bottom_corner: Vector2i = Vector2i.ZERO
 func create_maze_rectangle() -> void:
 	for row: int in range(0, MAZE_SIZE.y):
 		for column: int in range(0, MAZE_SIZE.x):
-			await get_tree().create_timer(WAIT_TIME).timeout
+			$Timers/Await.start()
+			await finish_await
+			if $"../MainMenu".visible: return
 			$Sounds/DimensionsGenerationNoise.play()
 			var selected_cell: Vector2i = Vector2i(column, row)
 			$Map/Ground.set_cell(selected_cell, 0, Vector2i(0, 0), 1)
@@ -104,7 +112,6 @@ func create_maze_rectangle() -> void:
 			create_maze_visual_wall(selected_cell, 3)
 	dimensions_finished.emit()
 
-var WAIT_TIME: float = 0.01
 var maze_cells: Array[Vector2i] = []
 #func carve_maze_rectangle() -> void:
 	#var effective_vertical_margins: Array[Vector2i] = []
@@ -294,7 +301,9 @@ func generate_maze_with_randomized_prim() -> void:
 	var selected_frontier_cell_index: int
 	#var i: int = 0
 	while frontier_cells.size() != 0:
-		await get_tree().create_timer(WAIT_TIME).timeout
+		$Timers/Await.start()
+		await finish_await
+		if $"../MainMenu".visible: return
 		$Sounds/MazeGenerationNoise.play()
 		if SEEDED_RNG.randi_range(0, 2) == 0:
 			selected_frontier_cell_index = 0
