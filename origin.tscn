@@ -139,6 +139,7 @@ size_flags_stretch_ratio = 0.05
 metadata/_edit_lock_ = true
 
 [node name="MainMenu" type="Control" parent="." unique_id=331948460]
+visible = false
 self_modulate = Color(0.168627, 0.168627, 0.168627, 0.419608)
 layout_mode = 3
 anchors_preset = 15
