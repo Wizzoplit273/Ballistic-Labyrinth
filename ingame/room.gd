@@ -21,6 +21,7 @@ var is_finished_loading: bool = false
 #const TILE_SIZE: int = 16
 ## called by the origin scene after initial configuration
 func modified_ready() -> void:
+	process_mode = Node.PROCESS_MODE_INHERIT
 	set_seeded_rng("")
 	$Camera.position.x = $Map/Ground.tile_set.tile_size.x * $Map/Ground.scale.x * MAZE_SIZE.x / 2
 	$Camera.position.y = $Map/Ground.tile_set.tile_size.y * $Map/Ground.scale.y * MAZE_SIZE.y / 2
@@ -59,7 +60,7 @@ func _process(_delta: float) -> void:
 	if is_queued_for_deletion(): return
 	if OS.is_debug_build() and Input.is_action_just_pressed("DEBUG_Toggle_Maze_Generation"):
 		DEBUG_is_checking_maze = not DEBUG_is_checking_maze
-		get_parent().get_node("DEBUG_Screen/Frame/DEBUG_MazeCheck").visible = DEBUG_is_checking_maze
+		ORIGIN_NODE.get_node("DEBUG_Screen/Frame/DEBUG_MazeCheck").visible = DEBUG_is_checking_maze
 		if DEBUG_is_checking_maze:
 			push_warning("DEBUG_Toggle_Maze_Generation is now ON")
 			print("\t\t\tDEBUG_Toggle_Maze_Generation is now ON")
@@ -68,7 +69,7 @@ func _process(_delta: float) -> void:
 			print("\t\t\tDEBUG_Toggle_Maze_Generation is now OFF")
 	if OS.is_debug_build() and Input.is_action_just_pressed("DEBUG_Show_Dodging"):
 		DEBUG_is_showing_dodging = not DEBUG_is_showing_dodging
-		get_parent().get_node("DEBUG_Screen/Frame/DEBUG_DodgeCheck").visible = DEBUG_is_showing_dodging
+		ORIGIN_NODE.get_node("DEBUG_Screen/Frame/DEBUG_DodgeCheck").visible = DEBUG_is_showing_dodging
 		if DEBUG_is_showing_dodging:
 			print("\t\t\tDEBUG_Show_Dodging is now ON")
 		else:
@@ -87,13 +88,20 @@ func initialize_score_ui() -> void:
 	%PlayerScore.text = str(player_score)
 	%EnemyScore.text = str(enemy_score)
 
+signal finish_await
+func _on_await_timeout() -> void:
+	finish_await.emit()
+func _on_main_menu_visibility_changed() -> void:
+	finish_await.emit()
+
 ## first vector entry is width, second is height
 const MAZE_SIZE: Vector2i = Vector2i(20, 12)
 var maze_bottom_corner: Vector2i = Vector2i.ZERO
 func create_maze_rectangle() -> void:
 	for row: int in range(0, MAZE_SIZE.y):
 		for column: int in range(0, MAZE_SIZE.x):
-			await get_tree().create_timer(WAIT_TIME).timeout
+			$Timers/Await.start()
+			await finish_await
 			$Sounds/DimensionsGenerationNoise.play()
 			var selected_cell: Vector2i = Vector2i(column, row)
 			$Map/Ground.set_cell(selected_cell, 0, Vector2i(0, 0), 1)
@@ -104,7 +112,6 @@ func create_maze_rectangle() -> void:
 			create_maze_visual_wall(selected_cell, 3)
 	dimensions_finished.emit()
 
-var WAIT_TIME: float = 0.01
 var maze_cells: Array[Vector2i] = []
 #func carve_maze_rectangle() -> void:
 	#var effective_vertical_margins: Array[Vector2i] = []
@@ -294,7 +301,8 @@ func generate_maze_with_randomized_prim() -> void:
 	var selected_frontier_cell_index: int
 	#var i: int = 0
 	while frontier_cells.size() != 0:
-		await get_tree().create_timer(WAIT_TIME).timeout
+		$Timers/Await.start()
+		await finish_await
 		$Sounds/MazeGenerationNoise.play()
 		if SEEDED_RNG.randi_range(0, 2) == 0:
 			selected_frontier_cell_index = 0
@@ -781,6 +789,6 @@ func reset() -> void:
 	for enemy: Node in $Enemies.get_children():
 		enemy.queue_free()
 
+@onready var ORIGIN_NODE: Node = get_parent().get_parent()
 func _on_next_round_delay_timeout() -> void:
-	reset()
-	get_parent().play()
+	ORIGIN_NODE.play()

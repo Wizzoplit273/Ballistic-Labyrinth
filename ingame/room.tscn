@@ -1,0 +1,373 @@
+[gd_scene format=3 uid="uid://bsh1a6x5mcckx"]
+
+[ext_resource type="Script" uid="uid://byehuv55tv13h" path="res://ingame/room.gd" id="1_rp5i7"]
+[ext_resource type="AudioStream" uid="uid://dhoxj0irluo7u" path="res://ingame/tiles/MAZE_GENERATION_glitch-fx-transitions-10-311812.mp3" id="2_qj304"]
+[ext_resource type="AudioStream" uid="uid://cy22uropw1uaf" path="res://ingame/entities/SHOOT_NORMAL_toy-gun-364850.mp3" id="3_hqbxh"]
+[ext_resource type="TileSet" uid="uid://ddrdyvjlplhow" path="res://ingame/tiles/base_tileset.tres" id="4_ogvd8"]
+[ext_resource type="TileSet" uid="uid://c4vwq4xoys05c" path="res://ingame/tiles/wall_tileset.tres" id="5_17rhd"]
+[ext_resource type="PhysicsMaterial" uid="uid://dwflcy1oyadf7" path="res://ingame/tiles/maze_wall_physics_material.tres" id="6_38y6w"]
+[ext_resource type="TileSet" uid="uid://dfsuj2j7xhgpg" path="res://ingame/tiles/navigation_tileset.tres" id="7_vsf7s"]
+[ext_resource type="PackedScene" uid="uid://dap0ih14qy4pi" path="res://ingame/entities/player/player.tscn" id="8_8fupj"]
+
+[sub_resource type="Gradient" id="Gradient_uasfe"]
+colors = PackedColorArray(0.27387288, 0.2738727, 0.27387273, 1, 0.18359044, 0.18359044, 0.18359044, 1)
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_1iybg"]
+noise_type = 2
+frequency = 0.05
+domain_warp_enabled = true
+domain_warp_type = 2
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_15ocg"]
+width = 100
+height = 100
+generate_mipmaps = false
+noise = SubResource("FastNoiseLite_1iybg")
+color_ramp = SubResource("Gradient_uasfe")
+seamless = true
+seamless_blend_skirt = 1.0
+
+[sub_resource type="Gradient" id="Gradient_qx50x"]
+offsets = PackedFloat32Array(0, 0.30722892, 0.5301205, 0.77710843, 1)
+colors = PackedColorArray(0.72464263, 0.72464263, 0.72464246, 0, 0.43134022, 0.43134025, 0.43134025, 0.6431373, 0.69965345, 0.6996535, 0.69965315, 0, 0.27752784, 0.2775277, 0.27752772, 0.7411765, 1, 1, 1, 0)
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_m0p68"]
+frequency = 0.03
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_6g7ql"]
+width = 100
+height = 100
+generate_mipmaps = false
+noise = SubResource("FastNoiseLite_m0p68")
+color_ramp = SubResource("Gradient_qx50x")
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_qmdpg"]
+size = Vector2(1, 1)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_wosq1"]
+size = Vector2(1, 1)
+
+[sub_resource type="LabelSettings" id="LabelSettings_1iybg"]
+shadow_size = 15
+shadow_color = Color(0, 0, 0, 1)
+shadow_offset = Vector2(0, 0)
+
+[sub_resource type="LabelSettings" id="LabelSettings_15ocg"]
+shadow_size = 15
+shadow_color = Color(0, 0, 0, 1)
+shadow_offset = Vector2(0, 0)
+
+[sub_resource type="LabelSettings" id="LabelSettings_kclq5"]
+font_size = 100
+shadow_size = 15
+shadow_color = Color(0, 0, 0, 1)
+shadow_offset = Vector2(0, 0)
+
+[sub_resource type="LabelSettings" id="LabelSettings_bsfgd"]
+shadow_size = 15
+shadow_color = Color(0, 0, 0, 1)
+shadow_offset = Vector2(0, 0)
+
+[sub_resource type="LabelSettings" id="LabelSettings_kgy77"]
+shadow_size = 15
+shadow_color = Color(0, 0, 0, 1)
+shadow_offset = Vector2(0, 0)
+
+[sub_resource type="LabelSettings" id="LabelSettings_qx50x"]
+font_size = 20
+
+[node name="Ingame" type="Node2D" unique_id=894949870]
+process_mode = 4
+script = ExtResource("1_rp5i7")
+metadata/_edit_lock_ = true
+
+[node name="Timers" type="Node" parent="." unique_id=452980816]
+
+[node name="Await" type="Timer" parent="Timers" unique_id=780148569]
+wait_time = 0.00999999999999999
+one_shot = true
+
+[node name="CrateSpawnDelay" type="Timer" parent="Timers" unique_id=108254139]
+wait_time = 8.0
+
+[node name="NextRoundDelay" type="Timer" parent="Timers" unique_id=1455442209]
+process_mode = 3
+wait_time = 3.0
+one_shot = true
+
+[node name="DeathDelay" type="Timer" parent="Timers" unique_id=469778061]
+wait_time = 3.0
+one_shot = true
+
+[node name="Sounds" type="Node" parent="." unique_id=774031366]
+
+[node name="NextRoundNoise" type="AudioStreamPlayer" parent="Sounds" unique_id=962319971]
+process_mode = 3
+stream = ExtResource("2_qj304")
+volume_db = -4.0
+pitch_scale = 0.2
+
+[node name="DeathNoise" type="AudioStreamPlayer" parent="Sounds" unique_id=861186]
+stream = ExtResource("3_hqbxh")
+volume_db = -4.0
+pitch_scale = 0.2
+max_polyphony = 5
+
+[node name="NoAmmoNoise" type="AudioStreamPlayer" parent="Sounds" unique_id=1913124328]
+stream = ExtResource("2_qj304")
+volume_db = -14.0
+pitch_scale = 7.0
+
+[node name="CrateSpawnNoise" type="AudioStreamPlayer" parent="Sounds" unique_id=116450893]
+stream = ExtResource("2_qj304")
+volume_db = -7.0
+pitch_scale = 0.65
+
+[node name="TrapPlaceNoise" type="AudioStreamPlayer" parent="Sounds" unique_id=1001089527]
+stream = ExtResource("3_hqbxh")
+volume_db = -5.0
+pitch_scale = 1.5
+
+[node name="RocketShootNoise" type="AudioStreamPlayer" parent="Sounds" unique_id=1891990658]
+stream = ExtResource("3_hqbxh")
+pitch_scale = 0.4
+
+[node name="LaserShootNoise" type="AudioStreamPlayer" parent="Sounds" unique_id=1905707717]
+stream = ExtResource("2_qj304")
+pitch_scale = 0.7
+
+[node name="NormalShootNoise" type="AudioStreamPlayer" parent="Sounds" unique_id=2072726849]
+stream = ExtResource("3_hqbxh")
+volume_db = -7.0
+pitch_scale = 0.65
+
+[node name="WallRemoveNoise" type="AudioStreamPlayer" parent="Sounds" unique_id=1371332677]
+stream = ExtResource("2_qj304")
+volume_db = -10.0
+pitch_scale = 0.4
+max_polyphony = 60
+
+[node name="MazeGenerationNoise" type="AudioStreamPlayer" parent="Sounds" unique_id=1303161301]
+stream = ExtResource("2_qj304")
+volume_db = -22.0
+pitch_scale = 0.8
+max_polyphony = 10
+
+[node name="TerrainGenerationNoise" type="AudioStreamPlayer" parent="Sounds" unique_id=1773927033]
+stream = ExtResource("3_hqbxh")
+volume_db = -15.0
+pitch_scale = 0.1
+max_polyphony = 20
+
+[node name="DoubleIntervalNoise" type="AudioStreamPlayer" parent="Sounds" unique_id=1239618057]
+stream = ExtResource("2_qj304")
+volume_db = -20.0
+pitch_scale = 1.1
+max_polyphony = 10
+
+[node name="SingleIntervalNoise" type="AudioStreamPlayer" parent="Sounds" unique_id=1272507861]
+stream = ExtResource("2_qj304")
+volume_db = -20.0
+max_polyphony = 10
+
+[node name="DimensionsGenerationNoise" type="AudioStreamPlayer" parent="Sounds" unique_id=192410137]
+stream = ExtResource("2_qj304")
+volume_db = -28.0
+pitch_scale = 0.1
+max_polyphony = 80
+
+[node name="Camera" type="Camera2D" parent="." unique_id=1791960745]
+zoom = Vector2(0.65, 0.65)
+metadata/_edit_lock_ = true
+
+[node name="OutsideMaze" type="Sprite2D" parent="Camera" unique_id=952029627]
+scale = Vector2(50, 50)
+texture = SubResource("NoiseTexture2D_15ocg")
+metadata/_edit_lock_ = true
+
+[node name="Map" type="Node2D" parent="." unique_id=1007293405]
+metadata/_edit_lock_ = true
+
+[node name="Ground" type="TileMapLayer" parent="Map" unique_id=1232731719]
+scale = Vector2(8, 8)
+tile_set = ExtResource("4_ogvd8")
+metadata/_edit_lock_ = true
+
+[node name="GroundNoise" type="Sprite2D" parent="Map" unique_id=327495193]
+scale = Vector2(28.1, 20)
+texture = SubResource("NoiseTexture2D_6g7ql")
+metadata/_edit_lock_ = true
+
+[node name="VerticalIntervals" type="TileMapLayer" parent="Map" unique_id=1578016]
+scale = Vector2(8, 8)
+tile_set = ExtResource("4_ogvd8")
+metadata/_edit_lock_ = true
+
+[node name="HorizontalIntervals" type="TileMapLayer" parent="Map" unique_id=1318905641]
+scale = Vector2(8, 8)
+tile_set = ExtResource("4_ogvd8")
+metadata/_edit_lock_ = true
+
+[node name="Walls" type="TileMapLayer" parent="Map" unique_id=1874828001]
+position = Vector2(0, -32)
+scale = Vector2(4, 4)
+tile_set = ExtResource("5_17rhd")
+metadata/_edit_lock_ = true
+
+[node name="Edges" type="Node2D" parent="Map" unique_id=1192725929]
+scale = Vector2(8, 8)
+metadata/_edit_lock_ = true
+
+[node name="RightEdgeWall" type="StaticBody2D" parent="Map/Edges" unique_id=69272316]
+unique_name_in_owner = true
+physics_material_override = ExtResource("6_38y6w")
+metadata/_edit_lock_ = true
+
+[node name="Rectangle" type="CollisionShape2D" parent="Map/Edges/RightEdgeWall" unique_id=293882795]
+shape = SubResource("RectangleShape2D_qmdpg")
+metadata/_edit_lock_ = true
+
+[node name="DownEdgeWall" type="StaticBody2D" parent="Map/Edges" unique_id=543350289]
+unique_name_in_owner = true
+physics_material_override = ExtResource("6_38y6w")
+metadata/_edit_lock_ = true
+
+[node name="Rectangle" type="CollisionShape2D" parent="Map/Edges/DownEdgeWall" unique_id=2118932401]
+shape = SubResource("RectangleShape2D_wosq1")
+metadata/_edit_lock_ = true
+
+[node name="LeftEdgeWall" type="StaticBody2D" parent="Map/Edges" unique_id=629337818]
+unique_name_in_owner = true
+physics_material_override = ExtResource("6_38y6w")
+metadata/_edit_lock_ = true
+
+[node name="Rectangle" type="CollisionShape2D" parent="Map/Edges/LeftEdgeWall" unique_id=488360288]
+shape = SubResource("RectangleShape2D_wosq1")
+metadata/_edit_lock_ = true
+
+[node name="UpEdgeWall" type="StaticBody2D" parent="Map/Edges" unique_id=1874393869]
+unique_name_in_owner = true
+physics_material_override = ExtResource("6_38y6w")
+metadata/_edit_lock_ = true
+
+[node name="Rectangle" type="CollisionShape2D" parent="Map/Edges/UpEdgeWall" unique_id=1259956618]
+shape = SubResource("RectangleShape2D_wosq1")
+metadata/_edit_lock_ = true
+
+[node name="PhysicsWalls" type="Node2D" parent="Map" unique_id=253137387]
+scale = Vector2(8, 8)
+metadata/_edit_lock_ = true
+
+[node name="Navigation" type="TileMapLayer" parent="Map" unique_id=1805826164]
+visible = false
+scale = Vector2(8, 8)
+tile_set = ExtResource("7_vsf7s")
+metadata/_edit_lock_ = true
+
+[node name="Crates" type="Node2D" parent="." unique_id=294075892]
+metadata/_edit_lock_ = true
+
+[node name="Player" parent="." unique_id=757195374 instance=ExtResource("8_8fupj")]
+visible = false
+
+[node name="Bullets" type="Node2D" parent="." unique_id=933019641]
+metadata/_edit_lock_ = true
+
+[node name="Enemies" type="Node2D" parent="." unique_id=1992723325]
+metadata/_edit_lock_ = true
+
+[node name="ScoresLayer" type="CanvasLayer" parent="." unique_id=1557918758]
+visible = false
+
+[node name="ScoresContainer" type="HBoxContainer" parent="ScoresLayer" unique_id=1058412826]
+custom_minimum_size = Vector2(500, 0)
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = -20.0
+offset_bottom = 50.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="EnemyScoreContainer" type="VBoxContainer" parent="ScoresLayer/ScoresContainer" unique_id=1194805346]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="EnemyTitle" type="Label" parent="ScoresLayer/ScoresContainer/EnemyScoreContainer" unique_id=439933839]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Enemies"
+label_settings = SubResource("LabelSettings_1iybg")
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="EnemyScore" type="Label" parent="ScoresLayer/ScoresContainer/EnemyScoreContainer" unique_id=1795896024]
+unique_name_in_owner = true
+layout_mode = 2
+text = "0"
+label_settings = SubResource("LabelSettings_15ocg")
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="DrawContainer" type="VBoxContainer" parent="ScoresLayer/ScoresContainer" unique_id=42889363]
+custom_minimum_size = Vector2(1775, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="DrawTitle" type="Label" parent="ScoresLayer/ScoresContainer/DrawContainer" unique_id=1072476903]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+text = "DRAW"
+label_settings = SubResource("LabelSettings_kclq5")
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="PlayerScoreContainer" type="VBoxContainer" parent="ScoresLayer/ScoresContainer" unique_id=1786767130]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="PlayerTitle" type="Label" parent="ScoresLayer/ScoresContainer/PlayerScoreContainer" unique_id=1249151254]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Player"
+label_settings = SubResource("LabelSettings_bsfgd")
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="PlayerScore" type="Label" parent="ScoresLayer/ScoresContainer/PlayerScoreContainer" unique_id=1586210240]
+unique_name_in_owner = true
+layout_mode = 2
+text = "0"
+label_settings = SubResource("LabelSettings_kgy77")
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="RoomHashLabel" type="Label" parent="ScoresLayer" unique_id=1464919366]
+offset_right = 162.0
+offset_bottom = 42.0
+text = "seed: place"
+label_settings = SubResource("LabelSettings_qx50x")
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_lock_ = true
+
+[connection signal="timeout" from="Timers/Await" to="." method="_on_await_timeout"]
+[connection signal="timeout" from="Timers/CrateSpawnDelay" to="." method="_on_crate_spawn_delay_timeout"]
+[connection signal="timeout" from="Timers/NextRoundDelay" to="." method="_on_next_round_delay_timeout"]
+[connection signal="timeout" from="Timers/DeathDelay" to="." method="_on_death_delay_timeout"]
+[connection signal="level_die" from="Player" to="." method="_on_player_level_die"]
+[connection signal="shoot" from="Player" to="." method="_on_player_shoot"]
