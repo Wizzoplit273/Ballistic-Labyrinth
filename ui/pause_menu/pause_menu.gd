@@ -1,6 +1,7 @@
 extends CanvasLayer
 
-@onready var NEXT_ROUND_TIMER: Timer = $"../Ingame/Timers/NextRoundDelay"
+## determined by loaded room
+var NEXT_ROUND_TIMER: Timer
 
 func _input(_event: InputEvent) -> void:
 	if Input.is_action_just_pressed("Pause"):
