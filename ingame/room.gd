@@ -587,7 +587,7 @@ func place_player_on_map() -> void:
 	#$Player.modulate = player_color
 	alive_players_count = 1
 
-const ENEMY_LINEAR_SPEED_DEVIATION: float = 50.0
+const ENEMY_LINEAR_SPEED_DEVIATION: float = 30.0
 const ENEMY_ANGULAR_SPEED_DEVIATION: float = 100.0
 const ENEMY_MAX_BULLET_DEVIATION: int = 3
 const ENEMY_FLANK_RESET_DEVIATION: float = 100.0
@@ -596,9 +596,9 @@ const ENEMY_FLANK_MIN_INTERVAL_DEVIATION: float = 100.0
 const ENEMY_FLANK_MAX_INTERVAL_DEVIATION: float = 200.0
 const ENEMY_FRONT_DISTANCE_DEVIATION: float = 200.0
 func set_enemy_personality(enemy: RigidBody2D) -> void:
-	enemy.get_node("Rest/Image").modulate.r += 0.1*randf_range(-1.0, 1.0)
-	enemy.get_node("Rest/Image").modulate.g += 0.1*randf_range(-3.0, 3.0)
-	enemy.get_node("Rest/Image").modulate.b += 0.1*randf_range(-3.0, 3.0)
+	enemy.get_node("Rest/Image").modulate.r += 0.02*randf_range(-1.0, 1.0)
+	enemy.get_node("Rest/Image").modulate.g += 0.02*randf_range(-1.0, 1.0)
+	enemy.get_node("Rest/Image").modulate.b += 0.02*randf_range(-1.0, 1.0)
 	enemy.LINEAR_SPEED += randf_range(-ENEMY_LINEAR_SPEED_DEVIATION, ENEMY_LINEAR_SPEED_DEVIATION)
 	enemy.ANGULAR_SPEED += randf_range(-ENEMY_ANGULAR_SPEED_DEVIATION, ENEMY_ANGULAR_SPEED_DEVIATION)
 	enemy.MAX_BULLET_COUNT += randi_range(-ENEMY_MAX_BULLET_DEVIATION, ENEMY_MAX_BULLET_DEVIATION)
@@ -644,6 +644,23 @@ func place_enemies_on_map() -> void:
 			enemy_instance.process_mode = Node.PROCESS_MODE_INHERIT
 			#enemy_instance.get_node("Rest/Image").scale += Vector2.ONE * SEEDED_RNG.randf_range(-0.1, 0.1)
 		alive_enemies_count = enemy_count
+	set_random_enemy_peer_vulnerability(SEEDED_RNG.randi_range(1, 2))
+
+func set_random_enemy_peer_vulnerability(count: int) -> void:
+	var index: int
+	var enemy: Node
+	var invincible_count: int = 0
+	while count > 0:
+		index = SEEDED_RNG.randi_range(0, $Enemies.get_child_count() - 1)
+		enemy = $Enemies.get_child(index)
+		while not enemy.is_peer_invincible and invincible_count < $Enemies.get_child_count():
+			invincible_count += 1
+			index += 1
+			if index >= $Enemies.get_child_count(): index = 0
+			enemy = $Enemies.get_child(index)
+		if invincible_count >= $Enemies.get_child_count(): return
+		enemy.switch_peer_invincibility()
+		count -= 1
 
 const NEW_BULLET_PATH: String = "res://ingame/entities/projectiles/bullet.tscn"
 const REGULAR_SPAWN_OFFSET: float = 30.0
@@ -747,7 +764,8 @@ func _on_player_level_die() -> void:
 	$Sounds/DeathNoise.play()
 	$Timers/DeathDelay.start()
 
-func _on_enemy_level_die() -> void:
+func _on_enemy_level_die(is_peer_invincible: bool) -> void:
+	if not is_peer_invincible: set_random_enemy_peer_vulnerability(1)
 	alive_enemies_count -= 1
 	$Sounds/DeathNoise.play()
 	$Timers/DeathDelay.start()

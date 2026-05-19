@@ -28,8 +28,8 @@ seamless = true
 seamless_blend_skirt = 1.0
 
 [sub_resource type="Gradient" id="Gradient_qx50x"]
-offsets = PackedFloat32Array(0, 0.30722892, 0.5301205, 0.77710843, 1)
-colors = PackedColorArray(0.72464263, 0.72464263, 0.72464246, 0, 0.43134022, 0.43134025, 0.43134025, 0.6431373, 0.69965345, 0.6996535, 0.69965315, 0, 0.27752784, 0.2775277, 0.27752772, 0.7411765, 1, 1, 1, 0)
+offsets = PackedFloat32Array(0, 0.27710843, 0.30722892, 0.5301205, 0.7590361, 1)
+colors = PackedColorArray(0.72464263, 0.72464263, 0.72464246, 0, 0.47058824, 0.47058824, 0.47058824, 0.15686275, 0.43134022, 0.43134025, 0.43134025, 0.6431373, 0.69965345, 0.6996535, 0.69965315, 0, 0.2784314, 0.2784314, 0.2784314, 0.35686275, 1, 1, 1, 0)
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_m0p68"]
 frequency = 0.03
@@ -76,7 +76,7 @@ shadow_offset = Vector2(0, 0)
 [sub_resource type="LabelSettings" id="LabelSettings_qx50x"]
 font_size = 20
 
-[node name="Ingame" type="Node2D" unique_id=894949870]
+[node name="Room" type="Node2D" unique_id=894949870]
 process_mode = 4
 script = ExtResource("1_rp5i7")
 metadata/_edit_lock_ = true
@@ -194,7 +194,7 @@ tile_set = ExtResource("4_ogvd8")
 metadata/_edit_lock_ = true
 
 [node name="GroundNoise" type="Sprite2D" parent="Map" unique_id=327495193]
-scale = Vector2(28.1, 20)
+scale = Vector2(25.5, 15.4)
 texture = SubResource("NoiseTexture2D_6g7ql")
 metadata/_edit_lock_ = true
 

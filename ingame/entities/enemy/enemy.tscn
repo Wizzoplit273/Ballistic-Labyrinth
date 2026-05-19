@@ -9,7 +9,7 @@ friction = 0.0
 
 [sub_resource type="Gradient" id="Gradient_1iybg"]
 offsets = PackedFloat32Array(0.279221, 0.714286, 0.915584)
-colors = PackedColorArray(0.941176, 0, 0, 1, 0.60842, 0.0817648, 0.282783, 1, 0.662632, 0.149411, 0.181078, 1)
+colors = PackedColorArray(0.5463372, 0.5307458, 0.5304909, 1, 0.34363475, 0.33553147, 0.32447162, 1, 0.3688306, 0.37067187, 0.38814846, 1)
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_15ocg"]
 seed = 5
@@ -102,6 +102,7 @@ process_material = SubResource("ParticleProcessMaterial_3vewc")
 metadata/_edit_lock_ = true
 
 [node name="Hitbox" type="CollisionShape2D" parent="." unique_id=1754612090]
+visible = false
 scale = Vector2(2.5, 2.5)
 shape = SubResource("RectangleShape2D_2w6dw")
 metadata/_edit_lock_ = true
@@ -111,12 +112,13 @@ scale = Vector2(3, 3)
 metadata/_edit_lock_ = true
 
 [node name="Image" type="Sprite2D" parent="Rest" unique_id=307403727]
-modulate = Color(0.985421, 0, 0.284938, 1)
+modulate = Color(0.6525275, 0.6361835, 0.6525456, 1)
 scale = Vector2(0.8333334, 0.8333334)
 texture = ExtResource("2_ado2y")
 metadata/_edit_lock_ = true
 
 [node name="BulletDetectionArea" type="Area2D" parent="Rest" unique_id=1838676578]
+visible = false
 scale = Vector2(0.2, 0.2)
 collision_layer = 8
 collision_mask = 4
