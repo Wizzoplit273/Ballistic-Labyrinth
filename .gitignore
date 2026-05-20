@@ -2,3 +2,7 @@
 .import/
 export_presets.cfg
 build/
+
+# Local-only AI assistant (Cursor + Godot MCP) — not published to GitHub
+.cursor/
+addons/godot_mcp/

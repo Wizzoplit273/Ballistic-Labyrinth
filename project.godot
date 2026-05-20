@@ -28,9 +28,14 @@ window/size/viewport_height=1080
 window/stretch/mode="viewport"
 window/vsync/vsync_mode=0
 
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/godot_mcp/plugin.cfg")
+
 [file_customization]
 
 folder_colors={
+"res://addons/": "purple",
 "res://ingame/": "blue",
 "res://ingame/entities/": "orange",
 "res://ingame/entities/enemy/": "red",
