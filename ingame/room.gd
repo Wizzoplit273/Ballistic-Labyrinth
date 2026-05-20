@@ -55,9 +55,7 @@ func set_seeded_rng(string: String) -> void:
 	if string != "": SEEDED_RNG.seed = string.hash()
 	$ScoresLayer/RoomHashLabel.text = "seed: " + str(SEEDED_RNG.state)
 
-const SCROLL_VALUE: float = 1.1
-func _process(_delta: float) -> void:
-	if is_queued_for_deletion(): return
+func manage_debug_options() -> void:
 	if OS.is_debug_build() and Input.is_action_just_pressed("DEBUG_Toggle_Maze_Generation"):
 		DEBUG_is_checking_maze = not DEBUG_is_checking_maze
 		ORIGIN_NODE.get_node("DEBUG_Screen/Frame/DEBUG_MazeCheck").visible = DEBUG_is_checking_maze
@@ -74,7 +72,11 @@ func _process(_delta: float) -> void:
 			print("\t\t\tDEBUG_Show_Dodging is now ON")
 		else:
 			print("\t\t\tDEBUG_Show_Dodging is now OFF")
-	#if is_finished_loading: $Player/Camera.position = $Player.position
+
+const SCROLL_VALUE: float = 1.1
+func _process(_delta: float) -> void:
+	if is_queued_for_deletion(): return
+	manage_debug_options()
 	for instance: RigidBody2D in $Enemies.get_children():
 		instance.DEBUG_is_showing_dodging = DEBUG_is_showing_dodging
 		var player_cell: Vector2i = $Map/Ground.local_to_map($Map/Ground.to_local($Player.position))
@@ -453,25 +455,25 @@ func new_collision_shape() -> CollisionShape2D:
 	physics_shape_ref.shape = shape_ref
 	return physics_shape_ref
 
+func print_debug_log(condition: bool, message: String) -> void:
+	if not OS.is_debug_build(): return
+	if not condition: return
+	print(message)
+
 func implement_maze_horizontal_walls_physics() -> void:
 	var selected_cell: Vector2i
 	var is_extending_wall: bool
 	var physics_wall_ins: StaticBody2D
-	if OS.is_debug_build() and DEBUG_is_checking_maze:
-		print("\t\t\t\t\t\t\t\t\t\timplementing maze horizontal walls physics")
+	print_debug_log(DEBUG_is_checking_maze, "\t\t\t\t\t\t\t\t\t\timplementing maze horizontal walls physics")
 	for row: int in range(0, MAZE_SIZE.y - 1):
-		if OS.is_debug_build() and DEBUG_is_checking_maze:
-			print("on row: ", row)
+		print_debug_log(DEBUG_is_checking_maze, "on row: " + str(row))
 		is_extending_wall = false
 		for column: int in range(0, MAZE_SIZE.x):
-			if OS.is_debug_build() and DEBUG_is_checking_maze:
-				print("\ton column: ", column)
+			print_debug_log(DEBUG_is_checking_maze, "on column: " + str(column))
 			selected_cell = Vector2i(column, row)
-			if OS.is_debug_build() and DEBUG_is_checking_maze:
-				print("\tselected cell: ", selected_cell)
+			print_debug_log(DEBUG_is_checking_maze, "selected cell: " + str(selected_cell))
 			if maze_visual_wall_exists(selected_cell, 1) and not is_extending_wall:
-				if OS.is_debug_build() and DEBUG_is_checking_maze:
-					print("\t\tvisual wall exists and can initiate!")
+				print_debug_log(DEBUG_is_checking_maze, "\t\tvisual wall exists and can initiate!")
 				physics_wall_ins = StaticBody2D.new()
 				var collision_shape: CollisionShape2D = new_collision_shape()
 				physics_wall_ins.add_child(collision_shape)
@@ -482,33 +484,26 @@ func implement_maze_horizontal_walls_physics() -> void:
 				is_extending_wall = true
 				continue
 			if maze_visual_wall_exists(selected_cell, 1) and is_extending_wall:
-				if OS.is_debug_build() and DEBUG_is_checking_maze:
-					print("\t\tvisual wall exists and can extend!")
+				print_debug_log(DEBUG_is_checking_maze, "\t\tvisual wall exists and can extend!")
 				modify_physics_wall_length(physics_wall_ins, 1, 3)
 			if not maze_visual_wall_exists(selected_cell, 1):
-				if OS.is_debug_build() and DEBUG_is_checking_maze:
-					print("\t\t\tVISUAL WALL DOESN'T EXIST HERE...")
+				print_debug_log(DEBUG_is_checking_maze, "\t\t\tVISUAL WALL DOESN'T EXIST HERE...")
 				is_extending_wall = false
 
 func implement_maze_vertical_walls_physics() -> void:
 	var selected_cell: Vector2i
 	var is_extending_wall: bool
 	var physics_wall_ins: StaticBody2D
-	if OS.is_debug_build() and DEBUG_is_checking_maze:
-		print("\t\t\t\t\t\t\t\t\t\timplementing maze vertical walls physics")
+	print_debug_log(DEBUG_is_checking_maze, "\t\t\t\t\t\t\t\t\t\timplementing maze vertical walls physics")
 	for column: int in range(0, MAZE_SIZE.x - 1):
-		if OS.is_debug_build() and DEBUG_is_checking_maze:
-			print("on column: ", column)
+		print_debug_log(DEBUG_is_checking_maze, "on column: " + str(column))
 		is_extending_wall = false
 		for row: int in range(0, MAZE_SIZE.y):
-			if OS.is_debug_build() and DEBUG_is_checking_maze:
-				print("\ton row: ", row)
+			print_debug_log(DEBUG_is_checking_maze, "on row: " + str(row))
 			selected_cell = Vector2i(column, row)
-			if OS.is_debug_build() and DEBUG_is_checking_maze:
-				print("\tselected cell: ", selected_cell)
+			print_debug_log(DEBUG_is_checking_maze, "selected cell: " + str(selected_cell))
 			if maze_visual_wall_exists(selected_cell, 0) and not is_extending_wall:
-				if OS.is_debug_build() and DEBUG_is_checking_maze:
-					print("\t\tvisual wall exists and can initiate!")
+				print_debug_log(DEBUG_is_checking_maze, "\t\tvisual wall exists and can initiate!")
 				physics_wall_ins = StaticBody2D.new()
 				var collision_shape: CollisionShape2D = new_collision_shape()
 				physics_wall_ins.add_child(collision_shape)
@@ -519,12 +514,10 @@ func implement_maze_vertical_walls_physics() -> void:
 				is_extending_wall = true
 				continue
 			if maze_visual_wall_exists(selected_cell, 0) and is_extending_wall:
-				if OS.is_debug_build() and DEBUG_is_checking_maze:
-					print("\t\tvisual wall exists and can extend!")
+				print_debug_log(DEBUG_is_checking_maze, "\t\tvisual wall exists and can extend!")
 				modify_physics_wall_length(physics_wall_ins, 1, 0)
 			if not maze_visual_wall_exists(selected_cell, 0):
-				if OS.is_debug_build() and DEBUG_is_checking_maze:
-					print("\t\t\tVISUAL WALL DOESN'T EXIST HERE...")
+				print_debug_log(DEBUG_is_checking_maze, "\t\t\tVISUAL WALL DOESN'T EXIST HERE...")
 				is_extending_wall = false
 
 # this function presupposes that at every maze cell has at least one accessible neighbour
