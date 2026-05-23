@@ -59,42 +59,27 @@ func point_to_player_if_seen() -> void:
 		else: is_patrol_set = false
 		return
 
-var FLANK_RESET: float = 1100.0
-var FLANK_RADIUS: float = 300.0
-var FLANK_MIN_INTERVAL: float = 100.0
-var FLANK_MAX_INTERVAL: float = 400.0
-var FLANK_FRONT_DISTANCE: float = 400.0
-const DIRECTION_DEVIATION: float = PI/180*10
-var is_patrol_set: bool = false
-var is_reversing: bool = false
-func _physics_process(_delta: float) -> void:
-	if not visible: return
-	linear_velocity = Vector2.ZERO
-	angular_velocity = 0.0
+func configure_patrol() -> void:
 	if position.distance_to(player_node.global_position) >= FLANK_RESET:
 		$NavigationAgent.target_position = player_node.global_position
 		is_patrol_set = false
 	elif position.distance_to(player_node.global_position) >= FLANK_RADIUS:
-		if not is_patrol_set:
-			var random_x: float = randf_range(FLANK_MIN_INTERVAL, FLANK_MAX_INTERVAL)
-			random_x *= sign(randi_range(0,1))*2-1
-			var random_y: float = randf_range(FLANK_MIN_INTERVAL, FLANK_MAX_INTERVAL)
-			random_y *= sign(randi_range(0,1))*2-1
-			var random_offset: Vector2 = Vector2(random_x, random_y)
-			$NavigationAgent.target_position = player_node.global_position + random_offset
-			if player_node.linear_velocity.length() >= 0.1:
-				var offset: Vector2 = Vector2(FLANK_FRONT_DISTANCE, 0)
-				$NavigationAgent.target_position += offset * player_node.linear_velocity.angle()
-			is_patrol_set = true
+		if is_patrol_set: return ## ensures that this block only executes once when it detects a change in radius
+		var random_x: float = randf_range(FLANK_MIN_INTERVAL, FLANK_MAX_INTERVAL)
+		random_x *= sign(randi_range(0,1))*2-1
+		var random_y: float = randf_range(FLANK_MIN_INTERVAL, FLANK_MAX_INTERVAL)
+		random_y *= sign(randi_range(0,1))*2-1
+		var random_offset: Vector2 = Vector2(random_x, random_y)
+		$NavigationAgent.target_position = player_node.global_position + random_offset
+		if player_node.linear_velocity.length() >= 0.1:
+			var offset: Vector2 = Vector2(FLANK_FRONT_DISTANCE, 0)
+			$NavigationAgent.target_position += offset * player_node.linear_velocity.angle()
+		is_patrol_set = true
 	else:
 		$NavigationAgent.target_position = player_node.global_position
 		is_patrol_set = false
-	point_to_player_if_seen()
-	if player_node.get_node("Rest").visible: $NavigationAgent.process_mode = Node.PROCESS_MODE_INHERIT
-	else: $NavigationAgent.process_mode = Node.PROCESS_MODE_DISABLED
-	$Rest/DEBUGLeftBulletDot.visible = false
-	$Rest/DEBUGRightBulletDot.visible = false
-	check_nearby_bullets()
+
+func configure_reversing() -> void:
 	var is_velocity_stuck: bool = (previous_position - position).length() <= MAX_STUCK_POSITION_CHANGE
 	var is_angle_stuck: bool = abs(previous_rotation- rotation) <= MAX_STUCK_ROTATION_CHANGE
 	var is_stuck: bool = is_velocity_stuck and is_angle_stuck
@@ -110,6 +95,27 @@ func _physics_process(_delta: float) -> void:
 	if is_dodging_bullets:
 		is_reversing = false
 		$WallStuckCooldown.stop()
+
+var FLANK_RESET: float = 1100.0
+var FLANK_RADIUS: float = 300.0
+var FLANK_MIN_INTERVAL: float = 100.0
+var FLANK_MAX_INTERVAL: float = 400.0
+var FLANK_FRONT_DISTANCE: float = 400.0
+const DIRECTION_DEVIATION: float = PI/180*10
+var is_patrol_set: bool = false
+var is_reversing: bool = false
+func _physics_process(_delta: float) -> void:
+	if not visible: return
+	linear_velocity = Vector2.ZERO
+	angular_velocity = 0.0
+	configure_patrol()
+	point_to_player_if_seen()
+	if player_node.get_node("Rest").visible: $NavigationAgent.process_mode = Node.PROCESS_MODE_INHERIT
+	else: $NavigationAgent.process_mode = Node.PROCESS_MODE_DISABLED
+	$Rest/DEBUGLeftBulletDot.visible = false
+	$Rest/DEBUGRightBulletDot.visible = false
+	check_nearby_bullets()
+	configure_reversing()
 	if $NavigationAgent.is_target_reached() and is_adjacent_wall_to_player:
 		$NavigationAgent.target_desired_distance = 0.0
 	else: $NavigationAgent.target_desired_distance = TARGET_DESIRED_DISTANCE
