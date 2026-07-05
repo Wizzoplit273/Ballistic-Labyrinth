@@ -637,7 +637,9 @@ func place_enemies_on_map() -> void:
 			enemy_instance.process_mode = Node.PROCESS_MODE_INHERIT
 			#enemy_instance.get_node("Rest/Image").scale += Vector2.ONE * SEEDED_RNG.randf_range(-0.1, 0.1)
 		alive_enemies_count = enemy_count
-	set_random_enemy_peer_vulnerability(SEEDED_RNG.randi_range(1, 2))
+		## TEMPORARY: make everyone vulnerable
+		enemy_instance.switch_peer_invincibility()
+	# set_random_enemy_peer_vulnerability(SEEDED_RNG.randi_range(1, 2))
 
 func set_random_enemy_peer_vulnerability(count: int) -> void:
 	var index: int

@@ -14,8 +14,8 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 
 [application]
 
-config/name="Ballistic Labyrinth 1.0.3"
-config/version="1.0.3"
+config/name="Ballistic Labyrinth 1.1"
+config/version="1.1"
 run/main_scene="uid://dl53xfp6aj77b"
 config/features=PackedStringArray("4.6", "Forward Plus")
 boot_splash/image="uid://8yxuw07nmuag"
@@ -35,7 +35,6 @@ enabled=PackedStringArray("res://addons/godot_mcp/plugin.cfg")
 [file_customization]
 
 folder_colors={
-"res://addons/": "purple",
 "res://ingame/": "blue",
 "res://ingame/entities/": "orange",
 "res://ingame/entities/enemy/": "red",
