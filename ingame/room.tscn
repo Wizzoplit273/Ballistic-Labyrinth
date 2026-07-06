@@ -267,13 +267,16 @@ metadata/_edit_lock_ = true
 [node name="Crates" type="Node2D" parent="." unique_id=294075892]
 metadata/_edit_lock_ = true
 
-[node name="Player" parent="." unique_id=757195374 instance=ExtResource("8_8fupj")]
+[node name="Players" type="Node2D" parent="." unique_id=840329032]
+metadata/_edit_lock_ = true
+
+[node name="Player" parent="Players" unique_id=757195374 instance=ExtResource("8_8fupj")]
 visible = false
 
 [node name="Bullets" type="Node2D" parent="." unique_id=933019641]
 metadata/_edit_lock_ = true
 
-[node name="Enemies" type="Node2D" parent="." unique_id=1992723325]
+[node name="Bots" type="Node2D" parent="." unique_id=1992723325]
 metadata/_edit_lock_ = true
 
 [node name="ScoresLayer" type="CanvasLayer" parent="." unique_id=1557918758]
@@ -291,13 +294,13 @@ grow_vertical = 2
 alignment = 1
 metadata/_edit_lock_ = true
 
-[node name="EnemyScoreContainer" type="VBoxContainer" parent="ScoresLayer/ScoresContainer" unique_id=1194805346]
+[node name="BotScoreContainer" type="VBoxContainer" parent="ScoresLayer/ScoresContainer" unique_id=1194805346]
 layout_mode = 2
 size_flags_horizontal = 3
 alignment = 1
 metadata/_edit_lock_ = true
 
-[node name="EnemyTitle" type="Label" parent="ScoresLayer/ScoresContainer/EnemyScoreContainer" unique_id=439933839]
+[node name="BotTitle" type="Label" parent="ScoresLayer/ScoresContainer/BotScoreContainer" unique_id=439933839]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Enemies"
@@ -306,7 +309,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 metadata/_edit_lock_ = true
 
-[node name="EnemyScore" type="Label" parent="ScoresLayer/ScoresContainer/EnemyScoreContainer" unique_id=1795896024]
+[node name="BotScore" type="Label" parent="ScoresLayer/ScoresContainer/BotScoreContainer" unique_id=1795896024]
 unique_name_in_owner = true
 layout_mode = 2
 text = "0"
@@ -369,5 +372,5 @@ metadata/_edit_lock_ = true
 [connection signal="timeout" from="Timers/CrateSpawnDelay" to="." method="_on_crate_spawn_delay_timeout"]
 [connection signal="timeout" from="Timers/NextRoundDelay" to="." method="_on_next_round_delay_timeout"]
 [connection signal="timeout" from="Timers/DeathDelay" to="." method="_on_death_delay_timeout"]
-[connection signal="level_die" from="Player" to="." method="_on_player_level_die"]
-[connection signal="shoot" from="Player" to="." method="_on_player_shoot"]
+[connection signal="level_die" from="Players/Player" to="." method="_on_player_level_die"]
+[connection signal="shoot" from="Players/Player" to="." method="_on_player_shoot"]

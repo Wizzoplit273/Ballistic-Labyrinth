@@ -2,7 +2,7 @@ extends RigidBody2D
 
 ## those variables are only used outside this script, in the level scene node
 @export var BULLET_SPEED: float = 300.0
-var enemy_friendly_fire: bool = true
+var bot_friendly_fire: bool = true
 
 @export var LINEAR_SPEED: float = 200.0
 @export var ANGULAR_SPEED: float = 320.0
@@ -15,7 +15,12 @@ var enemy_friendly_fire: bool = true
 
 ## updated by the parent level scene
 var bullet_count: int = 0
-var player_node: RigidBody2D
+
+var player_parent_node: Node = null
+var bot_parent_node: Node = null
+var nearest_tank: RigidBody2D = self
+
+
 var is_adjacent_wall_to_player: bool = false
 var is_dodging_bullets: bool = false
 var DEBUG_is_showing_dodging: bool = false
@@ -50,33 +55,53 @@ const MAX_SHOOT_ANGLE_DIFFERENCE: float = 0.4
 var previous_position: Vector2 = Vector2.ZERO
 var previous_rotation: float = 0.0
 
-func point_to_player_if_seen() -> void:
+func point_to_nearest_tank_if_seen() -> void:
+	if nearest_tank == self: return
 	for ray: RayCast2D in $Rest/PlayerDetectors.get_children():
-		if ray.get_collider() != player_node: continue
-		$NavigationAgent.target_position = player_node.global_position
-		if position.distance_to(player_node.global_position) >= FLANK_RADIUS:
+		if ray.get_collider() != nearest_tank: continue
+		$NavigationAgent.target_position = nearest_tank.global_position
+		if position.distance_to(nearest_tank.global_position) >= FLANK_RADIUS:
 			is_patrol_set = true
 		else: is_patrol_set = false
 		return
 
+func determine_nearest_tank() -> void:
+	for tank: RigidBody2D in player_parent_node.get_children():
+		if tank == self: continue
+		if nearest_tank == self:
+			nearest_tank = tank
+			continue
+		if position.distance_to(tank.position) < position.distance_to(nearest_tank.position):
+			nearest_tank = tank
+	for tank: RigidBody2D in bot_parent_node.get_children():
+		if tank == self: continue
+		if nearest_tank == self:
+			nearest_tank = tank
+			continue
+		if position.distance_to(tank.position) < position.distance_to(nearest_tank.position):
+			nearest_tank = tank
+
 func configure_patrol() -> void:
-	if position.distance_to(player_node.global_position) >= FLANK_RESET:
-		$NavigationAgent.target_position = player_node.global_position
+	if nearest_tank == self:
 		is_patrol_set = false
-	elif position.distance_to(player_node.global_position) >= FLANK_RADIUS:
+		return
+	if position.distance_to(nearest_tank.global_position) >= FLANK_RESET:
+		$NavigationAgent.target_position = nearest_tank.global_position
+		is_patrol_set = false
+	elif position.distance_to(nearest_tank.global_position) >= FLANK_RADIUS:
 		if is_patrol_set: return ## ensures that this block only executes once when it detects a change in radius
 		var random_x: float = randf_range(FLANK_MIN_INTERVAL, FLANK_MAX_INTERVAL)
 		random_x *= sign(randi_range(0,1))*2-1
 		var random_y: float = randf_range(FLANK_MIN_INTERVAL, FLANK_MAX_INTERVAL)
 		random_y *= sign(randi_range(0,1))*2-1
 		var random_offset: Vector2 = Vector2(random_x, random_y)
-		$NavigationAgent.target_position = player_node.global_position + random_offset
-		if player_node.linear_velocity.length() >= 0.1:
+		$NavigationAgent.target_position = nearest_tank.global_position + random_offset
+		if nearest_tank.linear_velocity.length() >= 0.1:
 			var offset: Vector2 = Vector2(FLANK_FRONT_DISTANCE, 0)
-			$NavigationAgent.target_position += offset * player_node.linear_velocity.angle()
+			$NavigationAgent.target_position += offset * nearest_tank.linear_velocity.angle()
 		is_patrol_set = true
 	else:
-		$NavigationAgent.target_position = player_node.global_position
+		$NavigationAgent.target_position = nearest_tank.global_position
 		is_patrol_set = false
 
 func configure_reversing() -> void:
@@ -108,9 +133,10 @@ func _physics_process(_delta: float) -> void:
 	if not visible: return
 	linear_velocity = Vector2.ZERO
 	angular_velocity = 0.0
+	determine_nearest_tank()
 	configure_patrol()
-	point_to_player_if_seen()
-	if player_node.get_node("Rest").visible: $NavigationAgent.process_mode = Node.PROCESS_MODE_INHERIT
+	point_to_nearest_tank_if_seen()
+	if nearest_tank.get_node("Rest").visible: $NavigationAgent.process_mode = Node.PROCESS_MODE_INHERIT
 	else: $NavigationAgent.process_mode = Node.PROCESS_MODE_DISABLED
 	$Rest/DEBUGLeftBulletDot.visible = false
 	$Rest/DEBUGRightBulletDot.visible = false
@@ -122,10 +148,10 @@ func _physics_process(_delta: float) -> void:
 	if $NavigationAgent.is_navigation_finished() and not is_adjacent_wall_to_player and not is_dodging_bullets:
 		var was_patroling: bool = is_patrol_set
 		is_patrol_set = false
-		if not player_node.get_node("Rest").visible: return
+		if not nearest_tank.get_node("Rest").visible: return
 		var auxiliary: float = rotation
 		var direction_to_player: float
-		look_at(player_node.position)
+		look_at(nearest_tank.position)
 		direction_to_player = rotation
 		rotation = auxiliary
 		var direction_deviation: float = randf_range(-DIRECTION_DEVIATION, DIRECTION_DEVIATION)
@@ -137,10 +163,10 @@ func _physics_process(_delta: float) -> void:
 		return
 	var next_point: Vector2 = $NavigationAgent.get_next_path_position()
 	var direction: Vector2 = (next_point - global_position).normalized()
-	if player_node.get_node("Rest").visible:
+	if nearest_tank.get_node("Rest").visible:
 		rotation = lerp_angle(rotation, direction.angle(), ROTATION_INTERPOLATION_WEIGHT)
 	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
-	if player_node.get_node("Rest").visible or is_dodging_bullets: 
+	if nearest_tank.get_node("Rest").visible or is_dodging_bullets: 
 		rotation += rng.randf_range(-ANGLE_DILATION, ANGLE_DILATION)
 		linear_velocity = Vector2.RIGHT.rotated(rotation) * LINEAR_SPEED * (1 - int(is_reversing) * 2)
 	previous_position = position
@@ -160,18 +186,18 @@ func is_bullet_dangerous(bullet: RigidBody2D) -> bool:
 	if bullet.get_meta("type", "NULL") != "bullet": return false
 	if bullet.owner_node != self:
 		if is_peer_invincible: return false
-		if bullet.owner_node.get_meta("type", "NULL") == "enemy":
-			if not enemy_friendly_fire: return false
+		if bullet.owner_node.get_meta("type", "NULL") == "bot":
+			if not bot_friendly_fire: return false
 	if (previous_position - position).length() == 0.0:
 		#if not bullet.has_node("VelocityRaycast"): return false
-		var is_raycast_hitting_enemy: bool = bullet.get_node("Rest/VelocityRaycast1").get_collider() == self
-		is_raycast_hitting_enemy = is_raycast_hitting_enemy or bullet.get_node("Rest/VelocityRaycast2").get_collider() == self
-		is_raycast_hitting_enemy = is_raycast_hitting_enemy or bullet.get_node("Rest/VelocityRaycast3").get_collider() == self
-		if not is_raycast_hitting_enemy: return false
-	var distance_to_enemy: Vector2 = global_position - bullet.global_position
+		var is_raycast_hitting_bot: bool = bullet.get_node("Rest/VelocityRaycast1").get_collider() == self
+		is_raycast_hitting_bot = is_raycast_hitting_bot or bullet.get_node("Rest/VelocityRaycast2").get_collider() == self
+		is_raycast_hitting_bot = is_raycast_hitting_bot or bullet.get_node("Rest/VelocityRaycast3").get_collider() == self
+		if not is_raycast_hitting_bot: return false
+	var distance_to_bot: Vector2 = global_position - bullet.global_position
 	var bullet_velocity_direction: Vector2 = bullet.linear_velocity.normalized()
-	## dot product is positive if bullet is moving towards the enemy
-	return distance_to_enemy.normalized().dot(bullet_velocity_direction) > BULLET_DANGER_SENSITIVITY
+	## dot product is positive if bullet is moving towards the bot
+	return distance_to_bot.normalized().dot(bullet_velocity_direction) > BULLET_DANGER_SENSITIVITY
 
 ## whether it's a bullet is verified by the is_bullet_dangerous() function
 const PERPENDICULAR_VELOCITY_DOT_OFFSET: float = 75.0
@@ -205,13 +231,13 @@ func dodge_bullet(bullet: RigidBody2D) -> void:
 	for i: int in range(navigation_path.size() - 1):
 		navigation_distance_to_right += navigation_path[i].distance_to(navigation_path[i + 1])
 	## final navigation distance
-	$NavigationAgent.target_position = player_node.global_position
+	$NavigationAgent.target_position = nearest_tank.global_position
 	var left_is_closer_than_right_navigation: bool = navigation_distance_to_left < navigation_distance_to_right
 	var left_is_closer_than_right_euclidean: bool = global_position.distance_to(left_bullet_dot) < global_position.distance_to(right_bullet_dot)
-	#var is_bullet_area_hitting_enemy: bool = false
+	#var is_bullet_area_hitting_bot: bool = false
 	#for body: CollisionObject2D in bullet.get_node("EnemyDodgeRadius").get_overlapping_bodies():
-		#if body == self: is_bullet_area_hitting_enemy = true
-	#if not is_bullet_area_hitting_enemy: return
+		#if body == self: is_bullet_area_hitting_bot = true
+	#if not is_bullet_area_hitting_bot: return
 	#if abs(global_position - bullet.global_position).length() <= MAX_BULLET_STOP_DISTANCE: return
 	if navigation_distance_to_left != navigation_distance_to_right:
 		if left_is_closer_than_right_navigation:
@@ -265,7 +291,7 @@ func dodge_bullet(bullet: RigidBody2D) -> void:
 		#$Rest/DEBUGRightBulletDot.visible = true
 	#var chosen_direction: Vector2
 	#var left_is_closer_than_right: bool = global_position.distance_to(left_bullet_dot) <= global_position.distance_to(right_bullet_dot)
-	#var is_bullet_velocity_raycast_hitting_enemy: bool = bullet.get_node("VelocityRayCast").get_collider() == self
+	#var is_bullet_velocity_raycast_hitting_bot: bool = bullet.get_node("VelocityRayCast").get_collider() == self
 	#if left_is_closer_than_right:
 		#chosen_direction = left_bullet_dot
 		#for body: CollisionObject2D in get_colliding_bodies():
@@ -280,7 +306,7 @@ func dodge_bullet(bullet: RigidBody2D) -> void:
 				#chosen_direction = left_bullet_dot
 				#$WallDodgeEvadeCooldown.start()
 		#if not $WallDodgeEvadeCooldown.is_stopped(): chosen_direction = left_bullet_dot
-	#if is_bullet_velocity_raycast_hitting_enemy:
+	#if is_bullet_velocity_raycast_hitting_bot:
 		#if chosen_direction == left_bullet_dot: chosen_direction = right_bullet_dot
 		#elif chosen_direction == right_bullet_dot: chosen_direction = left_bullet_dot
 	#var auxiliary: float = rotation
@@ -324,7 +350,7 @@ func dodge_bullet(bullet: RigidBody2D) -> void:
 	#rotation = lerp_angle(rotation, chosen_direction.angle(), ROTATION_INTERPOLATION_WEIGHT)
 
 signal level_die(has_peer_invincibility: bool)
-## called by bullet scenes that hit the enemy
+## called by bullet scenes that hit the bot
 func die() -> void:
 	if is_peer_invincible: return
 	$Rest.visible = false

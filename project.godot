@@ -30,14 +30,14 @@ window/vsync/vsync_mode=0
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/godot_mcp/plugin.cfg")
+enabled=PackedStringArray()
 
 [file_customization]
 
 folder_colors={
 "res://ingame/": "blue",
 "res://ingame/entities/": "orange",
-"res://ingame/entities/enemy/": "red",
+"res://ingame/entities/bot/": "red",
 "res://ingame/entities/projectiles/": "yellow",
 "res://ingame/tiles/": "red",
 "res://ui/": "green"

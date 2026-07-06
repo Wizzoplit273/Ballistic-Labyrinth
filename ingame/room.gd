@@ -5,7 +5,7 @@ const INGAME_CAMERA_ZOOM: float = 2.0
 ## those variables are modified by the origin scene(origin.tscn)
 var DEBUG_is_checking_maze: bool = false
 var DEBUG_is_showing_dodging: bool = false
-var enemy_friendly_fire: bool = true
+var bot_friendly_fire: bool = true
 var maze_carve_offset: Vector2i = Vector2i.ZERO
 var player_color: Color = Color.WHITE
 
@@ -41,13 +41,13 @@ func modified_ready() -> void:
 	implement_maze_walls_physics()
 	implement_navigation()
 	place_player_on_map()
-	place_enemies_on_map()
+	place_bots_on_map()
 	is_finished_loading = true
-	#$Player/Camera.zoom = Vector2.ONE * INGAME_CAMERA_ZOOM
-	$Player.bullet_count = 0
-	$Player.process_mode = Node.PROCESS_MODE_INHERIT
-	$Player.visible = true
-	$Player/Rest.visible = true
+	#$Players/Player/Camera.zoom = Vector2.ONE * INGAME_CAMERA_ZOOM
+	$Players/Player.bullet_count = 0
+	$Players/Player.process_mode = Node.PROCESS_MODE_INHERIT
+	$Players/Player.visible = true
+	$Players/Player/Rest.visible = true
 	$Timers/CrateSpawnDelay.start()
 
 var SEEDED_RNG: RandomNumberGenerator = RandomNumberGenerator.new()
@@ -77,18 +77,18 @@ const SCROLL_VALUE: float = 1.1
 func _process(_delta: float) -> void:
 	if is_queued_for_deletion(): return
 	manage_debug_options()
-	for instance: RigidBody2D in $Enemies.get_children():
+	for instance: RigidBody2D in $Bots.get_children():
 		instance.DEBUG_is_showing_dodging = DEBUG_is_showing_dodging
-		var player_cell: Vector2i = $Map/Ground.local_to_map($Map/Ground.to_local($Player.position))
-		var enemy_cell: Vector2i = $Map/Ground.local_to_map($Map/Ground.to_local(instance.position))
-		instance.is_adjacent_wall_to_player = is_wall_between_cells(player_cell, enemy_cell, 2, true)
+		var player_cell: Vector2i = $Map/Ground.local_to_map($Map/Ground.to_local($Players/Player.position))
+		var bot_cell: Vector2i = $Map/Ground.local_to_map($Map/Ground.to_local(instance.position))
+		instance.is_adjacent_wall_to_player = is_wall_between_cells(player_cell, bot_cell, 2, true)
 	# for debugging
 	#%PlayerTitle.text = str(alive_players_count)
-	#%EnemyTitle.text = str(alive_enemies_count)
+	#%BotTitle.text = str(alive_bots_count)
 
 func initialize_score_ui() -> void:
 	%PlayerScore.text = str(player_score)
-	%EnemyScore.text = str(enemy_score)
+	%BotScore.text = str(bot_score)
 
 signal finish_await
 func _on_await_timeout() -> void:
@@ -568,16 +568,16 @@ func place_player_on_map() -> void:
 	#var ground_tile_size: Vector2i = load(GROUND_TILE_SET).tile_size
 	selected_cell = maze_cells.get(SEEDED_RNG.randi_range(0, maze_cells.size() - 1))
 	var selected_position: Vector2 = maze_cell_to_world(selected_cell)
-	$Player.position = selected_position
+	$Players/Player.position = selected_position
 	var offset_vector: Vector2
 	var max_offset_scalar: Vector2 = $Map/Ground.scale / 2 - Vector2.ONE * OFFSET_SUBTRACT
 	offset_vector.x = SEEDED_RNG.randf_range(-max_offset_scalar.x, max_offset_scalar.x)
 	offset_vector.y = SEEDED_RNG.randf_range(-max_offset_scalar.y, max_offset_scalar.y)
-	$Player.position += offset_vector
-	$Player.rotation = SEEDED_RNG.randf_range(0, PI * 2)
-	$Player.visible = true
-	$Player.process_mode = Node.PROCESS_MODE_INHERIT
-	#$Player.modulate = player_color
+	$Players/Player.position += offset_vector
+	$Players/Player.rotation = SEEDED_RNG.randf_range(0, PI * 2)
+	$Players/Player.visible = true
+	$Players/Player.process_mode = Node.PROCESS_MODE_INHERIT
+	#$Players/Player.modulate = player_color
 	alive_players_count = 1
 
 const ENEMY_LINEAR_SPEED_DEVIATION: float = 30.0
@@ -588,73 +588,74 @@ const ENEMY_FLANK_RADIUS_DEVIATION: float = 20.0
 const ENEMY_FLANK_MIN_INTERVAL_DEVIATION: float = 100.0
 const ENEMY_FLANK_MAX_INTERVAL_DEVIATION: float = 200.0
 const ENEMY_FRONT_DISTANCE_DEVIATION: float = 200.0
-func set_enemy_personality(enemy: RigidBody2D) -> void:
-	enemy.get_node("Rest/Image").modulate.r += 0.02*randf_range(-1.0, 1.0)
-	enemy.get_node("Rest/Image").modulate.g += 0.02*randf_range(-1.0, 1.0)
-	enemy.get_node("Rest/Image").modulate.b += 0.02*randf_range(-1.0, 1.0)
-	enemy.LINEAR_SPEED += randf_range(-ENEMY_LINEAR_SPEED_DEVIATION, ENEMY_LINEAR_SPEED_DEVIATION)
-	enemy.ANGULAR_SPEED += randf_range(-ENEMY_ANGULAR_SPEED_DEVIATION, ENEMY_ANGULAR_SPEED_DEVIATION)
-	enemy.MAX_BULLET_COUNT += randi_range(-ENEMY_MAX_BULLET_DEVIATION, ENEMY_MAX_BULLET_DEVIATION)
-	enemy.FLANK_RESET += randf_range(-ENEMY_FLANK_RESET_DEVIATION, ENEMY_FLANK_RESET_DEVIATION)
-	enemy.FLANK_RADIUS = enemy.FLANK_RADIUS + randf_range(-ENEMY_FLANK_RADIUS_DEVIATION, ENEMY_FLANK_RADIUS_DEVIATION)
-	enemy.FLANK_MIN_INTERVAL += randf_range(-ENEMY_FLANK_MIN_INTERVAL_DEVIATION, ENEMY_FLANK_MIN_INTERVAL_DEVIATION)
-	enemy.FLANK_MAX_INTERVAL += randf_range(-ENEMY_FLANK_MAX_INTERVAL_DEVIATION, ENEMY_FLANK_MAX_INTERVAL_DEVIATION)
-	enemy.FLANK_FRONT_DISTANCE += randf_range(-ENEMY_FRONT_DISTANCE_DEVIATION, ENEMY_FRONT_DISTANCE_DEVIATION)
+func set_bot_personality(bot: RigidBody2D) -> void:
+	bot.get_node("Rest/Image").modulate.r += 0.02*randf_range(-1.0, 1.0)
+	bot.get_node("Rest/Image").modulate.g += 0.02*randf_range(-1.0, 1.0)
+	bot.get_node("Rest/Image").modulate.b += 0.02*randf_range(-1.0, 1.0)
+	bot.LINEAR_SPEED += randf_range(-ENEMY_LINEAR_SPEED_DEVIATION, ENEMY_LINEAR_SPEED_DEVIATION)
+	bot.ANGULAR_SPEED += randf_range(-ENEMY_ANGULAR_SPEED_DEVIATION, ENEMY_ANGULAR_SPEED_DEVIATION)
+	bot.MAX_BULLET_COUNT += randi_range(-ENEMY_MAX_BULLET_DEVIATION, ENEMY_MAX_BULLET_DEVIATION)
+	bot.FLANK_RESET += randf_range(-ENEMY_FLANK_RESET_DEVIATION, ENEMY_FLANK_RESET_DEVIATION)
+	bot.FLANK_RADIUS = bot.FLANK_RADIUS + randf_range(-ENEMY_FLANK_RADIUS_DEVIATION, ENEMY_FLANK_RADIUS_DEVIATION)
+	bot.FLANK_MIN_INTERVAL += randf_range(-ENEMY_FLANK_MIN_INTERVAL_DEVIATION, ENEMY_FLANK_MIN_INTERVAL_DEVIATION)
+	bot.FLANK_MAX_INTERVAL += randf_range(-ENEMY_FLANK_MAX_INTERVAL_DEVIATION, ENEMY_FLANK_MAX_INTERVAL_DEVIATION)
+	bot.FLANK_FRONT_DISTANCE += randf_range(-ENEMY_FRONT_DISTANCE_DEVIATION, ENEMY_FRONT_DISTANCE_DEVIATION)
 
 @export var MIN_SPAWNPOINT_DISTANCING: float = 800.0
-var enemy_count: int
-const NEW_ENEMY_INSTANCE_PATH: String = "res://ingame/entities/enemy/enemy.tscn"
-var enemy_count_interval: Vector2i = Vector2i(3, 5)
-func place_enemies_on_map() -> void:
-	enemy_count = SEEDED_RNG.randi_range(enemy_count_interval.x, enemy_count_interval.y)
-	var enemy_instance: RigidBody2D = null
-	for index: int in range(0, enemy_count):
-		enemy_instance = load(NEW_ENEMY_INSTANCE_PATH).instantiate()
-		set_enemy_personality(enemy_instance)
-		$Enemies.add_child(enemy_instance)
-		enemy_instance.global_position = $Player.global_position
-		while ($Player.global_position - enemy_instance.global_position).length() <= MIN_SPAWNPOINT_DISTANCING:
-			enemy_instance.process_mode = Node.PROCESS_MODE_DISABLED
-			enemy_instance.visible = false
+var bot_count: int
+const NEW_ENEMY_INSTANCE_PATH: String = "res://ingame/entities/bot/bot.tscn"
+var bot_count_interval: Vector2i = Vector2i(3, 5)
+func place_bots_on_map() -> void:
+	bot_count = SEEDED_RNG.randi_range(bot_count_interval.x, bot_count_interval.y)
+	var bot_instance: RigidBody2D = null
+	for index: int in range(0, bot_count):
+		bot_instance = load(NEW_ENEMY_INSTANCE_PATH).instantiate()
+		set_bot_personality(bot_instance)
+		$Bots.add_child(bot_instance)
+		bot_instance.global_position = $Players/Player.global_position
+		bot_instance.player_parent_node = $Players
+		bot_instance.bot_parent_node = $Bots
+		bot_instance.bot_friendly_fire = bot_friendly_fire
+		while ($Players/Player.global_position - bot_instance.global_position).length() <= MIN_SPAWNPOINT_DISTANCING:
+			bot_instance.process_mode = Node.PROCESS_MODE_DISABLED
+			bot_instance.visible = false
 			var selected_cell: Vector2i
 			#var ground_tile_size: Vector2i = load(GROUND_TILE_SET).tile_size
 			selected_cell = maze_cells.get(SEEDED_RNG.randi_range(0, maze_cells.size() - 1))
 			var selected_position: Vector2 = maze_cell_to_world(selected_cell)
-			enemy_instance.position = selected_position
+			bot_instance.position = selected_position
 			var offset_vector: Vector2
 			var max_offset_scalar: Vector2 = $Map/Ground.scale / 2 - Vector2.ONE * OFFSET_SUBTRACT
 			offset_vector.x = SEEDED_RNG.randf_range(-max_offset_scalar.x, max_offset_scalar.x)
 			offset_vector.y = SEEDED_RNG.randf_range(-max_offset_scalar.y, max_offset_scalar.y)
-			enemy_instance.position += offset_vector
-			enemy_instance.rotation = SEEDED_RNG.randf_range(0, PI * 2)
-			enemy_instance.visible = true
-			enemy_instance.player_node = $Player
-			enemy_instance.enemy_friendly_fire = enemy_friendly_fire
-			if not enemy_instance.is_connected("shoot", _on_enemy_shoot):
-				enemy_instance.connect("shoot", _on_enemy_shoot)
-			if not enemy_instance.is_connected("level_die", _on_enemy_level_die):
-				enemy_instance.connect("level_die", _on_enemy_level_die)
-			enemy_instance.process_mode = Node.PROCESS_MODE_INHERIT
-			#enemy_instance.get_node("Rest/Image").scale += Vector2.ONE * SEEDED_RNG.randf_range(-0.1, 0.1)
-		alive_enemies_count = enemy_count
+			bot_instance.position += offset_vector
+			bot_instance.rotation = SEEDED_RNG.randf_range(0, PI * 2)
+			bot_instance.visible = true
+			if not bot_instance.is_connected("shoot", _on_bot_shoot):
+				bot_instance.connect("shoot", _on_bot_shoot)
+			if not bot_instance.is_connected("level_die", _on_bot_level_die):
+				bot_instance.connect("level_die", _on_bot_level_die)
+			bot_instance.process_mode = Node.PROCESS_MODE_INHERIT
+			#bot_instance.get_node("Rest/Image").scale += Vector2.ONE * SEEDED_RNG.randf_range(-0.1, 0.1)
+		alive_bots_count = bot_count
 		## TEMPORARY: make everyone vulnerable
-		enemy_instance.switch_peer_invincibility()
-	# set_random_enemy_peer_vulnerability(SEEDED_RNG.randi_range(1, 2))
+		bot_instance.switch_peer_invincibility()
+	# set_random_bot_peer_vulnerability(SEEDED_RNG.randi_range(1, 2))
 
-func set_random_enemy_peer_vulnerability(count: int) -> void:
+func set_random_bot_peer_vulnerability(count: int) -> void:
 	var index: int
-	var enemy: Node
+	var bot: Node
 	var invincible_count: int = 0
 	while count > 0:
-		index = SEEDED_RNG.randi_range(0, $Enemies.get_child_count() - 1)
-		enemy = $Enemies.get_child(index)
-		while not enemy.is_peer_invincible and invincible_count < $Enemies.get_child_count():
+		index = SEEDED_RNG.randi_range(0, $Bots.get_child_count() - 1)
+		bot = $Bots.get_child(index)
+		while not bot.is_peer_invincible and invincible_count < $Bots.get_child_count():
 			invincible_count += 1
 			index += 1
-			if index >= $Enemies.get_child_count(): index = 0
-			enemy = $Enemies.get_child(index)
-		if invincible_count >= $Enemies.get_child_count(): return
-		enemy.switch_peer_invincibility()
+			if index >= $Bots.get_child_count(): index = 0
+			bot = $Bots.get_child(index)
+		if invincible_count >= $Bots.get_child_count(): return
+		bot.switch_peer_invincibility()
 		count -= 1
 
 const NEW_BULLET_PATH: String = "res://ingame/entities/projectiles/bullet.tscn"
@@ -667,17 +668,17 @@ const TRAP_SPAWN_OFFSET: float = 60.0
 
 var bullet_ins: RigidBody2D = null
 func _on_player_shoot(weapon_type: String) -> void:
-	if weapon_type == "regular" and $Player.bullet_count >= $Player.MAX_BULLET_COUNT:
+	if weapon_type == "regular" and $Players/Player.bullet_count >= $Players/Player.MAX_BULLET_COUNT:
 		$Sounds/NoAmmoNoise.play()
 		return
 	if weapon_type != "regular":
-		$Player.equip_weapon("regular")
+		$Players/Player.equip_weapon("regular")
 	bullet_ins = load(NEW_BULLET_PATH).instantiate()
 	var bullet_offset: float
 	#var bullet_speed: float
 	if weapon_type == "regular":
 		bullet_offset = REGULAR_SPAWN_OFFSET
-		bullet_ins.initial_velocity_speed = $Player.BULLET_SPEED
+		bullet_ins.initial_velocity_speed = $Players/Player.BULLET_SPEED
 		bullet_ins.type = "regular"
 		$Sounds/NormalShootNoise.play()
 	if weapon_type == "laser":
@@ -689,7 +690,7 @@ func _on_player_shoot(weapon_type: String) -> void:
 		$Sounds/LaserShootNoise.play()
 	if weapon_type == "rocket":
 		bullet_offset = ROCKET_SPAWN_OFFSET
-		bullet_ins.initial_velocity_speed = $Player.BULLET_SPEED
+		bullet_ins.initial_velocity_speed = $Players/Player.BULLET_SPEED
 		bullet_ins.type = "rocket"
 		$Sounds/RocketShootNoise.play()
 	if weapon_type == "trap":
@@ -698,39 +699,39 @@ func _on_player_shoot(weapon_type: String) -> void:
 		bullet_ins.type = "trap"
 		$Sounds/TrapPlaceNoise.play()
 	$Bullets.add_child(bullet_ins)
-	bullet_ins.owner_node = $Player
-	bullet_ins.initial_velocity_direction = $Player.rotation
-	bullet_ins.position = $Player.position + Vector2(bullet_offset, 0).rotated($Player.rotation)
+	bullet_ins.owner_node = $Players/Player
+	bullet_ins.initial_velocity_direction = $Players/Player.rotation
+	bullet_ins.position = $Players/Player.position + Vector2(bullet_offset, 0).rotated($Players/Player.rotation)
 	if weapon_type != "trap": bullet_ins.connect("despawn", on_bullet_despawn)
-	if weapon_type == "regular": $Player.bullet_count += 1
+	if weapon_type == "regular": $Players/Player.bullet_count += 1
 	bullet_ins.modified_ready()
 	bullet_ins.process_mode = Node.PROCESS_MODE_INHERIT
 
-func _on_enemy_shoot(enemy_node: RigidBody2D) -> void:
-	if enemy_node.bullet_count >= enemy_node.MAX_BULLET_COUNT:
+func _on_bot_shoot(bot_node: RigidBody2D) -> void:
+	if bot_node.bullet_count >= bot_node.MAX_BULLET_COUNT:
 		$Sounds/NoAmmoNoise.play()
 		return
 	$Sounds/NormalShootNoise.play()
 	bullet_ins = load(NEW_BULLET_PATH).instantiate()
 	bullet_ins.type = "regular"
-	bullet_ins.initial_velocity_direction = enemy_node.rotation
-	bullet_ins.initial_velocity_speed = $Player.BULLET_SPEED
+	bullet_ins.initial_velocity_direction = bot_node.rotation
+	bullet_ins.initial_velocity_speed = $Players/Player.BULLET_SPEED
 	$Bullets.add_child(bullet_ins)
-	bullet_ins.position = enemy_node.position + Vector2(enemy_node.BULLET_SPAWN_OFFSET, 0).rotated(enemy_node.rotation)
+	bullet_ins.position = bot_node.position + Vector2(bot_node.BULLET_SPAWN_OFFSET, 0).rotated(bot_node.rotation)
 	bullet_ins.connect("despawn", on_bullet_despawn)
-	bullet_ins.owner_node = enemy_node
-	enemy_node.bullet_count += 1
+	bullet_ins.owner_node = bot_node
+	bot_node.bullet_count += 1
 	bullet_ins.modified_ready()
 	bullet_ins.process_mode = Node.PROCESS_MODE_INHERIT
 
 ## connected to each bullet's despawn signal
 func on_bullet_despawn(bullet: RigidBody2D) -> void:
 	# it'll probably be a single if statement in the future, there is no good reason to distinguish between
-	# players and enemies inside this function
+	# players and bots inside this function
 	if bullet.owner_node.get_meta("type", "NULL") == "player":
 		if bullet.type == "regular":
-			$Player.bullet_count -= 1
-	if bullet.owner_node.get_meta("type", "NULL") == "enemy": bullet.owner_node.bullet_count -= 1
+			$Players/Player.bullet_count -= 1
+	if bullet.owner_node.get_meta("type", "NULL") == "bot": bullet.owner_node.bullet_count -= 1
 	#node.queue_free()
 
 const NEW_CRATE_PATH: String = "res://ingame/entities/crates/crate.tscn"
@@ -746,37 +747,37 @@ func _on_crate_spawn_delay_timeout() -> void:
 
 ## connected to crates when one of them gets picked up by the player
 func equip_weapon(_player: RigidBody2D, type: String) -> void:
-	$Player.equip_weapon(type)
+	$Players/Player.equip_weapon(type)
 
 var alive_players_count: int
-var alive_enemies_count: int
+var alive_bots_count: int
 
 var player_score: int = 0
-var enemy_score: int = 0
+var bot_score: int = 0
 
 func _on_player_level_die() -> void:
 	alive_players_count -= 1
 	$Sounds/DeathNoise.play()
 	$Timers/DeathDelay.start()
 
-func _on_enemy_level_die(is_peer_invincible: bool) -> void:
-	if not is_peer_invincible: set_random_enemy_peer_vulnerability(1)
-	alive_enemies_count -= 1
+func _on_bot_level_die(is_peer_invincible: bool) -> void:
+	if not is_peer_invincible: set_random_bot_peer_vulnerability(1)
+	alive_bots_count -= 1
 	$Sounds/DeathNoise.play()
 	$Timers/DeathDelay.start()
 
 func _on_death_delay_timeout() -> void:
-	if alive_players_count > 0 and alive_enemies_count > 0: return
-	if alive_players_count <= 0 and alive_enemies_count <= 0:
+	if alive_players_count > 0 and alive_bots_count > 0: return
+	if alive_players_count <= 0 and alive_bots_count <= 0:
 		%DrawTitle.visible = true
 		$Timers/NextRoundDelay.start()
 		$Sounds/NextRoundNoise.play()
 		process_mode = Node.PROCESS_MODE_DISABLED
 		return
 	if alive_players_count <= 0:
-		enemy_score += 1
-		%EnemyScore.text = str(enemy_score)
-	if alive_enemies_count <= 0:
+		bot_score += 1
+		%BotScore.text = str(bot_score)
+	if alive_bots_count <= 0:
 		player_score += 1
 		%PlayerScore.text = str(player_score)
 	$Timers/NextRoundDelay.start()
@@ -785,8 +786,8 @@ func _on_death_delay_timeout() -> void:
 
 func reset() -> void:
 	%DrawTitle.visible = false
-	$Player.process_mode = Node.PROCESS_MODE_DISABLED
-	$Player.visible = false
+	$Players/Player.process_mode = Node.PROCESS_MODE_DISABLED
+	$Players/Player.visible = false
 	maze_cells.clear()
 	$Timers/CrateSpawnDelay.stop()
 	
@@ -799,8 +800,8 @@ func reset() -> void:
 		crate.queue_free()
 	for bullet: Node in $Bullets.get_children():
 		bullet.queue_free()
-	for enemy: Node in $Enemies.get_children():
-		enemy.queue_free()
+	for bot: Node in $Bots.get_children():
+		bot.queue_free()
 
 @onready var ORIGIN_NODE: Node = get_parent().get_parent()
 func _on_next_round_delay_timeout() -> void:

@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://dt6pc3iwv8285"]
 
-[ext_resource type="Script" uid="uid://crfjuwlcy81x2" path="res://ingame/entities/enemy/enemy.gd" id="1_02fao"]
-[ext_resource type="Texture2D" uid="uid://ufr4xvpydw1x" path="res://ingame/entities/player/player_regular.png" id="2_ado2y"]
-[ext_resource type="Texture2D" uid="uid://xa5vxaptiwsv" path="res://ingame/entities/projectiles/bullet_normal.png" id="3_ado2y"]
+[ext_resource type="Script" uid="uid://crfjuwlcy81x2" path="res://ingame/entities/bot/bot.gd" id="1_l1d7n"]
+[ext_resource type="Texture2D" uid="uid://ufr4xvpydw1x" path="res://ingame/entities/player/player_regular.png" id="2_ctn2v"]
+[ext_resource type="Texture2D" uid="uid://xa5vxaptiwsv" path="res://ingame/entities/projectiles/bullet_normal.png" id="3_srmle"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_1etb5"]
 friction = 0.0
@@ -50,7 +50,7 @@ size = Vector2(16, 12)
 [sub_resource type="CircleShape2D" id="CircleShape2D_02fao"]
 radius = 225.0
 
-[node name="Enemy" type="RigidBody2D" unique_id=1362450737]
+[node name="Bot" type="RigidBody2D" unique_id=1362450737]
 process_mode = 4
 collision_layer = 16
 collision_mask = 19
@@ -58,7 +58,7 @@ physics_material_override = SubResource("PhysicsMaterial_1etb5")
 gravity_scale = 0.0
 contact_monitor = true
 max_contacts_reported = 5
-script = ExtResource("1_02fao")
+script = ExtResource("1_l1d7n")
 metadata/_edit_lock_ = true
 metadata/type = "enemy"
 
@@ -114,7 +114,7 @@ metadata/_edit_lock_ = true
 [node name="Image" type="Sprite2D" parent="Rest" unique_id=307403727]
 modulate = Color(0.6525275, 0.6361835, 0.6525456, 1)
 scale = Vector2(0.8333334, 0.8333334)
-texture = ExtResource("2_ado2y")
+texture = ExtResource("2_ctn2v")
 metadata/_edit_lock_ = true
 
 [node name="BulletDetectionArea" type="Area2D" parent="Rest" unique_id=1838676578]
@@ -132,13 +132,13 @@ metadata/_edit_lock_ = true
 [node name="DEBUGLeftBulletDot" type="Sprite2D" parent="Rest" unique_id=1100602464]
 visible = false
 scale = Vector2(0.1, 0.1)
-texture = ExtResource("3_ado2y")
+texture = ExtResource("3_srmle")
 metadata/_edit_lock_ = true
 
 [node name="DEBUGRightBulletDot" type="Sprite2D" parent="Rest" unique_id=859752608]
 visible = false
 scale = Vector2(0.1, 0.1)
-texture = ExtResource("3_ado2y")
+texture = ExtResource("3_srmle")
 metadata/_edit_lock_ = true
 
 [node name="PlayerDetectors" type="Node2D" parent="Rest" unique_id=1321538283]

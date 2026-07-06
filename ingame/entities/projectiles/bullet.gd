@@ -57,8 +57,8 @@ func _on_body_entered(body: Node) -> void:
 	if body.get_meta("type", "NULL") == "player":
 		body.die()
 		die("tank")
-	if body.get_meta("type", "NULL") == "enemy":
-		if (body.enemy_friendly_fire == true and owner_node == body) or owner_node.get_meta("type", "NULL") == "player":
+	if body.get_meta("type", "NULL") == "bot":
+		if (body.bot_friendly_fire == true and owner_node == body) or owner_node.get_meta("type", "NULL") == "player":
 			body.die()
 		die("tank")
 	if body.get_meta("type", "NULL") == "bullet":
