@@ -60,7 +60,7 @@ contact_monitor = true
 max_contacts_reported = 5
 script = ExtResource("1_l1d7n")
 metadata/_edit_lock_ = true
-metadata/type = "enemy"
+metadata/type = "bot"
 
 [node name="WallStuckCooldown" type="Timer" parent="." unique_id=1051075490]
 wait_time = 0.25
@@ -76,7 +76,7 @@ one_shot = true
 
 [node name="NavigationAgent" type="NavigationAgent2D" parent="." unique_id=538825553]
 path_desired_distance = 50.0
-target_desired_distance = 200.0
+target_desired_distance = 210.0
 path_postprocessing = 2
 path_search_max_polygons = 4000
 radius = 100.0

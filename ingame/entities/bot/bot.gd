@@ -12,6 +12,7 @@ var bot_friendly_fire: bool = true
 @export var ANGLE_DILATION: float = 0.1
 
 @onready var TARGET_DESIRED_DISTANCE: float = $NavigationAgent.target_desired_distance
+const TARGET_PATROL_DISTANCE: float = 300.0
 
 ## updated by the parent level scene
 var bullet_count: int = 0
@@ -29,7 +30,7 @@ var is_peer_invincible: bool = true
 const PEER_VULNERABLE_MODULATE: Color = Color(0.954, 0.008, 0.0, 1.0)
 var normal_modulate: Color
 ## called by parent level scene
-const PEER_INVINCIBILITY_MODULATE: float = 1.0
+const PEER_INVINCIBILITY_MODULATE: float = 1.0	
 func switch_peer_invincibility() -> void:
 	if is_peer_invincible:
 		normal_modulate = $Rest/Image.modulate
@@ -68,6 +69,7 @@ func point_to_nearest_tank_if_seen() -> void:
 func determine_nearest_tank() -> void:
 	for tank: RigidBody2D in player_parent_node.get_children():
 		if tank == self: continue
+		if tank.get_node("Rest").visible == false: continue
 		if nearest_tank == self:
 			nearest_tank = tank
 			continue
@@ -75,14 +77,17 @@ func determine_nearest_tank() -> void:
 			nearest_tank = tank
 	for tank: RigidBody2D in bot_parent_node.get_children():
 		if tank == self: continue
+		if tank.get_node("Rest").visible == false: continue
 		if nearest_tank == self:
 			nearest_tank = tank
 			continue
 		if position.distance_to(tank.position) < position.distance_to(nearest_tank.position):
 			nearest_tank = tank
+	if nearest_tank.get_node("Rest").visible == false: nearest_tank = self
 
 func configure_patrol() -> void:
 	if nearest_tank == self:
+		$NavigationAgent.target_position = position
 		is_patrol_set = false
 		return
 	if position.distance_to(nearest_tank.global_position) >= FLANK_RESET:
@@ -103,6 +108,8 @@ func configure_patrol() -> void:
 	else:
 		$NavigationAgent.target_position = nearest_tank.global_position
 		is_patrol_set = false
+	if is_patrol_set: $NavigationAgent.target_desired_distance = TARGET_PATROL_DISTANCE
+	else: $NavigationAgent.target_desired_distance = TARGET_DESIRED_DISTANCE 
 
 func configure_reversing() -> void:
 	var is_velocity_stuck: bool = (previous_position - position).length() <= MAX_STUCK_POSITION_CHANGE
@@ -121,6 +128,20 @@ func configure_reversing() -> void:
 		is_reversing = false
 		$WallStuckCooldown.stop()
 
+func reset_motion() -> void:
+	linear_velocity = Vector2.ZERO
+	angular_velocity = 0.0
+
+## if process mode is DISABLED, then it stays idle; otherwise, it goes after the nearest tank
+func configure_process_mode() -> void:
+	if nearest_tank.get_node("Rest").visible and nearest_tank != self:
+		$NavigationAgent.process_mode = Node.PROCESS_MODE_INHERIT
+	else: $NavigationAgent.process_mode = Node.PROCESS_MODE_DISABLED
+
+func configure_debug() -> void:
+	$Rest/DEBUGLeftBulletDot.visible = false
+	$Rest/DEBUGRightBulletDot.visible = false
+
 var FLANK_RESET: float = 1100.0
 var FLANK_RADIUS: float = 300.0
 var FLANK_MIN_INTERVAL: float = 100.0
@@ -131,18 +152,16 @@ var is_patrol_set: bool = false
 var is_reversing: bool = false
 func _physics_process(_delta: float) -> void:
 	if not visible: return
-	linear_velocity = Vector2.ZERO
-	angular_velocity = 0.0
+	reset_motion()
 	determine_nearest_tank()
-	configure_patrol()
-	point_to_nearest_tank_if_seen()
-	if nearest_tank.get_node("Rest").visible: $NavigationAgent.process_mode = Node.PROCESS_MODE_INHERIT
-	else: $NavigationAgent.process_mode = Node.PROCESS_MODE_DISABLED
-	$Rest/DEBUGLeftBulletDot.visible = false
-	$Rest/DEBUGRightBulletDot.visible = false
 	check_nearby_bullets()
+	configure_patrol()
+	if nearest_tank == self: return
+	point_to_nearest_tank_if_seen()
+	configure_process_mode()
+	configure_debug()
 	configure_reversing()
-	if $NavigationAgent.is_target_reached() and is_adjacent_wall_to_player:
+	if ($NavigationAgent.is_target_reached() and is_adjacent_wall_to_player):
 		$NavigationAgent.target_desired_distance = 0.0
 	else: $NavigationAgent.target_desired_distance = TARGET_DESIRED_DISTANCE
 	if $NavigationAgent.is_navigation_finished() and not is_adjacent_wall_to_player and not is_dodging_bullets:
@@ -203,6 +222,7 @@ func is_bullet_dangerous(bullet: RigidBody2D) -> bool:
 const PERPENDICULAR_VELOCITY_DOT_OFFSET: float = 75.0
 #const MAX_BULLET_STOP_DISTANCE: float = 20.0
 func dodge_bullet(bullet: RigidBody2D) -> void:
+	$NavigationAgent.process_mode = Node.PROCESS_MODE_INHERIT
 	var bullet_velocity_direction: Vector2 = bullet.linear_velocity.normalized()
 	var left_bullet_dot: Vector2 = bullet.global_position
 	var right_bullet_dot: Vector2 = bullet.global_position

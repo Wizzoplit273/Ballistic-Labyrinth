@@ -604,7 +604,7 @@ func set_bot_personality(bot: RigidBody2D) -> void:
 @export var MIN_SPAWNPOINT_DISTANCING: float = 800.0
 var bot_count: int
 const NEW_ENEMY_INSTANCE_PATH: String = "res://ingame/entities/bot/bot.tscn"
-var bot_count_interval: Vector2i = Vector2i(3, 5)
+var bot_count_interval: Vector2i = Vector2i(10, 15)
 func place_bots_on_map() -> void:
 	bot_count = SEEDED_RNG.randi_range(bot_count_interval.x, bot_count_interval.y)
 	var bot_instance: RigidBody2D = null
@@ -758,13 +758,15 @@ var bot_score: int = 0
 func _on_player_level_die() -> void:
 	alive_players_count -= 1
 	$Sounds/DeathNoise.play()
-	$Timers/DeathDelay.start()
+	if alive_players_count + alive_bots_count <= 1:
+		$Timers/DeathDelay.start()
 
 func _on_bot_level_die(is_peer_invincible: bool) -> void:
 	if not is_peer_invincible: set_random_bot_peer_vulnerability(1)
 	alive_bots_count -= 1
 	$Sounds/DeathNoise.play()
-	$Timers/DeathDelay.start()
+	if alive_players_count + alive_bots_count <= 1:
+		$Timers/DeathDelay.start()
 
 func _on_death_delay_timeout() -> void:
 	if alive_players_count > 0 and alive_bots_count > 0: return
