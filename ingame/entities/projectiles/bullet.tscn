@@ -98,7 +98,6 @@ metadata/type = "bullet"
 
 [node name="RocketNavigation" type="NavigationAgent2D" parent="." unique_id=731593333]
 process_mode = 4
-debug_enabled = true
 debug_use_custom = true
 debug_path_custom_color = Color(0, 1, 1, 1)
 

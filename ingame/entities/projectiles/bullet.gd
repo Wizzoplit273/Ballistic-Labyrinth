@@ -54,7 +54,7 @@ func determine_closest_target() -> void:
 func _on_rocket_delay_timeout() -> void:
 	$RocketActivate.play()
 
-const ROCKET_MAX_TURN_SPEED: float = 0.06
+const ROCKET_MAX_TURN_SPEED: float = 0.04
 func configure_if_rocket() -> void:
 	if type != "rocket": return
 	if not $RocketDelay.is_stopped(): return
