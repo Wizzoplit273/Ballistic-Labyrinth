@@ -96,6 +96,15 @@ script = ExtResource("2_wrvnv")
 metadata/_edit_lock_ = true
 metadata/type = "bullet"
 
+[node name="RocketNavigation" type="NavigationAgent2D" parent="." unique_id=731593333]
+process_mode = 4
+debug_enabled = true
+debug_use_custom = true
+debug_path_custom_color = Color(0, 1, 1, 1)
+
+[node name="RocketDelay" type="Timer" parent="." unique_id=541031035]
+one_shot = true
+
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=946547365]
 libraries/ = SubResource("AnimationLibrary_jhhk6")
 
@@ -116,6 +125,12 @@ process_mode = 1
 stream = ExtResource("3_05xpt")
 volume_db = -5.0
 pitch_scale = 0.3
+
+[node name="RocketActivate" type="AudioStreamPlayer" parent="." unique_id=181274682]
+process_mode = 1
+stream = ExtResource("3_05xpt")
+volume_db = -3.0
+pitch_scale = 0.03
 
 [node name="WallTunnelProofTimer" type="Timer" parent="." unique_id=832737102]
 wait_time = 0.05
@@ -198,6 +213,7 @@ process_material = SubResource("ParticleProcessMaterial_qbrdm")
 metadata/_edit_lock_ = true
 
 [connection signal="body_entered" from="." to="." method="_on_body_entered"]
+[connection signal="timeout" from="RocketDelay" to="." method="_on_rocket_delay_timeout"]
 [connection signal="timeout" from="LifespanTimer" to="." method="_on_lifespan_timer_timeout"]
 [connection signal="body_entered" from="WallTunnelProof" to="." method="_on_wall_tunnel_proof_body_entered"]
 [connection signal="finished" from="DespawnParticles" to="." method="_on_despawn_particles_finished"]

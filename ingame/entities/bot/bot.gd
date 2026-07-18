@@ -19,10 +19,10 @@ var bullet_count: int = 0
 
 var player_parent_node: Node = null
 var bot_parent_node: Node = null
-var nearest_tank: RigidBody2D = self
+var target: RigidBody2D = self
 
 
-var is_adjacent_wall_to_player: bool = false
+var is_adjacent_wall_to_target: bool = false
 var is_dodging_bullets: bool = false
 var DEBUG_is_showing_dodging: bool = false
 var is_peer_invincible: bool = true
@@ -56,57 +56,63 @@ const MAX_SHOOT_ANGLE_DIFFERENCE: float = 0.4
 var previous_position: Vector2 = Vector2.ZERO
 var previous_rotation: float = 0.0
 
-func point_to_nearest_tank_if_seen() -> void:
-	if nearest_tank == self: return
+func point_to_target_if_seen() -> void:
+	if target == self: return
 	for ray: RayCast2D in $Rest/PlayerDetectors.get_children():
-		if ray.get_collider() != nearest_tank: continue
-		$NavigationAgent.target_position = nearest_tank.global_position
-		if position.distance_to(nearest_tank.global_position) >= FLANK_RADIUS:
+		if ray.get_collider() != target: continue
+		$NavigationAgent.target_position = target.global_position
+		if position.distance_to(target.global_position) >= FLANK_RADIUS:
 			is_patrol_set = true
 		else: is_patrol_set = false
 		return
 
-func determine_nearest_tank() -> void:
+func determine_target() -> void:
 	for tank: RigidBody2D in player_parent_node.get_children():
 		if tank == self: continue
 		if tank.get_node("Rest").visible == false: continue
-		if nearest_tank == self:
-			nearest_tank = tank
+		if target == self:
+			target = tank
 			continue
-		if position.distance_to(tank.position) < position.distance_to(nearest_tank.position):
-			nearest_tank = tank
+		if position.distance_to(tank.position) < position.distance_to(target.position):
+			target = tank
 	for tank: RigidBody2D in bot_parent_node.get_children():
 		if tank == self: continue
 		if tank.get_node("Rest").visible == false: continue
-		if nearest_tank == self:
-			nearest_tank = tank
+		if target == self:
+			target = tank
 			continue
-		if position.distance_to(tank.position) < position.distance_to(nearest_tank.position):
-			nearest_tank = tank
-	if nearest_tank.get_node("Rest").visible == false: nearest_tank = self
+		if position.distance_to(tank.position) < position.distance_to(target.position):
+			target = tank
+	if target.get_node("Rest").visible == false: target = self
 
+var is_path_stuck: bool = false
 func configure_patrol() -> void:
-	if nearest_tank == self:
+	if is_path_stuck:
+		is_path_stuck = false
+		$NavigationAgent.target_position = target.position
+		is_patrol_set = true
+		return
+	if target == self:
 		$NavigationAgent.target_position = position
 		is_patrol_set = false
 		return
-	if position.distance_to(nearest_tank.global_position) >= FLANK_RESET:
-		$NavigationAgent.target_position = nearest_tank.global_position
+	if position.distance_to(target.global_position) >= FLANK_RESET:
+		$NavigationAgent.target_position = target.global_position
 		is_patrol_set = false
-	elif position.distance_to(nearest_tank.global_position) >= FLANK_RADIUS:
+	elif position.distance_to(target.global_position) >= FLANK_RADIUS:
 		if is_patrol_set: return ## ensures that this block only executes once when it detects a change in radius
 		var random_x: float = randf_range(FLANK_MIN_INTERVAL, FLANK_MAX_INTERVAL)
 		random_x *= sign(randi_range(0,1))*2-1
 		var random_y: float = randf_range(FLANK_MIN_INTERVAL, FLANK_MAX_INTERVAL)
 		random_y *= sign(randi_range(0,1))*2-1
 		var random_offset: Vector2 = Vector2(random_x, random_y)
-		$NavigationAgent.target_position = nearest_tank.global_position + random_offset
-		if nearest_tank.linear_velocity.length() >= 0.1:
+		$NavigationAgent.target_position = target.global_position + random_offset
+		if target.linear_velocity.length() >= 0.1:
 			var offset: Vector2 = Vector2(FLANK_FRONT_DISTANCE, 0)
-			$NavigationAgent.target_position += offset * nearest_tank.linear_velocity.angle()
+			$NavigationAgent.target_position += offset * target.linear_velocity.angle()
 		is_patrol_set = true
 	else:
-		$NavigationAgent.target_position = nearest_tank.global_position
+		$NavigationAgent.target_position = target.global_position
 		is_patrol_set = false
 	if is_patrol_set: $NavigationAgent.target_desired_distance = TARGET_PATROL_DISTANCE
 	else: $NavigationAgent.target_desired_distance = TARGET_DESIRED_DISTANCE 
@@ -134,7 +140,7 @@ func reset_motion() -> void:
 
 ## if process mode is DISABLED, then it stays idle; otherwise, it goes after the nearest tank
 func configure_process_mode() -> void:
-	if nearest_tank.get_node("Rest").visible and nearest_tank != self:
+	if target.get_node("Rest").visible and target != self:
 		$NavigationAgent.process_mode = Node.PROCESS_MODE_INHERIT
 	else: $NavigationAgent.process_mode = Node.PROCESS_MODE_DISABLED
 
@@ -153,24 +159,24 @@ var is_reversing: bool = false
 func _physics_process(_delta: float) -> void:
 	if not visible: return
 	reset_motion()
-	determine_nearest_tank()
+	determine_target()
 	check_nearby_bullets()
 	configure_patrol()
-	if nearest_tank == self: return
-	point_to_nearest_tank_if_seen()
+	if target == self: return
+	point_to_target_if_seen()
 	configure_process_mode()
 	configure_debug()
 	configure_reversing()
-	if ($NavigationAgent.is_target_reached() and is_adjacent_wall_to_player):
-		$NavigationAgent.target_desired_distance = 0.0
+	if ($NavigationAgent.is_target_reached() and is_adjacent_wall_to_target):
+		$NavigationAgent.target_desired_distance = 1000.0
 	else: $NavigationAgent.target_desired_distance = TARGET_DESIRED_DISTANCE
-	if $NavigationAgent.is_navigation_finished() and not is_adjacent_wall_to_player and not is_dodging_bullets:
+	if $NavigationAgent.is_navigation_finished() and not is_adjacent_wall_to_target and not is_dodging_bullets:
 		var was_patroling: bool = is_patrol_set
 		is_patrol_set = false
-		if not nearest_tank.get_node("Rest").visible: return
+		if not target.get_node("Rest").visible: return
 		var auxiliary: float = rotation
 		var direction_to_player: float
-		look_at(nearest_tank.position)
+		look_at(target.position)
 		direction_to_player = rotation
 		rotation = auxiliary
 		var direction_deviation: float = randf_range(-DIRECTION_DEVIATION, DIRECTION_DEVIATION)
@@ -182,14 +188,26 @@ func _physics_process(_delta: float) -> void:
 		return
 	var next_point: Vector2 = $NavigationAgent.get_next_path_position()
 	var direction: Vector2 = (next_point - global_position).normalized()
-	if nearest_tank.get_node("Rest").visible:
+	if target.get_node("Rest").visible:
 		rotation = lerp_angle(rotation, direction.angle(), ROTATION_INTERPOLATION_WEIGHT)
 	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
-	if nearest_tank.get_node("Rest").visible or is_dodging_bullets: 
+	if target.get_node("Rest").visible or is_dodging_bullets: 
 		rotation += rng.randf_range(-ANGLE_DILATION, ANGLE_DILATION)
 		linear_velocity = Vector2.RIGHT.rotated(rotation) * LINEAR_SPEED * (1 - int(is_reversing) * 2)
+	#if position.distance_to($NavigationAgent.get_next_path_position()) <= PATH_STUCK_DISTANCE:
+	if not $PathStuckDelay.is_stopped():
+		$StuckBoy.play()
+		initial_path_stuck_distance = position.distance_to($NavigationAgent.get_next_path_position())
+		$PathStuckDelay.start()
 	previous_position = position
 	previous_rotation = rotation
+
+var initial_path_stuck_distance: float = 0.0
+const PATH_STUCK_DISTANCE: float = 3000.0
+func _on_path_stuck_delay_timeout() -> void:
+	var current_polygon_distance: float = position.distance_to($NavigationAgent.get_next_path_position())
+	if current_polygon_distance > PATH_STUCK_DISTANCE: return
+	if abs(current_polygon_distance - initial_path_stuck_distance) <= 10.0: is_path_stuck = true
 
 func check_nearby_bullets() -> void:
 	is_dodging_bullets = false
@@ -222,7 +240,6 @@ func is_bullet_dangerous(bullet: RigidBody2D) -> bool:
 const PERPENDICULAR_VELOCITY_DOT_OFFSET: float = 75.0
 #const MAX_BULLET_STOP_DISTANCE: float = 20.0
 func dodge_bullet(bullet: RigidBody2D) -> void:
-	$NavigationAgent.process_mode = Node.PROCESS_MODE_INHERIT
 	var bullet_velocity_direction: Vector2 = bullet.linear_velocity.normalized()
 	var left_bullet_dot: Vector2 = bullet.global_position
 	var right_bullet_dot: Vector2 = bullet.global_position
@@ -251,7 +268,7 @@ func dodge_bullet(bullet: RigidBody2D) -> void:
 	for i: int in range(navigation_path.size() - 1):
 		navigation_distance_to_right += navigation_path[i].distance_to(navigation_path[i + 1])
 	## final navigation distance
-	$NavigationAgent.target_position = nearest_tank.global_position
+	$NavigationAgent.target_position = target.global_position
 	var left_is_closer_than_right_navigation: bool = navigation_distance_to_left < navigation_distance_to_right
 	var left_is_closer_than_right_euclidean: bool = global_position.distance_to(left_bullet_dot) < global_position.distance_to(right_bullet_dot)
 	#var is_bullet_area_hitting_bot: bool = false
@@ -293,6 +310,7 @@ func dodge_bullet(bullet: RigidBody2D) -> void:
 	var dodge_angle: float = rotation
 	rotation = auxiliary
 	rotation = lerp_angle(rotation, dodge_angle, ROTATION_INTERPOLATION_WEIGHT * 1.5)
+	if target == self: linear_velocity = LINEAR_SPEED * Vector2.from_angle(rotation)
 
 # old dodge implementation number 2
 ### whether it's a bullet is verified by the is_bullet_dangerous() function

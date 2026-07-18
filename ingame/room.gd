@@ -27,7 +27,7 @@ func modified_ready() -> void:
 	$Camera.position.y = $Map/Ground.tile_set.tile_size.y * $Map/Ground.scale.y * MAZE_SIZE.y / 2
 	$Map/GroundNoise.position = $Camera.position
 	$Map/GroundNoise.texture.noise.seed = SEEDED_RNG.randi_range(0, 10000)
-	initialize_score_ui()
+	#initialize_score_ui()
 	create_maze_rectangle()
 	await dimensions_finished
 	#carve_maze_rectangle()
@@ -53,7 +53,7 @@ func modified_ready() -> void:
 var SEEDED_RNG: RandomNumberGenerator = RandomNumberGenerator.new()
 func set_seeded_rng(string: String) -> void:
 	if string != "": SEEDED_RNG.seed = string.hash()
-	$ScoresLayer/RoomHashLabel.text = "seed: " + str(SEEDED_RNG.state)
+	#$ScoresLayer/RoomHashLabel.text = "seed: " + str(SEEDED_RNG.state)
 
 func manage_debug_options() -> void:
 	if OS.is_debug_build() and Input.is_action_just_pressed("DEBUG_Toggle_Maze_Generation"):
@@ -79,16 +79,16 @@ func _process(_delta: float) -> void:
 	manage_debug_options()
 	for instance: RigidBody2D in $Bots.get_children():
 		instance.DEBUG_is_showing_dodging = DEBUG_is_showing_dodging
-		var player_cell: Vector2i = $Map/Ground.local_to_map($Map/Ground.to_local($Players/Player.position))
+		var target_cell: Vector2i = $Map/Ground.local_to_map($Map/Ground.to_local(instance.target.position))
 		var bot_cell: Vector2i = $Map/Ground.local_to_map($Map/Ground.to_local(instance.position))
-		instance.is_adjacent_wall_to_player = is_wall_between_cells(player_cell, bot_cell, 2, true)
+		instance.is_adjacent_wall_to_target = is_wall_between_cells(target_cell, bot_cell, 2, true)
 	# for debugging
 	#%PlayerTitle.text = str(alive_players_count)
 	#%BotTitle.text = str(alive_bots_count)
 
-func initialize_score_ui() -> void:
-	%PlayerScore.text = str(player_score)
-	%BotScore.text = str(bot_score)
+#func initialize_score_ui() -> void:
+	#%PlayerScore.text = str(player_score)
+	#%BotScore.text = str(bot_score)
 
 signal finish_await
 func _on_await_timeout() -> void:
@@ -604,7 +604,7 @@ func set_bot_personality(bot: RigidBody2D) -> void:
 @export var MIN_SPAWNPOINT_DISTANCING: float = 800.0
 var bot_count: int
 const NEW_ENEMY_INSTANCE_PATH: String = "res://ingame/entities/bot/bot.tscn"
-var bot_count_interval: Vector2i = Vector2i(10, 15)
+var bot_count_interval: Vector2i = Vector2i(1, 1)
 func place_bots_on_map() -> void:
 	bot_count = SEEDED_RNG.randi_range(bot_count_interval.x, bot_count_interval.y)
 	var bot_instance: RigidBody2D = null
@@ -692,6 +692,7 @@ func _on_player_shoot(weapon_type: String) -> void:
 		bullet_offset = ROCKET_SPAWN_OFFSET
 		bullet_ins.initial_velocity_speed = $Players/Player.BULLET_SPEED
 		bullet_ins.type = "rocket"
+		bullet_ins.room_node = self
 		$Sounds/RocketShootNoise.play()
 	if weapon_type == "trap":
 		bullet_offset = TRAP_SPAWN_OFFSET
@@ -726,13 +727,7 @@ func _on_bot_shoot(bot_node: RigidBody2D) -> void:
 
 ## connected to each bullet's despawn signal
 func on_bullet_despawn(bullet: RigidBody2D) -> void:
-	# it'll probably be a single if statement in the future, there is no good reason to distinguish between
-	# players and bots inside this function
-	if bullet.owner_node.get_meta("type", "NULL") == "player":
-		if bullet.type == "regular":
-			$Players/Player.bullet_count -= 1
-	if bullet.owner_node.get_meta("type", "NULL") == "bot": bullet.owner_node.bullet_count -= 1
-	#node.queue_free()
+	if bullet.type == "regular": bullet.owner_node.bullet_count -= 1
 
 const NEW_CRATE_PATH: String = "res://ingame/entities/crates/crate.tscn"
 func _on_crate_spawn_delay_timeout() -> void:
@@ -771,23 +766,23 @@ func _on_bot_level_die(is_peer_invincible: bool) -> void:
 func _on_death_delay_timeout() -> void:
 	if alive_players_count > 0 and alive_bots_count > 0: return
 	if alive_players_count <= 0 and alive_bots_count <= 0:
-		%DrawTitle.visible = true
+		#%DrawTitle.visible = true
 		$Timers/NextRoundDelay.start()
 		$Sounds/NextRoundNoise.play()
 		process_mode = Node.PROCESS_MODE_DISABLED
 		return
 	if alive_players_count <= 0:
 		bot_score += 1
-		%BotScore.text = str(bot_score)
+		#%BotScore.text = str(bot_score)
 	if alive_bots_count <= 0:
 		player_score += 1
-		%PlayerScore.text = str(player_score)
+		#%PlayerScore.text = str(player_score)
 	$Timers/NextRoundDelay.start()
 	$Sounds/NextRoundNoise.play()
 	process_mode = Node.PROCESS_MODE_DISABLED
 
 func reset() -> void:
-	%DrawTitle.visible = false
+	#%DrawTitle.visible = false
 	$Players/Player.process_mode = Node.PROCESS_MODE_DISABLED
 	$Players/Player.visible = false
 	maze_cells.clear()
