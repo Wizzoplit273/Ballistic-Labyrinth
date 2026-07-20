@@ -4,6 +4,7 @@
 [ext_resource type="AudioStream" uid="uid://dhoxj0irluo7u" path="res://ingame/tiles/MAZE_GENERATION_glitch-fx-transitions-10-311812.mp3" id="2_qj304"]
 [ext_resource type="AudioStream" uid="uid://cy22uropw1uaf" path="res://ingame/entities/SHOOT_NORMAL_toy-gun-364850.mp3" id="3_hqbxh"]
 [ext_resource type="TileSet" uid="uid://ddrdyvjlplhow" path="res://ingame/tiles/base_tileset.tres" id="4_ogvd8"]
+[ext_resource type="AudioStream" uid="uid://j0bvh28ujkcp" path="res://ingame/entities/projectiles/laser_sfx_13b.ogg" id="4_qj304"]
 [ext_resource type="TileSet" uid="uid://c4vwq4xoys05c" path="res://ingame/tiles/wall_tileset.tres" id="5_17rhd"]
 [ext_resource type="PhysicsMaterial" uid="uid://dwflcy1oyadf7" path="res://ingame/tiles/maze_wall_physics_material.tres" id="6_38y6w"]
 [ext_resource type="TileSet" uid="uid://dfsuj2j7xhgpg" path="res://ingame/tiles/navigation_tileset.tres" id="7_vsf7s"]
@@ -146,6 +147,11 @@ stream = ExtResource("2_qj304")
 volume_db = -28.0
 pitch_scale = 0.1
 max_polyphony = 80
+
+[node name="EquipWeaponNoise" type="AudioStreamPlayer" parent="Sounds" unique_id=2139951534]
+stream = ExtResource("4_qj304")
+volume_db = -10.0
+pitch_scale = 0.65
 
 [node name="Camera" type="Camera2D" parent="." unique_id=1791960745]
 zoom = Vector2(0.65, 0.65)

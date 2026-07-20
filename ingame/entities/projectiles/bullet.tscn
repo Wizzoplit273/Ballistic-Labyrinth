@@ -5,6 +5,7 @@
 [ext_resource type="Script" uid="uid://c116i4g5og7gj" path="res://ingame/entities/projectiles/bullet.gd" id="2_wrvnv"]
 [ext_resource type="AudioStream" uid="uid://cy22uropw1uaf" path="res://ingame/entities/SHOOT_NORMAL_toy-gun-364850.mp3" id="3_05xpt"]
 [ext_resource type="AudioStream" uid="uid://dhoxj0irluo7u" path="res://ingame/tiles/MAZE_GENERATION_glitch-fx-transitions-10-311812.mp3" id="3_qbrdm"]
+[ext_resource type="Texture2D" uid="uid://d1q7gd2e0q0ji" path="res://light.png" id="6_qnes1"]
 
 [sub_resource type="Animation" id="Animation_qnes1"]
 length = 0.001
@@ -46,17 +47,29 @@ _data = {
 radius = 32.0
 
 [sub_resource type="Gradient" id="Gradient_05xpt"]
-offsets = PackedFloat32Array(0)
-colors = PackedColorArray(0, 0, 0, 0.431373)
+colors = PackedColorArray(1, 1, 1, 1, 0, 0, 0, 0.431373)
 
 [sub_resource type="GradientTexture1D" id="GradientTexture1D_qbrdm"]
 gradient = SubResource("Gradient_05xpt")
 
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_qnes1"]
+particle_flag_disable_z = true
+gravity = Vector3(0, 0, 0)
+damping_min = 0.010000001
+damping_max = 0.010000001
+scale_min = 0.099999994
+scale_max = 0.099999994
+color = Color(0.41598046, 0.41598043, 0.4159804, 1)
+color_ramp = SubResource("GradientTexture1D_qbrdm")
+
 [sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_05xpt"]
 particle_flag_disable_z = true
 gravity = Vector3(0, 0, 0)
-scale_min = 0.1
-scale_max = 0.1
+damping_min = 0.010000001
+damping_max = 0.010000001
+scale_min = 0.01
+scale_max = 0.01
+color = Color(0.41568628, 0.41568628, 0.41568628, 0.42745098)
 color_ramp = SubResource("GradientTexture1D_qbrdm")
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_wrvnv"]
@@ -157,6 +170,20 @@ texture = ExtResource("1_qp50q")
 lifetime = 32.0
 speed_scale = 64.0
 fixed_fps = 60
+trail_lifetime = 2.0
+process_material = SubResource("ParticleProcessMaterial_qnes1")
+metadata/_edit_lock_ = true
+
+[node name="RocketTrail" type="GPUParticles2D" parent="Rest" unique_id=2140393203]
+modulate = Color(1, 1, 1, 0.11372549)
+scale = Vector2(10, 10)
+emitting = false
+amount = 3000
+texture = ExtResource("6_qnes1")
+lifetime = 32.0
+speed_scale = 64.0
+fixed_fps = 60
+trail_lifetime = 2.0
 process_material = SubResource("ParticleProcessMaterial_05xpt")
 metadata/_edit_lock_ = true
 

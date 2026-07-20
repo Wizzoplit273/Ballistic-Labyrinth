@@ -745,6 +745,7 @@ func _on_crate_spawn_delay_timeout() -> void:
 
 ## connected to crates when one of them gets picked up by the player
 func equip_weapon(_player: RigidBody2D, type: String) -> void:
+	$Sounds/EquipWeaponNoise.play()
 	$Players/Player.equip_weapon(type)
 
 var alive_players_count: int

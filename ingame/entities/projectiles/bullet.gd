@@ -43,9 +43,17 @@ func modified_ready() -> void:
 func determine_closest_target() -> void:
 	var result: Node2D = owner_node
 	for player: RigidBody2D in room_node.get_node("Players").get_children():
+		if player.get_node("Rest").visible == false: continue
+		if result.get_node("Rest").visible == false:
+			result = player
+			continue
 		if position.distance_to(player.position) <= position.distance_to(result.position):
 			result = player
 	for bot: RigidBody2D in room_node.get_node("Bots").get_children():
+		if bot.get_node("Rest").visible == false: continue
+		if result.get_node("Rest").visible == false:
+			result = bot
+			continue
 		if position.distance_to(bot.position) <= position.distance_to(result.position):
 			result = bot
 	$RocketNavigation.target_position = result.position
@@ -64,8 +72,10 @@ func configure_if_rocket() -> void:
 	var next_point: Vector2 = $RocketNavigation.get_next_path_position()
 	var direction: Vector2 = (next_point - global_position).normalized()
 	var proper_rotation: float = linear_velocity.angle()
-	if target.get_node("Rest").visible:
-		proper_rotation = lerp_angle(proper_rotation, direction.angle(), ROCKET_MAX_TURN_SPEED)
+	if target != null:
+		$Rest/RocketTrail.emitting = target.get_node("Rest").visible
+		if target.get_node("Rest").visible:
+			proper_rotation = lerp_angle(proper_rotation, direction.angle(), ROCKET_MAX_TURN_SPEED)
 	linear_velocity = (Vector2.RIGHT * linear_velocity.length()).rotated(proper_rotation)
 
 func set_node_rotations() -> void:

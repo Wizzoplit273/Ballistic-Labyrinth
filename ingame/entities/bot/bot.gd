@@ -184,6 +184,8 @@ func _physics_process(_delta: float) -> void:
 		if abs(rotation - direction_to_player) <= MAX_SHOOT_ANGLE_DIFFERENCE and $ShootingCooldown.is_stopped():
 			if not was_patroling:
 				$ShootingCooldown.start()
+				direction_deviation = randf_range(-DIRECTION_DEVIATION, DIRECTION_DEVIATION)
+				rotation += direction_deviation
 				shoot.emit(self)
 		return
 	var next_point: Vector2 = $NavigationAgent.get_next_path_position()
