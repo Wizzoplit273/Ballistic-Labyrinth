@@ -638,25 +638,6 @@ func place_bots_on_map() -> void:
 			bot_instance.process_mode = Node.PROCESS_MODE_INHERIT
 			#bot_instance.get_node("Rest/Image").scale += Vector2.ONE * SEEDED_RNG.randf_range(-0.1, 0.1)
 		alive_bots_count = bot_count
-		## TEMPORARY: make everyone vulnerable
-		bot_instance.switch_peer_invincibility()
-	# set_random_bot_peer_vulnerability(SEEDED_RNG.randi_range(1, 2))
-
-func set_random_bot_peer_vulnerability(count: int) -> void:
-	var index: int
-	var bot: Node
-	var invincible_count: int = 0
-	while count > 0:
-		index = SEEDED_RNG.randi_range(0, $Bots.get_child_count() - 1)
-		bot = $Bots.get_child(index)
-		while not bot.is_peer_invincible and invincible_count < $Bots.get_child_count():
-			invincible_count += 1
-			index += 1
-			if index >= $Bots.get_child_count(): index = 0
-			bot = $Bots.get_child(index)
-		if invincible_count >= $Bots.get_child_count(): return
-		bot.switch_peer_invincibility()
-		count -= 1
 
 const NEW_BULLET_PATH: String = "res://ingame/entities/projectiles/bullet.tscn"
 const REGULAR_SPAWN_OFFSET: float = 30.0
@@ -760,8 +741,7 @@ func _on_player_level_die() -> void:
 	if alive_players_count + alive_bots_count <= 1:
 		$Timers/DeathDelay.start()
 
-func _on_bot_level_die(is_peer_invincible: bool) -> void:
-	if not is_peer_invincible: set_random_bot_peer_vulnerability(1)
+func _on_bot_level_die() -> void:
 	alive_bots_count -= 1
 	$Sounds/DeathNoise.play()
 	if alive_players_count + alive_bots_count <= 1:

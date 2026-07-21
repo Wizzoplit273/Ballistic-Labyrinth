@@ -25,21 +25,6 @@ var target: RigidBody2D = self
 var is_adjacent_wall_to_target: bool = false
 var is_dodging_bullets: bool = false
 var DEBUG_is_showing_dodging: bool = false
-var is_peer_invincible: bool = true
-
-const PEER_VULNERABLE_MODULATE: Color = Color(0.954, 0.008, 0.0, 1.0)
-var normal_modulate: Color
-## called by parent level scene
-const PEER_INVINCIBILITY_MODULATE: float = 1.0	
-func switch_peer_invincibility() -> void:
-	if is_peer_invincible:
-		normal_modulate = $Rest/Image.modulate
-		$Rest/Image.modulate = PEER_VULNERABLE_MODULATE
-		$DeathParticles.modulate = PEER_VULNERABLE_MODULATE
-	else:
-		$Rest/Image.modulate = normal_modulate
-		$DeathParticles.modulate = normal_modulate
-	is_peer_invincible = not is_peer_invincible
 
 signal shoot(owner_node: RigidBody2D)
 func _ready() -> void:
@@ -224,7 +209,6 @@ func is_bullet_dangerous(bullet: RigidBody2D) -> bool:
 	if bullet == null: return false
 	if bullet.get_meta("type", "NULL") != "bullet": return false
 	if bullet.owner_node != self:
-		if is_peer_invincible: return false
 		if bullet.owner_node.get_meta("type", "NULL") == "bot":
 			if not bot_friendly_fire: return false
 	if (previous_position - position).length() == 0.0:
@@ -392,8 +376,7 @@ func dodge_bullet(bullet: RigidBody2D) -> void:
 signal level_die(has_peer_invincibility: bool)
 ## called by bullet scenes that hit the bot
 func die() -> void:
-	if is_peer_invincible: return
 	$Rest.visible = false
 	process_mode = Node.PROCESS_MODE_DISABLED
 	$DeathParticles.restart()
-	level_die.emit(is_peer_invincible)
+	level_die.emit()
