@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://wgurxu8fyrnf" path="res://origin.gd" id="1_tb4yc"]
 [ext_resource type="Script" uid="uid://desjpxlp4d326" path="res://ui/main_menu/main_menu.gd" id="2_2me8q"]
+[ext_resource type="AudioStream" uid="uid://g7a62bk645rj" path="res://soundtrack_menu.mp3" id="2_6o7oq"]
 [ext_resource type="Texture2D" uid="uid://bsnkweusjyp86" path="res://ui/main_menu/main_menu_background.jpg" id="2_wc1iw"]
 [ext_resource type="Script" uid="uid://tecvb1bo3wnl" path="res://ui/pause_menu/pause_menu.gd" id="2_xyqw4"]
 [ext_resource type="Texture2D" uid="uid://cfp23f081i35a" path="res://ui/noise_texture_1.tres" id="4_xyqw4"]
@@ -31,6 +32,9 @@ font_size = 35
 
 [node name="Origin" type="Node" unique_id=1976139409]
 script = ExtResource("1_tb4yc")
+
+[node name="Soundtrack" type="AudioStreamPlayer" parent="." unique_id=206717116]
+stream = ExtResource("2_6o7oq")
 
 [node name="RoomContainer" type="Node" parent="." unique_id=574915652]
 
@@ -186,25 +190,25 @@ layout_mode = 2
 size_flags_vertical = 3
 metadata/_edit_lock_ = true
 
-[node name="BurronContainer" type="HBoxContainer" parent="MainMenu/ExitConfirmDialog/Frame" unique_id=2091531796]
+[node name="ButtonContainer" type="HBoxContainer" parent="MainMenu/ExitConfirmDialog/Frame" unique_id=2091531796]
 layout_mode = 2
 size_flags_vertical = 3
 size_flags_stretch_ratio = 0.2
 alignment = 1
 metadata/_edit_lock_ = true
 
-[node name="DiscardButton" type="Button" parent="MainMenu/ExitConfirmDialog/Frame/BurronContainer" unique_id=170040272]
+[node name="DiscardButton" type="Button" parent="MainMenu/ExitConfirmDialog/Frame/ButtonContainer" unique_id=170040272]
 layout_mode = 2
 size_flags_horizontal = 10
 text = "No"
 metadata/_edit_lock_ = true
 
-[node name="HSpacer" type="Control" parent="MainMenu/ExitConfirmDialog/Frame/BurronContainer" unique_id=247019043]
+[node name="HSpacer" type="Control" parent="MainMenu/ExitConfirmDialog/Frame/ButtonContainer" unique_id=247019043]
 layout_mode = 2
 size_flags_horizontal = 3
 metadata/_edit_lock_ = true
 
-[node name="ConfirmButton" type="Button" parent="MainMenu/ExitConfirmDialog/Frame/BurronContainer" unique_id=1572412178]
+[node name="ConfirmButton" type="Button" parent="MainMenu/ExitConfirmDialog/Frame/ButtonContainer" unique_id=1572412178]
 layout_mode = 2
 size_flags_horizontal = 2
 text = "Yes"
@@ -229,7 +233,7 @@ metadata/_edit_lock_ = true
 layout_mode = 2
 size_flags_vertical = 10
 size_flags_stretch_ratio = 0.2
-text = "Ballistic Labyrinth"
+text = "Ballistic Labyrinth Lite"
 label_settings = SubResource("LabelSettings_wc1iw")
 horizontal_alignment = 1
 vertical_alignment = 2
@@ -291,7 +295,6 @@ size_flags_stretch_ratio = 0.4
 metadata/_edit_lock_ = true
 
 [node name="Developer" type="Label" parent="MainMenu/Frame" unique_id=1408923264]
-visible = false
 layout_mode = 2
 size_flags_vertical = 2
 size_flags_stretch_ratio = 0.07
@@ -754,8 +757,8 @@ metadata/_edit_lock_ = true
 
 [connection signal="pressed" from="PauseMenu/Frame/BurronContainer/ResumeButton" to="PauseMenu" method="_on_resume_button_pressed"]
 [connection signal="pressed" from="PauseMenu/Frame/BurronContainer/BackToMainMenuButton" to="PauseMenu" method="_on_back_to_main_menu_button_pressed"]
-[connection signal="pressed" from="MainMenu/ExitConfirmDialog/Frame/BurronContainer/DiscardButton" to="MainMenu" method="_on_discard_button_pressed"]
-[connection signal="pressed" from="MainMenu/ExitConfirmDialog/Frame/BurronContainer/ConfirmButton" to="MainMenu" method="_on_confirm_button_pressed"]
+[connection signal="pressed" from="MainMenu/ExitConfirmDialog/Frame/ButtonContainer/DiscardButton" to="MainMenu" method="_on_discard_button_pressed"]
+[connection signal="pressed" from="MainMenu/ExitConfirmDialog/Frame/ButtonContainer/ConfirmButton" to="MainMenu" method="_on_confirm_button_pressed"]
 [connection signal="pressed" from="MainMenu/Frame/StartMissionButton" to="MainMenu" method="_on_start_mission_button_pressed"]
 [connection signal="pressed" from="MainMenu/Frame/SettingsButton" to="MainMenu" method="_on_settings_button_pressed"]
 [connection signal="pressed" from="MainMenu/Frame/ExitGameButton" to="MainMenu" method="_on_exit_game_button_pressed"]

@@ -598,7 +598,7 @@ func set_bot_personality(bot: RigidBody2D) -> void:
 @export var MIN_SPAWNPOINT_DISTANCING: float = 800.0
 var bot_count: int
 const NEW_ENEMY_INSTANCE_PATH: String = "res://ingame/entities/bot/bot.tscn"
-var bot_count_interval: Vector2i = Vector2i(3, 6)
+var bot_count_interval: Vector2i = Vector2i(3, 10)
 func place_bots_on_map() -> void:
 	bot_count = SEEDED_RNG.randi_range(bot_count_interval.x, bot_count_interval.y)
 	alive_tanks_count += bot_count

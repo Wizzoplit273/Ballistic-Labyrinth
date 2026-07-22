@@ -12,6 +12,8 @@ func free_room_container() -> void:
 		node.queue_free()
 
 func toggle_main_menu(value: bool) -> void:
+	if value: $Soundtrack.play()
+	else: $Soundtrack.stop()
 	$MainMenu.activate(value)
 	$MenusBackground.visible = value
 
