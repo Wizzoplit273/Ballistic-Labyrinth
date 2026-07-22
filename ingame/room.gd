@@ -79,16 +79,10 @@ func _process(_delta: float) -> void:
 	manage_debug_options()
 	for instance: RigidBody2D in $Bots.get_children():
 		instance.DEBUG_is_showing_dodging = DEBUG_is_showing_dodging
+		if instance.target == null: continue
 		var target_cell: Vector2i = $Map/Ground.local_to_map($Map/Ground.to_local(instance.target.position))
 		var bot_cell: Vector2i = $Map/Ground.local_to_map($Map/Ground.to_local(instance.position))
 		instance.is_adjacent_wall_to_target = is_wall_between_cells(target_cell, bot_cell, 2, true)
-	# for debugging
-	#%PlayerTitle.text = str(alive_players_count)
-	#%BotTitle.text = str(alive_bots_count)
-
-#func initialize_score_ui() -> void:
-	#%PlayerScore.text = str(player_score)
-	#%BotScore.text = str(bot_score)
 
 signal finish_await
 func _on_await_timeout() -> void:
@@ -578,7 +572,7 @@ func place_player_on_map() -> void:
 	$Players/Player.visible = true
 	$Players/Player.process_mode = Node.PROCESS_MODE_INHERIT
 	#$Players/Player.modulate = player_color
-	alive_players_count = 1
+	alive_tanks_count += 1
 
 const ENEMY_LINEAR_SPEED_DEVIATION: float = 30.0
 const ENEMY_ANGULAR_SPEED_DEVIATION: float = 100.0
@@ -607,6 +601,7 @@ const NEW_ENEMY_INSTANCE_PATH: String = "res://ingame/entities/bot/bot.tscn"
 var bot_count_interval: Vector2i = Vector2i(3, 6)
 func place_bots_on_map() -> void:
 	bot_count = SEEDED_RNG.randi_range(bot_count_interval.x, bot_count_interval.y)
+	alive_tanks_count += bot_count
 	var bot_instance: RigidBody2D = null
 	for index: int in range(0, bot_count):
 		bot_instance = load(NEW_ENEMY_INSTANCE_PATH).instantiate()
@@ -615,6 +610,7 @@ func place_bots_on_map() -> void:
 		bot_instance.global_position = $Players/Player.global_position
 		bot_instance.player_parent_node = $Players
 		bot_instance.bot_parent_node = $Bots
+		bot_instance.crate_parent_node = $Crates
 		bot_instance.bot_friendly_fire = bot_friendly_fire
 		while ($Players/Player.global_position - bot_instance.global_position).length() <= MIN_SPAWNPOINT_DISTANCING:
 			bot_instance.process_mode = Node.PROCESS_MODE_DISABLED
@@ -637,7 +633,6 @@ func place_bots_on_map() -> void:
 				bot_instance.connect("level_die", _on_bot_level_die)
 			bot_instance.process_mode = Node.PROCESS_MODE_INHERIT
 			#bot_instance.get_node("Rest/Image").scale += Vector2.ONE * SEEDED_RNG.randf_range(-0.1, 0.1)
-		alive_bots_count = bot_count
 
 const NEW_BULLET_PATH: String = "res://ingame/entities/projectiles/bullet.tscn"
 const REGULAR_SPAWN_OFFSET: float = 26.0
@@ -648,6 +643,7 @@ const ROCKET_SPAWN_OFFSET: float = 30.0
 const ROCKET_SPEED: float = 300.0
 const ROCKET_LIFESPAN: float = 15.0
 const TRAP_SPAWN_OFFSET: float = 60.0
+const REGULAR_SPEED: float = 300.0
 
 var bullet_ins: RigidBody2D = null
 func _on_player_shoot(weapon_type: String) -> void:
@@ -661,7 +657,7 @@ func _on_player_shoot(weapon_type: String) -> void:
 	#var bullet_speed: float
 	if weapon_type == "regular":
 		bullet_offset = REGULAR_SPAWN_OFFSET
-		bullet_ins.initial_velocity_speed = $Players/Player.BULLET_SPEED
+		bullet_ins.initial_velocity_speed = REGULAR_SPEED
 		bullet_ins.type = "regular"
 		$Sounds/NormalShootNoise.play()
 	if weapon_type == "laser":
@@ -692,20 +688,45 @@ func _on_player_shoot(weapon_type: String) -> void:
 	bullet_ins.modified_ready()
 	bullet_ins.process_mode = Node.PROCESS_MODE_INHERIT
 
-func _on_bot_shoot(bot_node: RigidBody2D) -> void:
-	if bot_node.bullet_count >= bot_node.MAX_BULLET_COUNT:
+func _on_bot_shoot(bot: RigidBody2D, weapon_type: String) -> void:
+	if weapon_type == "regular" and bot.bullet_count >= bot.MAX_BULLET_COUNT:
 		$Sounds/NoAmmoNoise.play()
 		return
-	$Sounds/NormalShootNoise.play()
+	if weapon_type != "regular":
+		bot.equip_weapon("regular")
 	bullet_ins = load(NEW_BULLET_PATH).instantiate()
-	bullet_ins.type = "regular"
-	bullet_ins.initial_velocity_direction = bot_node.rotation
-	bullet_ins.initial_velocity_speed = $Players/Player.BULLET_SPEED
+	var bullet_offset: float
+	#var bullet_speed: float
+	if weapon_type == "regular":
+		bullet_offset = REGULAR_SPAWN_OFFSET
+		bullet_ins.initial_velocity_speed = REGULAR_SPEED
+		bullet_ins.type = "regular"
+		$Sounds/NormalShootNoise.play()
+	if weapon_type == "laser":
+		bullet_offset = LASER_SPAWN_OFFSET
+		bullet_ins.initial_velocity_speed = LASER_SPEED
+		bullet_ins.get_node("LifespanTimer").wait_time = LASER_LIFESPAN
+		bullet_ins.get_node("Rest/LaserTrail").emitting = true
+		bullet_ins.type = "laser"
+		$Sounds/LaserShootNoise.play()
+	if weapon_type == "rocket":
+		bullet_offset = ROCKET_SPAWN_OFFSET
+		bullet_ins.initial_velocity_speed = ROCKET_SPEED
+		bullet_ins.get_node("LifespanTimer").wait_time = ROCKET_LIFESPAN
+		bullet_ins.type = "rocket"
+		bullet_ins.room_node = self
+		$Sounds/RocketShootNoise.play()
+	if weapon_type == "trap":
+		bullet_offset = TRAP_SPAWN_OFFSET
+		bullet_ins.initial_velocity_speed = 0.0
+		bullet_ins.type = "trap"
+		$Sounds/TrapPlaceNoise.play()
 	$Bullets.add_child(bullet_ins)
-	bullet_ins.position = bot_node.position + Vector2(bot_node.BULLET_SPAWN_OFFSET, 0).rotated(bot_node.rotation)
-	bullet_ins.connect("despawn", on_bullet_despawn)
-	bullet_ins.owner_node = bot_node
-	bot_node.bullet_count += 1
+	bullet_ins.owner_node = bot
+	bullet_ins.initial_velocity_direction = bot.rotation
+	bullet_ins.position = bot.position + Vector2(bullet_offset, 0).rotated(bot.rotation)
+	if weapon_type != "trap": bullet_ins.connect("despawn", on_bullet_despawn)
+	if weapon_type == "regular": bot.bullet_count += 1
 	bullet_ins.modified_ready()
 	bullet_ins.process_mode = Node.PROCESS_MODE_INHERIT
 
@@ -713,8 +734,11 @@ func _on_bot_shoot(bot_node: RigidBody2D) -> void:
 func on_bullet_despawn(bullet: RigidBody2D) -> void:
 	if bullet.type == "regular": bullet.owner_node.bullet_count -= 1
 
+var crate_count: int = 0
 const NEW_CRATE_PATH: String = "res://ingame/entities/crates/crate.tscn"
 func _on_crate_spawn_delay_timeout() -> void:
+	if crate_count >= alive_tanks_count: return
+	crate_count += 1
 	$Sounds/CrateSpawnNoise.play()
 	var crate_instance: Area2D = null
 	crate_instance = load(NEW_CRATE_PATH).instantiate()
@@ -724,43 +748,31 @@ func _on_crate_spawn_delay_timeout() -> void:
 	crate_instance.connect("equip_weapon", equip_weapon)
 	crate_instance.modified_ready()
 
-## connected to crates when one of them gets picked up by the player
-func equip_weapon(_player: RigidBody2D, type: String) -> void:
+## connected to crates when one of them gets picked up by a tank
+func equip_weapon(tank: RigidBody2D, type: String) -> void:
+	crate_count -= 1
 	$Sounds/EquipWeaponNoise.play()
-	$Players/Player.equip_weapon(type)
+	tank.equip_weapon(type)
 
-var alive_players_count: int
-var alive_bots_count: int
+var alive_tanks_count: int = 0
 
 var player_score: int = 0
 var bot_score: int = 0
 
 func _on_player_level_die() -> void:
-	alive_players_count -= 1
+	alive_tanks_count -= 1
 	$Sounds/DeathNoise.play()
-	if alive_players_count + alive_bots_count <= 1:
+	if alive_tanks_count <= 1:
 		$Timers/DeathDelay.start()
 
 func _on_bot_level_die() -> void:
-	alive_bots_count -= 1
+	alive_tanks_count -= 1
 	$Sounds/DeathNoise.play()
-	if alive_players_count + alive_bots_count <= 1:
+	if alive_tanks_count <= 1:
 		$Timers/DeathDelay.start()
 
 func _on_death_delay_timeout() -> void:
-	if alive_players_count > 0 and alive_bots_count > 0: return
-	if alive_players_count <= 0 and alive_bots_count <= 0:
-		#%DrawTitle.visible = true
-		$Timers/NextRoundDelay.start()
-		$Sounds/NextRoundNoise.play()
-		process_mode = Node.PROCESS_MODE_DISABLED
-		return
-	if alive_players_count <= 0:
-		bot_score += 1
-		#%BotScore.text = str(bot_score)
-	if alive_bots_count <= 0:
-		player_score += 1
-		#%PlayerScore.text = str(player_score)
+	if alive_tanks_count > 1: return
 	$Timers/NextRoundDelay.start()
 	$Sounds/NextRoundNoise.play()
 	process_mode = Node.PROCESS_MODE_DISABLED

@@ -56,7 +56,7 @@ metadata/_edit_lock_ = true
 [node name="Timers" type="Node" parent="." unique_id=452980816]
 
 [node name="Await" type="Timer" parent="Timers" unique_id=780148569]
-wait_time = 0.00999999999999999
+wait_time = 0.009999999999999998
 one_shot = true
 
 [node name="CrateSpawnDelay" type="Timer" parent="Timers" unique_id=108254139]
@@ -96,9 +96,8 @@ volume_db = -7.0
 pitch_scale = 0.65
 
 [node name="TrapPlaceNoise" type="AudioStreamPlayer" parent="Sounds" unique_id=1001089527]
-stream = ExtResource("3_hqbxh")
-volume_db = -5.0
-pitch_scale = 1.5
+stream = ExtResource("4_qj304")
+volume_db = -10.0
 
 [node name="RocketShootNoise" type="AudioStreamPlayer" parent="Sounds" unique_id=1891990658]
 stream = ExtResource("3_hqbxh")

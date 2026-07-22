@@ -1,8 +1,5 @@
 extends RigidBody2D
 
-## those variables are only used outside this script, in the level scene node
-const BULLET_SPEED: float = 300.0
-
 const LINEAR_SPEED: float = 200.0
 const ANGULAR_SPEED: float = 300.0
 const MAX_BULLET_COUNT: int = 5

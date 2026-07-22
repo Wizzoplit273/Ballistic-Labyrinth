@@ -110,10 +110,6 @@ func _on_body_entered(body: Node) -> void:
 		body.die("bullet")
 		die("bullet")
 
-func _on_wall_tunnel_proof_body_entered(_body: Node2D) -> void:
-	if not $WallTunnelProofTimer.is_stopped():
-		die("tunnel_proof")
-
 func disable_process_mode() -> void:
 	process_mode = Node.PROCESS_MODE_DISABLED
 
@@ -121,10 +117,6 @@ func die(cause: String) -> void:
 	$Rest.visible = false
 	call_deferred("disable_process_mode")
 	if cause == "lifespan":
-		despawn.emit(self)
-		queue_free()
-		return
-	if cause == "tunnel_proof":
 		despawn.emit(self)
 		queue_free()
 		return

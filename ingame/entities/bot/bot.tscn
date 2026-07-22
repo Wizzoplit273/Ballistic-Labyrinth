@@ -2,7 +2,6 @@
 
 [ext_resource type="Script" uid="uid://crfjuwlcy81x2" path="res://ingame/entities/bot/bot.gd" id="1_l1d7n"]
 [ext_resource type="Texture2D" uid="uid://ufr4xvpydw1x" path="res://ingame/entities/player/player_regular.png" id="2_ctn2v"]
-[ext_resource type="AudioStream" uid="uid://cy22uropw1uaf" path="res://ingame/entities/SHOOT_NORMAL_toy-gun-364850.mp3" id="2_srmle"]
 [ext_resource type="Texture2D" uid="uid://xa5vxaptiwsv" path="res://ingame/entities/projectiles/bullet_normal.png" id="3_srmle"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_1etb5"]
@@ -65,7 +64,7 @@ metadata/type = "bot"
 
 [node name="NavigationAgent" type="NavigationAgent2D" parent="." unique_id=538825553]
 path_desired_distance = 70.0
-target_desired_distance = 225.0
+target_desired_distance = 260.0
 path_max_distance = 80.0
 path_search_max_polygons = 0
 avoidance_enabled = true
@@ -77,11 +76,6 @@ debug_use_custom = true
 debug_path_custom_color = Color(0.941074, 7.70092e-07, 0.514228, 1)
 debug_path_custom_point_size = 10.0
 debug_path_custom_line_width = 2.0
-
-[node name="StuckBoy" type="AudioStreamPlayer" parent="." unique_id=1271306728]
-stream = ExtResource("2_srmle")
-volume_db = 5.0
-pitch_scale = 0.1
 
 [node name="WallStuckCooldown" type="Timer" parent="." unique_id=1051075490]
 wait_time = 0.25

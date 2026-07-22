@@ -12,6 +12,7 @@ var bot_friendly_fire: bool = true
 @export var ANGLE_DILATION: float = 0.1
 
 @onready var TARGET_DESIRED_DISTANCE: float = $NavigationAgent.target_desired_distance
+const CRATE_DESIRED_DISTANCE: float = 5.0
 const TARGET_PATROL_DISTANCE: float = 300.0
 
 ## updated by the parent level scene
@@ -19,14 +20,15 @@ var bullet_count: int = 0
 
 var player_parent_node: Node = null
 var bot_parent_node: Node = null
-var target: RigidBody2D = self
+var crate_parent_node: Node = null
+var target: Node2D = self
 
 
 var is_adjacent_wall_to_target: bool = false
 var is_dodging_bullets: bool = false
 var DEBUG_is_showing_dodging: bool = false
 
-signal shoot(owner_node: RigidBody2D)
+signal shoot(owner_node: RigidBody2D, type: String)
 func _ready() -> void:
 	$NavigationAgent.max_speed = LINEAR_SPEED
 
@@ -52,6 +54,7 @@ func point_to_target_if_seen() -> void:
 		return
 
 func determine_target() -> void:
+	if target == null: target = self
 	for tank: RigidBody2D in player_parent_node.get_children():
 		if tank == self: continue
 		if tank.get_node("Rest").visible == false: continue
@@ -68,6 +71,17 @@ func determine_target() -> void:
 			continue
 		if position.distance_to(tank.position) < position.distance_to(target.position):
 			target = tank
+	for crate: Area2D in crate_parent_node.get_children():
+		if crate.type == "trap": continue
+		if target == self:
+			target = crate
+			continue
+		if position.distance_to(crate.position) < position.distance_to(target.position):
+			target = crate
+	if not is_patrol_set:
+		if target is StaticBody2D:
+			$NavigationAgent.target_desired_distance = CRATE_DESIRED_DISTANCE
+		else: $NavigationAgent.target_desired_distance = TARGET_DESIRED_DISTANCE
 	if target.get_node("Rest").visible == false: target = self
 
 var is_path_stuck: bool = false
@@ -153,37 +167,39 @@ func _physics_process(_delta: float) -> void:
 	configure_debug()
 	configure_reversing()
 	if ($NavigationAgent.is_target_reached() and is_adjacent_wall_to_target):
-		$NavigationAgent.target_desired_distance = 1000.0
+		if not target is StaticBody2D: $NavigationAgent.target_desired_distance = 1000.0
+	elif target is StaticBody2D:
+		$NavigationAgent.target_desired_distance = CRATE_DESIRED_DISTANCE
 	else: $NavigationAgent.target_desired_distance = TARGET_DESIRED_DISTANCE
 	if $NavigationAgent.is_navigation_finished() and not is_adjacent_wall_to_target and not is_dodging_bullets:
-		var was_patroling: bool = is_patrol_set
-		is_patrol_set = false
-		if not target.get_node("Rest").visible: return
-		var auxiliary: float = rotation
-		var direction_to_player: float
-		look_at(target.position)
-		direction_to_player = rotation
-		rotation = auxiliary
-		var direction_deviation: float = randf_range(-DIRECTION_DEVIATION, DIRECTION_DEVIATION)
-		rotation = lerp_angle(rotation, direction_to_player+direction_deviation, ROTATION_INTERPOLATION_WEIGHT * 2)
-		if abs(rotation - direction_to_player) <= MAX_SHOOT_ANGLE_DIFFERENCE and $ShootingCooldown.is_stopped():
-			if not was_patroling:
-				$ShootingCooldown.start()
-				direction_deviation = randf_range(-DIRECTION_DEVIATION, DIRECTION_DEVIATION)
-				rotation += direction_deviation
-				shoot.emit(self)
-		return
+		if not target is Area2D:
+			var was_patroling: bool = is_patrol_set
+			is_patrol_set = false
+			if not target.get_node("Rest").visible: return
+			var auxiliary: float = rotation
+			var direction_to_player: float
+			look_at(target.position)
+			direction_to_player = rotation
+			rotation = auxiliary
+			var direction_deviation: float = randf_range(-DIRECTION_DEVIATION, DIRECTION_DEVIATION)
+			rotation = lerp_angle(rotation, direction_to_player+direction_deviation, ROTATION_INTERPOLATION_WEIGHT * 2)
+			if abs(rotation - direction_to_player) <= MAX_SHOOT_ANGLE_DIFFERENCE and $ShootingCooldown.is_stopped():
+				if not was_patroling:
+					$ShootingCooldown.start()
+					direction_deviation = randf_range(-DIRECTION_DEVIATION, DIRECTION_DEVIATION)
+					rotation += direction_deviation
+					shoot.emit(self, weapon_type)
+			return
 	var next_point: Vector2 = $NavigationAgent.get_next_path_position()
 	var direction: Vector2 = (next_point - global_position).normalized()
 	if target.get_node("Rest").visible:
 		rotation = lerp_angle(rotation, direction.angle(), ROTATION_INTERPOLATION_WEIGHT)
 	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
-	if target.get_node("Rest").visible or is_dodging_bullets: 
+	if target.get_node("Rest").visible or is_dodging_bullets:
 		rotation += rng.randf_range(-ANGLE_DILATION, ANGLE_DILATION)
 		linear_velocity = Vector2.RIGHT.rotated(rotation) * LINEAR_SPEED * (1 - int(is_reversing) * 2)
 	#if position.distance_to($NavigationAgent.get_next_path_position()) <= PATH_STUCK_DISTANCE:
 	if not $PathStuckDelay.is_stopped():
-		$StuckBoy.play()
 		initial_path_stuck_distance = position.distance_to($NavigationAgent.get_next_path_position())
 		$PathStuckDelay.start()
 	previous_position = position
@@ -380,3 +396,24 @@ func die() -> void:
 	process_mode = Node.PROCESS_MODE_DISABLED
 	$DeathParticles.restart()
 	level_die.emit()
+
+var weapon_type: String = "regular"
+const SKIN_PATH_PREFIX: String = "res://ingame/entities/player/player_"
+const SKIN_EXTENSION: String = ".png"
+func equip_weapon(type: String) -> void:
+	if type == "regular":
+		weapon_type = type
+		$Rest/Image.texture = load(SKIN_PATH_PREFIX + type + SKIN_EXTENSION)
+		return
+	if type == "laser":
+		weapon_type = type
+		$Rest/Image.texture = load(SKIN_PATH_PREFIX + type + SKIN_EXTENSION)
+		return
+	if type == "rocket":
+		weapon_type = type
+		$Rest/Image.texture = load(SKIN_PATH_PREFIX + type + SKIN_EXTENSION)
+		return
+	if type == "trap":
+		weapon_type = type
+		$Rest/Image.texture = load(SKIN_PATH_PREFIX + type + SKIN_EXTENSION)
+		return

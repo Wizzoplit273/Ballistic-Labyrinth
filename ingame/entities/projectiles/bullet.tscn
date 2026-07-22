@@ -72,9 +72,6 @@ color_ramp = SubResource("GradientTexture1D_qbrdm")
 [sub_resource type="CircleShape2D" id="CircleShape2D_d633r"]
 radius = 32.0
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_wrvnv"]
-radius = 3.0
-
 [sub_resource type="CircleShape2D" id="CircleShape2D_o8hsd"]
 radius = 50.0
 
@@ -115,7 +112,7 @@ debug_use_custom = true
 debug_path_custom_color = Color(0, 1, 1, 1)
 
 [node name="RocketDelay" type="Timer" parent="." unique_id=541031035]
-wait_time = 2.0
+wait_time = 1.5
 one_shot = true
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=946547365]
@@ -210,16 +207,6 @@ scale = Vector2(0.1, 0.1)
 shape = SubResource("CircleShape2D_d633r")
 metadata/_edit_lock_ = true
 
-[node name="WallTunnelProof" type="Area2D" parent="." unique_id=1450931438]
-visible = false
-monitoring = false
-metadata/_edit_lock_ = true
-
-[node name="Hitbox" type="CollisionShape2D" parent="WallTunnelProof" unique_id=1141954983]
-shape = SubResource("CircleShape2D_wrvnv")
-debug_color = Color(0.960603, 6.73831e-07, 0.515095, 0.42)
-metadata/_edit_lock_ = true
-
 [node name="EnemyDodgeRadius" type="Area2D" parent="." unique_id=963295539]
 visible = false
 collision_layer = 8
@@ -244,5 +231,4 @@ metadata/_edit_lock_ = true
 [connection signal="body_entered" from="." to="." method="_on_body_entered"]
 [connection signal="timeout" from="RocketDelay" to="." method="_on_rocket_delay_timeout"]
 [connection signal="timeout" from="LifespanTimer" to="." method="_on_lifespan_timer_timeout"]
-[connection signal="body_entered" from="WallTunnelProof" to="." method="_on_wall_tunnel_proof_body_entered"]
 [connection signal="finished" from="DespawnParticles" to="." method="_on_despawn_particles_finished"]

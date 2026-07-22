@@ -64,6 +64,7 @@ wait_time = 0.05
 one_shot = true
 
 [node name="TunnelHitbox" type="Area2D" parent="." unique_id=676680012]
+visible = false
 position = Vector2(1, 0)
 metadata/_edit_lock_ = true
 

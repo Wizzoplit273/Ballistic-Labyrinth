@@ -1,5 +1,8 @@
 extends Area2D
 
+# needed for making bot target as crate work(temporary fix)
+var linear_velocity: Vector2 = Vector2.ZERO
+
 ## self variables determind by the level scene:
 ## position
 
@@ -28,8 +31,9 @@ func modified_ready() -> void:
 	process_mode = Node.PROCESS_MODE_INHERIT
 	visible = true
 
-signal equip_weapon(player: RigidBody2D, type: String)
+signal equip_weapon(tank: RigidBody2D, type: String)
 func _on_body_entered(body: Node2D) -> void:
-	if body.get_meta("type", "NULL") != "player": return
+	if body.get_meta("type", "NULL") != "player" and body.get_meta("type", "NULL") != "bot": return
+	if type == "trap" and body.get_meta("type", "NULL") == "bot": return
 	equip_weapon.emit(body, type)
 	queue_free()
