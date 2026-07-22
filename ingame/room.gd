@@ -640,11 +640,11 @@ func place_bots_on_map() -> void:
 		alive_bots_count = bot_count
 
 const NEW_BULLET_PATH: String = "res://ingame/entities/projectiles/bullet.tscn"
-const REGULAR_SPAWN_OFFSET: float = 30.0
-const LASER_SPAWN_OFFSET: float = 30.0
-const LASER_SPEED: float = 4000.0
+const REGULAR_SPAWN_OFFSET: float = 26.0
+const LASER_SPAWN_OFFSET: float = 26.0
+const LASER_SPEED: float = 3000.0
 const LASER_LIFESPAN: float = 1.0
-const ROCKET_SPAWN_OFFSET: float = 34.0
+const ROCKET_SPAWN_OFFSET: float = 30.0
 const ROCKET_SPEED: float = 300.0
 const ROCKET_LIFESPAN: float = 15.0
 const TRAP_SPAWN_OFFSET: float = 60.0

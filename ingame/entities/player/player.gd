@@ -5,7 +5,6 @@ const BULLET_SPEED: float = 300.0
 
 const LINEAR_SPEED: float = 200.0
 const ANGULAR_SPEED: float = 300.0
-const BULLET_SPAWN_OFFSET: float = 30.0
 const MAX_BULLET_COUNT: int = 5
 
 var weapon_type: String = "regular"
@@ -34,6 +33,8 @@ func _physics_process(delta: float) -> void:
 		angular_velocity = -ANGULAR_SPEED * delta
 	
 	if Input.is_action_just_pressed("Shoot") and $ShootCooldown.is_stopped():
+		for body: Node2D in $TunnelHitbox.get_overlapping_bodies():
+			if body is StaticBody2D: return
 		shoot.emit(weapon_type)
 		$ShootCooldown.start()
 
