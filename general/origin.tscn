@@ -33,10 +33,10 @@ font_size = 35
 [node name="Origin" type="Node" unique_id=1976139409]
 script = ExtResource("1_nd25w")
 
+[node name="RoomContainer" type="Node" parent="." unique_id=574915652]
+
 [node name="Soundtrack" type="AudioStreamPlayer" parent="." unique_id=206717116]
 stream = ExtResource("2_ljvqv")
-
-[node name="RoomContainer" type="Node" parent="." unique_id=574915652]
 
 [node name="MenusBackground" type="TextureRect" parent="." unique_id=1598378569]
 visible = false
@@ -143,7 +143,6 @@ size_flags_stretch_ratio = 0.05
 metadata/_edit_lock_ = true
 
 [node name="MainMenu" type="Control" parent="." unique_id=331948460]
-visible = false
 self_modulate = Color(0.168627, 0.168627, 0.168627, 0.419608)
 layout_mode = 3
 anchors_preset = 15
@@ -248,17 +247,28 @@ label_settings = SubResource("LabelSettings_pqpuc")
 horizontal_alignment = 1
 metadata/_edit_lock_ = true
 
-[node name="VSpacer1" type="Control" parent="MainMenu/Frame" unique_id=1847243273]
+[node name="Side1" type="HBoxContainer" parent="MainMenu/Frame" unique_id=1721091423]
+layout_mode = 2
+metadata/_edit_lock_ = true
+
+[node name="StartMissionButton" type="Button" parent="MainMenu/Frame/Side1" unique_id=523317959]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+text = "Start Game"
+metadata/_edit_lock_ = true
+
+[node name="VSpacer1" type="Control" parent="MainMenu/Frame/Side1" unique_id=1847243273]
 layout_mode = 2
 size_flags_vertical = 3
 size_flags_stretch_ratio = 0.4
 metadata/_edit_lock_ = true
 
-[node name="StartMissionButton" type="Button" parent="MainMenu/Frame" unique_id=523317959]
+[node name="ExitGameButton" type="Button" parent="MainMenu/Frame/Side1" unique_id=551240082]
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
-text = "Start Game"
+text = "Exit Game"
 metadata/_edit_lock_ = true
 
 [node name="VSpacer2" type="Control" parent="MainMenu/Frame" unique_id=725221564]
@@ -279,13 +289,6 @@ metadata/_edit_lock_ = true
 layout_mode = 2
 size_flags_vertical = 3
 size_flags_stretch_ratio = 0.05
-metadata/_edit_lock_ = true
-
-[node name="ExitGameButton" type="Button" parent="MainMenu/Frame" unique_id=551240082]
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 4
-text = "Exit Game"
 metadata/_edit_lock_ = true
 
 [node name="VSpacer4" type="Control" parent="MainMenu/Frame" unique_id=1481120288]
@@ -759,9 +762,9 @@ metadata/_edit_lock_ = true
 [connection signal="pressed" from="PauseMenu/Frame/BurronContainer/BackToMainMenuButton" to="PauseMenu" method="_on_back_to_main_menu_button_pressed"]
 [connection signal="pressed" from="MainMenu/ExitConfirmDialog/Frame/ButtonContainer/DiscardButton" to="MainMenu" method="_on_discard_button_pressed"]
 [connection signal="pressed" from="MainMenu/ExitConfirmDialog/Frame/ButtonContainer/ConfirmButton" to="MainMenu" method="_on_confirm_button_pressed"]
-[connection signal="pressed" from="MainMenu/Frame/StartMissionButton" to="MainMenu" method="_on_start_mission_button_pressed"]
+[connection signal="pressed" from="MainMenu/Frame/Side1/StartMissionButton" to="MainMenu" method="_on_start_mission_button_pressed"]
+[connection signal="pressed" from="MainMenu/Frame/Side1/ExitGameButton" to="MainMenu" method="_on_exit_game_button_pressed"]
 [connection signal="pressed" from="MainMenu/Frame/SettingsButton" to="MainMenu" method="_on_settings_button_pressed"]
-[connection signal="pressed" from="MainMenu/Frame/ExitGameButton" to="MainMenu" method="_on_exit_game_button_pressed"]
 [connection signal="value_changed" from="SettingsMenu/Frame/MazeSizeInterval/MinMazeSize/Width/MinMazeSizeScrollerX" to="SettingsMenu" method="_on_min_maze_size_scroller_x_value_changed"]
 [connection signal="value_changed" from="SettingsMenu/Frame/MazeSizeInterval/MinMazeSize/Height/MinMazeSizeScrollerY" to="SettingsMenu" method="_on_min_maze_size_scroller_y_value_changed"]
 [connection signal="value_changed" from="SettingsMenu/Frame/MazeSizeInterval/MaxMazeSize/Width/MaxMazeSizeScrollerX" to="SettingsMenu" method="_on_max_maze_size_scroller_x_value_changed"]
