@@ -24,7 +24,7 @@ config/icon="uid://bsnkweusjyp86"
 [autoload]
 
 NetworkHandler="*uid://db3pnn8xuboou"
-NetworkRegistry="*uid://cqmpp882jy0b8"
+NetworkSessions="*uid://cqmpp882jy0b8"
 
 [display]
 
