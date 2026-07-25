@@ -1,13 +1,13 @@
 [gd_scene format=3 uid="uid://dl53xfp6aj77b"]
 
-[ext_resource type="Script" uid="uid://wgurxu8fyrnf" path="res://origin.gd" id="1_tb4yc"]
-[ext_resource type="Script" uid="uid://desjpxlp4d326" path="res://ui/main_menu/main_menu.gd" id="2_2me8q"]
-[ext_resource type="AudioStream" uid="uid://g7a62bk645rj" path="res://soundtrack_menu.mp3" id="2_6o7oq"]
-[ext_resource type="Texture2D" uid="uid://bsnkweusjyp86" path="res://ui/main_menu/main_menu_background.jpg" id="2_wc1iw"]
-[ext_resource type="Script" uid="uid://tecvb1bo3wnl" path="res://ui/pause_menu/pause_menu.gd" id="2_xyqw4"]
-[ext_resource type="Texture2D" uid="uid://cfp23f081i35a" path="res://ui/noise_texture_1.tres" id="4_xyqw4"]
-[ext_resource type="Script" uid="uid://b41ev4xjlv5mx" path="res://ui/settings_menu/settings_menu.gd" id="6_ppsw1"]
-[ext_resource type="Texture2D" uid="uid://ufr4xvpydw1x" path="res://ingame/entities/player/player_regular.png" id="7_bao8v"]
+[ext_resource type="Script" uid="uid://wgurxu8fyrnf" path="res://general/origin.gd" id="1_nd25w"]
+[ext_resource type="AudioStream" uid="uid://g7a62bk645rj" path="res://soundtrack_menu.mp3" id="2_ljvqv"]
+[ext_resource type="Texture2D" uid="uid://bsnkweusjyp86" path="res://ui/main_menu/main_menu_background.jpg" id="3_8crku"]
+[ext_resource type="Script" uid="uid://tecvb1bo3wnl" path="res://ui/pause_menu/pause_menu.gd" id="4_c6wdr"]
+[ext_resource type="Texture2D" uid="uid://cfp23f081i35a" path="res://ui/noise_texture_1.tres" id="5_ygt82"]
+[ext_resource type="Script" uid="uid://desjpxlp4d326" path="res://ui/main_menu/main_menu.gd" id="6_q4m8x"]
+[ext_resource type="Script" uid="uid://b41ev4xjlv5mx" path="res://ui/settings_menu/settings_menu.gd" id="7_1hk6f"]
+[ext_resource type="Texture2D" uid="uid://ufr4xvpydw1x" path="res://ingame/entities/player/player_regular.png" id="8_erfxn"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_ppsw1"]
 font_size = 70
@@ -31,10 +31,10 @@ font_size = 50
 font_size = 35
 
 [node name="Origin" type="Node" unique_id=1976139409]
-script = ExtResource("1_tb4yc")
+script = ExtResource("1_nd25w")
 
 [node name="Soundtrack" type="AudioStreamPlayer" parent="." unique_id=206717116]
-stream = ExtResource("2_6o7oq")
+stream = ExtResource("2_ljvqv")
 
 [node name="RoomContainer" type="Node" parent="." unique_id=574915652]
 
@@ -46,7 +46,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-texture = ExtResource("2_wc1iw")
+texture = ExtResource("3_8crku")
 metadata/_edit_lock_ = true
 
 [node name="DEBUG_Screen" type="CanvasLayer" parent="." unique_id=1923287359]
@@ -76,7 +76,7 @@ metadata/_edit_lock_ = true
 [node name="PauseMenu" type="CanvasLayer" parent="." unique_id=2072805945]
 process_mode = 3
 visible = false
-script = ExtResource("2_xyqw4")
+script = ExtResource("4_c6wdr")
 
 [node name="Background" type="TextureRect" parent="PauseMenu" unique_id=1061662770]
 modulate = Color(1, 1, 1, 0.784314)
@@ -85,7 +85,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-texture = ExtResource("4_xyqw4")
+texture = ExtResource("5_ygt82")
 metadata/_edit_lock_ = true
 
 [node name="Frame" type="VBoxContainer" parent="PauseMenu" unique_id=939871743]
@@ -151,7 +151,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("2_2me8q")
+script = ExtResource("6_q4m8x")
 metadata/_edit_lock_ = true
 
 [node name="ExitConfirmDialog" type="CanvasLayer" parent="MainMenu" unique_id=340417110]
@@ -164,7 +164,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-texture = ExtResource("4_xyqw4")
+texture = ExtResource("5_ygt82")
 metadata/_edit_lock_ = true
 
 [node name="Frame" type="VBoxContainer" parent="MainMenu/ExitConfirmDialog" unique_id=981759832]
@@ -233,7 +233,7 @@ metadata/_edit_lock_ = true
 layout_mode = 2
 size_flags_vertical = 10
 size_flags_stretch_ratio = 0.2
-text = "Ballistic Labyrinth Lite"
+text = "Ballistic Labyrinth"
 label_settings = SubResource("LabelSettings_wc1iw")
 horizontal_alignment = 1
 vertical_alignment = 2
@@ -311,7 +311,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("6_ppsw1")
+script = ExtResource("7_1hk6f")
 metadata/_edit_lock_ = true
 
 [node name="Frame" type="VBoxContainer" parent="SettingsMenu" unique_id=1719284721]
@@ -724,7 +724,7 @@ metadata/_edit_lock_ = true
 unique_name_in_owner = true
 custom_minimum_size = Vector2(200, 0)
 layout_mode = 2
-texture = ExtResource("7_bao8v")
+texture = ExtResource("8_erfxn")
 metadata/_edit_lock_ = true
 
 [node name="PlayerColorPicker" type="ColorPicker" parent="SettingsMenu/Frame/EnemyFriendlyFire1/PlayerColor/PlayerColorContainer" unique_id=862987781]

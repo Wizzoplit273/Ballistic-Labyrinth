@@ -14,12 +14,17 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 
 [application]
 
-config/name="Ballistic Labyrinth Lite 1.4"
-config/version="1.4"
+config/name="Ballistic Labyrinth 1.5"
+config/version="1.5"
 run/main_scene="uid://dl53xfp6aj77b"
 config/features=PackedStringArray("4.7", "Forward Plus")
 boot_splash/image="uid://8yxuw07nmuag"
 config/icon="uid://bsnkweusjyp86"
+
+[autoload]
+
+NetworkHandler="*uid://db3pnn8xuboou"
+NetworkRegistry="*uid://cqmpp882jy0b8"
 
 [display]
 
@@ -35,6 +40,8 @@ enabled=PackedStringArray()
 [file_customization]
 
 folder_colors={
+"res://general/": "orange",
+"res://globals/": "gray",
 "res://ingame/": "blue",
 "res://ingame/entities/": "orange",
 "res://ingame/entities/bot/": "red",
