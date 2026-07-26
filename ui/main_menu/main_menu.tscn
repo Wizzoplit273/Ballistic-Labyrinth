@@ -1,0 +1,289 @@
+[gd_scene format=3 uid="uid://bjlnlvac61t55"]
+
+[ext_resource type="Texture2D" uid="uid://bsnkweusjyp86" path="res://ui/main_menu/main_menu_background.jpg" id="1_i5wg5"]
+[ext_resource type="Script" uid="uid://desjpxlp4d326" path="res://ui/main_menu/main_menu.gd" id="1_omy8q"]
+[ext_resource type="Texture2D" uid="uid://cfp23f081i35a" path="res://ui/noise_texture_1.tres" id="2_i5wg5"]
+[ext_resource type="Texture2D" uid="uid://ufr4xvpydw1x" path="res://ingame/entities/player/player_regular.png" id="3_3c04x"]
+[ext_resource type="AudioStream" uid="uid://g7a62bk645rj" path="res://soundtrack_menu.mp3" id="3_joh67"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_xyqw4"]
+font_size = 75
+
+[sub_resource type="LabelSettings" id="LabelSettings_wc1iw"]
+font_size = 100
+outline_size = 10
+shadow_size = 100
+shadow_color = Color(0, 0, 0, 0.639216)
+
+[sub_resource type="LabelSettings" id="LabelSettings_pqpuc"]
+font_size = 30
+
+[sub_resource type="LabelSettings" id="LabelSettings_03ljy"]
+font_size = 60
+
+[sub_resource type="LabelSettings" id="LabelSettings_bao8v"]
+font_size = 50
+
+[node name="MainMenu" type="TextureRect" unique_id=902416193]
+visible = false
+self_modulate = Color(0.168627, 0.168627, 0.168627, 0.419608)
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("1_i5wg5")
+script = ExtResource("1_omy8q")
+metadata/_edit_lock_ = true
+
+[node name="Soundtrack" type="AudioStreamPlayer" parent="." unique_id=807736029]
+stream = ExtResource("3_joh67")
+
+[node name="ExitConfirmDialog" type="CanvasLayer" parent="." unique_id=1626898685]
+visible = false
+
+[node name="Background" type="TextureRect" parent="ExitConfirmDialog" unique_id=829023834]
+modulate = Color(1, 1, 1, 0.72549)
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_i5wg5")
+metadata/_edit_lock_ = true
+
+[node name="Frame" type="VBoxContainer" parent="ExitConfirmDialog" unique_id=785122869]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+metadata/_edit_lock_ = true
+
+[node name="Title" type="Label" parent="ExitConfirmDialog/Frame" unique_id=941014730]
+layout_mode = 2
+size_flags_vertical = 10
+size_flags_stretch_ratio = 0.17
+text = "Are you sure you want to exit the game?"
+label_settings = SubResource("LabelSettings_xyqw4")
+horizontal_alignment = 1
+vertical_alignment = 2
+metadata/_edit_lock_ = true
+
+[node name="VSpacer1" type="Control" parent="ExitConfirmDialog/Frame" unique_id=2114162016]
+layout_mode = 2
+size_flags_vertical = 3
+metadata/_edit_lock_ = true
+
+[node name="ButtonContainer" type="HBoxContainer" parent="ExitConfirmDialog/Frame" unique_id=642482190]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.2
+alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="DiscardButton" type="Button" parent="ExitConfirmDialog/Frame/ButtonContainer" unique_id=847774769]
+layout_mode = 2
+size_flags_horizontal = 10
+text = "No"
+metadata/_edit_lock_ = true
+
+[node name="HSpacer" type="Control" parent="ExitConfirmDialog/Frame/ButtonContainer" unique_id=1192686664]
+layout_mode = 2
+size_flags_horizontal = 3
+metadata/_edit_lock_ = true
+
+[node name="ConfirmButton" type="Button" parent="ExitConfirmDialog/Frame/ButtonContainer" unique_id=1791383424]
+layout_mode = 2
+size_flags_horizontal = 2
+text = "Yes"
+metadata/_edit_lock_ = true
+
+[node name="VSpacer2" type="Control" parent="ExitConfirmDialog/Frame" unique_id=1497279364]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.05
+metadata/_edit_lock_ = true
+
+[node name="Frame" type="VBoxContainer" parent="." unique_id=1037096841]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+metadata/_edit_lock_ = true
+
+[node name="Title" type="Label" parent="Frame" unique_id=1846780923]
+layout_mode = 2
+size_flags_vertical = 0
+size_flags_stretch_ratio = 0.2
+text = "Ballistic Labyrinth"
+label_settings = SubResource("LabelSettings_wc1iw")
+horizontal_alignment = 1
+vertical_alignment = 2
+metadata/_edit_lock_ = true
+
+[node name="Version" type="Label" parent="Frame" unique_id=1260827880]
+layout_mode = 2
+size_flags_vertical = 2
+size_flags_stretch_ratio = 0.07
+text = "Version xyp.yp.yp.yp"
+label_settings = SubResource("LabelSettings_pqpuc")
+horizontal_alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="HOSTBUTTON" type="Button" parent="Frame" unique_id=987661017]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 4
+text = "HOST GAME"
+metadata/_edit_lock_ = true
+
+[node name="Side1" type="HBoxContainer" parent="Frame" unique_id=258531281]
+layout_mode = 2
+metadata/_edit_lock_ = true
+
+[node name="Spacer1" type="Control" parent="Frame/Side1" unique_id=2063243769]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.02
+metadata/_edit_lock_ = true
+
+[node name="JoinContainer" type="VBoxContainer" parent="Frame/Side1" unique_id=1406538635]
+layout_mode = 2
+alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="IPLabel" type="Label" parent="Frame/Side1/JoinContainer" unique_id=2002616516]
+layout_mode = 2
+text = "IP address"
+label_settings = SubResource("LabelSettings_03ljy")
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="IPEdit" type="LineEdit" parent="Frame/Side1/JoinContainer" unique_id=1884564064]
+layout_mode = 2
+placeholder_text = "IP address"
+alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="JoinGameButton" type="Button" parent="Frame/Side1/JoinContainer" unique_id=1453929641]
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 4
+text = "Join Game"
+metadata/_edit_lock_ = true
+
+[node name="Spacer2" type="Control" parent="Frame/Side1" unique_id=261301873]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.05
+metadata/_edit_lock_ = true
+
+[node name="PlayerColor" type="VBoxContainer" parent="Frame/Side1" unique_id=1958408875]
+layout_mode = 2
+size_flags_vertical = 4
+metadata/_edit_lock_ = true
+
+[node name="PlayerColorTitle" type="Label" parent="Frame/Side1/PlayerColor" unique_id=147146953]
+layout_mode = 2
+text = "Player Colour"
+label_settings = SubResource("LabelSettings_bao8v")
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="PlayerColorContainer" type="HBoxContainer" parent="Frame/Side1/PlayerColor" unique_id=1310340692]
+layout_mode = 2
+size_flags_vertical = 0
+metadata/_edit_lock_ = true
+
+[node name="PlayerColorTest" type="TextureRect" parent="Frame/Side1/PlayerColor/PlayerColorContainer" unique_id=103617573]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+texture = ExtResource("3_3c04x")
+metadata/_edit_lock_ = true
+
+[node name="PlayerColorPicker" type="ColorPicker" parent="Frame/Side1/PlayerColor/PlayerColorContainer" unique_id=1690257158]
+layout_mode = 2
+size_flags_vertical = 0
+edit_alpha = false
+sampler_visible = false
+color_modes_visible = false
+sliders_visible = false
+hex_visible = false
+presets_visible = false
+metadata/_edit_lock_ = true
+
+[node name="Spacer3" type="Control" parent="Frame/Side1" unique_id=373069830]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.05
+metadata/_edit_lock_ = true
+
+[node name="LeaveGameButton" type="Button" parent="Frame/Side1" unique_id=687722753]
+layout_mode = 2
+size_flags_vertical = 4
+text = "Leave Game"
+metadata/_edit_lock_ = true
+
+[node name="Spacer4" type="Control" parent="Frame/Side1" unique_id=1409945194]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.02
+metadata/_edit_lock_ = true
+
+[node name="VSpacer2" type="Control" parent="Frame" unique_id=142324849]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.05
+metadata/_edit_lock_ = true
+
+[node name="SettingsButton" type="Button" parent="Frame" unique_id=1800755174]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+text = "Settings"
+metadata/_edit_lock_ = true
+
+[node name="VSpacer3" type="Control" parent="Frame" unique_id=1218309067]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.05
+metadata/_edit_lock_ = true
+
+[node name="PlayersList" type="ScrollContainer" parent="Frame" unique_id=35550605]
+layout_mode = 2
+size_flags_vertical = 3
+metadata/_edit_lock_ = true
+
+[node name="GridContainer" type="GridContainer" parent="Frame/PlayersList" unique_id=1095732806]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+metadata/_edit_lock_ = true
+
+[node name="Developer" type="Label" parent="Frame" unique_id=1862865097]
+layout_mode = 2
+size_flags_vertical = 2
+size_flags_stretch_ratio = 0.07
+text = "Made by Wizzoplit273"
+label_settings = SubResource("LabelSettings_pqpuc")
+horizontal_alignment = 1
+metadata/_edit_lock_ = true
+
+[connection signal="pressed" from="ExitConfirmDialog/Frame/ButtonContainer/DiscardButton" to="." method="_on_discard_button_pressed"]
+[connection signal="pressed" from="ExitConfirmDialog/Frame/ButtonContainer/ConfirmButton" to="." method="_on_confirm_button_pressed"]
+[connection signal="pressed" from="Frame/HOSTBUTTON" to="." method="_on_start_mission_button_pressed"]
+[connection signal="pressed" from="Frame/Side1/JoinContainer/JoinGameButton" to="." method="_on_start_mission_button_pressed"]
+[connection signal="pressed" from="Frame/Side1/LeaveGameButton" to="." method="_on_exit_game_button_pressed"]
+[connection signal="pressed" from="Frame/SettingsButton" to="." method="_on_settings_button_pressed"]

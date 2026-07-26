@@ -1,34 +1,38 @@
 extends Node
 
-## player skin colour(corresponds to the player texture's modulation)
-var player_color: Color = Color.WHITE
+var main_menu_node: Control = null
+var ingame_node: Node = null
 
 func _ready() -> void:
-	main_menu()
+	create_main_menu()
+	main_menu_node.activate(true)
 
-func free_room_container() -> void:
-	for node: Node in $RoomContainer.get_children():
-		$RoomContainer.remove_child(node)
-		node.queue_free()
+const MAIN_MENU_FILE: String = "res://ui/main_menu/main_menu.tscn"
+func create_main_menu() -> void:
+	if main_menu_node != null: return
+	main_menu_node = load(MAIN_MENU_FILE).instantiate()
+	add_child(main_menu_node)
 
-func toggle_main_menu(value: bool) -> void:
-	if value: $Soundtrack.play()
-	else: $Soundtrack.stop()
-	$MainMenu.activate(value)
-	$MenusBackground.visible = value
+const INGAME_FILE: String = "res://ingame/ingame.tscn"
+func create_ingame() -> void:
+	if ingame_node != null: return
+	ingame_node = load(INGAME_FILE).instantiate()
+	$PauseMenu.NEXT_ROUND_TIMER = ingame_node.get_node("Timers/NextRoundDelay")
+	
+	add_child(ingame_node)
+	if main_menu_node != null: main_menu_node.activate(false)
+	ingame_node.connect("_on_next_round", _on_ingame_next_round)
+	ingame_node.modified_ready()
 
-const ROOM_FILE: String = "res://ingame/room.tscn"
-func load_room() -> void:
-	var room: Node = load(ROOM_FILE).instantiate()
-	$PauseMenu.NEXT_ROUND_TIMER = room.get_node("Timers/NextRoundDelay")
-	$RoomContainer.add_child(room)
+func _on_ingame_next_round() -> void:
+	delete_ingame()
+	await get_tree().process_frame
+	create_ingame()
 
-func play() -> void:
-	free_room_container()
-	toggle_main_menu(false)
-	load_room()
-	$RoomContainer.get_child(0).modified_ready()
+func delete_main_menu() -> void:
+	if main_menu_node == null: return
+	main_menu_node.queue_free()
 
-func main_menu() -> void:
-	free_room_container()
-	toggle_main_menu(true)
+func delete_ingame() -> void:
+	if ingame_node == null: return
+	ingame_node.queue_free()

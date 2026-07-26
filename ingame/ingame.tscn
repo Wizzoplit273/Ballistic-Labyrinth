@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://bsh1a6x5mcckx"]
 
-[ext_resource type="Script" uid="uid://byehuv55tv13h" path="res://ingame/room.gd" id="1_rp5i7"]
+[ext_resource type="Script" uid="uid://byehuv55tv13h" path="res://ingame/ingame.gd" id="1_rp5i7"]
 [ext_resource type="AudioStream" uid="uid://dhoxj0irluo7u" path="res://ingame/tiles/MAZE_GENERATION_glitch-fx-transitions-10-311812.mp3" id="2_qj304"]
 [ext_resource type="AudioStream" uid="uid://cy22uropw1uaf" path="res://ingame/entities/SHOOT_NORMAL_toy-gun-364850.mp3" id="3_hqbxh"]
 [ext_resource type="TileSet" uid="uid://ddrdyvjlplhow" path="res://ingame/tiles/base_tileset.tres" id="4_ogvd8"]
@@ -48,7 +48,7 @@ size = Vector2(1, 1)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_wosq1"]
 size = Vector2(1, 1)
 
-[node name="Room" type="Node2D" unique_id=894949870]
+[node name="Ingame" type="Node2D" unique_id=894949870]
 process_mode = 4
 script = ExtResource("1_rp5i7")
 metadata/_edit_lock_ = true
@@ -56,14 +56,14 @@ metadata/_edit_lock_ = true
 [node name="Timers" type="Node" parent="." unique_id=452980816]
 
 [node name="Await" type="Timer" parent="Timers" unique_id=780148569]
-wait_time = 0.009999999999999998
+wait_time = 0.00999999999999999
 one_shot = true
 
 [node name="CrateSpawnDelay" type="Timer" parent="Timers" unique_id=108254139]
 wait_time = 8.0
 
 [node name="NextRoundDelay" type="Timer" parent="Timers" unique_id=1455442209]
-process_mode = 3
+process_mode = 1
 wait_time = 3.0
 one_shot = true
 

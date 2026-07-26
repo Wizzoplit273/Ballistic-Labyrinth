@@ -6,6 +6,8 @@ func _ready() -> void:
 func activate(value: bool) -> void:
 	unfocus()
 	visible = value
+	if value: $Soundtrack.play()
+	else: $Soundtrack.stop()
 
 func unfocus() -> void:
 	focus_mode = Control.FOCUS_ALL
@@ -14,7 +16,7 @@ func unfocus() -> void:
 
 func _on_start_mission_button_pressed() -> void:
 	activate(false)
-	$"..".play()
+	$"..".create_ingame()
 
 func _on_exit_game_button_pressed() -> void:
 	unfocus()

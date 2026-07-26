@@ -14,8 +14,8 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 
 [application]
 
-config/name="Ballistic Labyrinth 1.5"
-config/version="1.5"
+config/name="Ballistic Labyrinth 1.6"
+config/version="1.6"
 run/main_scene="uid://dl53xfp6aj77b"
 config/features=PackedStringArray("4.7", "Forward Plus")
 boot_splash/image="uid://8yxuw07nmuag"
@@ -23,8 +23,9 @@ config/icon="uid://bsnkweusjyp86"
 
 [autoload]
 
-NetworkHandler="*uid://db3pnn8xuboou"
-NetworkSessions="*uid://cqmpp882jy0b8"
+NetworkManager="*uid://db3pnn8xuboou"
+SessionManager="*uid://cqmpp882jy0b8"
+CommandManager="*uid://db7whopcojwf3"
 
 [display]
 

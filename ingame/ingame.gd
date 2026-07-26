@@ -55,28 +55,9 @@ func set_seeded_rng(string: String) -> void:
 	if string != "": SEEDED_RNG.seed = string.hash()
 	#$ScoresLayer/RoomHashLabel.text = "seed: " + str(SEEDED_RNG.state)
 
-func manage_debug_options() -> void:
-	if OS.is_debug_build() and Input.is_action_just_pressed("DEBUG_Toggle_Maze_Generation"):
-		DEBUG_is_checking_maze = not DEBUG_is_checking_maze
-		ORIGIN_NODE.get_node("DEBUG_Screen/Frame/DEBUG_MazeCheck").visible = DEBUG_is_checking_maze
-		if DEBUG_is_checking_maze:
-			push_warning("DEBUG_Toggle_Maze_Generation is now ON")
-			print("\t\t\tDEBUG_Toggle_Maze_Generation is now ON")
-		else:
-			push_warning("DEBUG_Toggle_Maze_Generation is now OFF")
-			print("\t\t\tDEBUG_Toggle_Maze_Generation is now OFF")
-	if OS.is_debug_build() and Input.is_action_just_pressed("DEBUG_Show_Dodging"):
-		DEBUG_is_showing_dodging = not DEBUG_is_showing_dodging
-		ORIGIN_NODE.get_node("DEBUG_Screen/Frame/DEBUG_DodgeCheck").visible = DEBUG_is_showing_dodging
-		if DEBUG_is_showing_dodging:
-			print("\t\t\tDEBUG_Show_Dodging is now ON")
-		else:
-			print("\t\t\tDEBUG_Show_Dodging is now OFF")
-
 const SCROLL_VALUE: float = 1.1
 func _process(_delta: float) -> void:
 	if is_queued_for_deletion(): return
-	manage_debug_options()
 	for instance: RigidBody2D in $Bots.get_children():
 		instance.DEBUG_is_showing_dodging = DEBUG_is_showing_dodging
 		if instance.target == null: continue
@@ -796,6 +777,6 @@ func reset() -> void:
 	for bot: Node in $Bots.get_children():
 		bot.queue_free()
 
-@onready var ORIGIN_NODE: Node = get_parent().get_parent()
+signal _on_next_round()
 func _on_next_round_delay_timeout() -> void:
-	ORIGIN_NODE.play()
+	_on_next_round.emit()

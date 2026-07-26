@@ -45,13 +45,13 @@ func peer_connected(peer_id: int) -> void:
 func peer_disconnected(peer_id: int) -> void:
 	if not multiplayer.is_server(): return
 	print_console("Player disconnected with peer id = " + str(peer_id))
-	NetworkSessions.data.erase(peer_id)
-	NetworkSessions.update_registry.rpc(NetworkSessions.data)
+	SessionManager.data.erase(peer_id)
+	SessionManager.update_registry.rpc(SessionManager.data)
 
 ## called on clients
 func connected_to_server() -> void:
 	print_console("Successfully joined with peer id = " + str(multiplayer.get_unique_id()))
-	NetworkSessions.request_profile_update.rpc_id(1, NetworkSessions.profile_data)
+	SessionManager.request_profile_update.rpc_id(1, SessionManager.profile_data)
 
 ## called on clients
 func connection_failed() -> void:
@@ -74,7 +74,7 @@ func disconnect_client(peer_id: int) -> void:
 
 func disconnect_from_server() -> void:
 	if multiplayer.is_server(): return
-	NetworkSessions.clear_registry()
+	SessionManager.clear_registry()
 	await get_tree().process_frame
 	multiplayer.multiplayer_peer.close()
 	print_console("Successfully disconnected from server")
@@ -88,11 +88,11 @@ func close_server() -> void:
 	if multiplayer.multiplayer_peer:
 		multiplayer.multiplayer_peer.close()
 		multiplayer.multiplayer_peer = null
-	NetworkSessions.clear_registry()
+	SessionManager.clear_registry()
 	print_console("Server successfully closed: local machine is no longer a server")
 
 @rpc("authority", "reliable")
 func notify_server_shutdown() -> void:
 	if multiplayer.is_server(): return
-	NetworkSessions.clear_registry()
+	SessionManager.clear_registry()
 	print_console("Server is closing")
