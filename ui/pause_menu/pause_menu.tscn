@@ -8,6 +8,7 @@ font_size = 70
 
 [node name="PauseMenu" type="CanvasLayer" unique_id=2067027107]
 process_mode = 3
+layer = 3
 visible = false
 script = ExtResource("1_jbgdu")
 
@@ -45,25 +46,25 @@ layout_mode = 2
 size_flags_vertical = 3
 metadata/_edit_lock_ = true
 
-[node name="BurronContainer" type="HBoxContainer" parent="Frame" unique_id=1183064690]
+[node name="ButtonContainer" type="HBoxContainer" parent="Frame" unique_id=1183064690]
 layout_mode = 2
 size_flags_vertical = 3
 size_flags_stretch_ratio = 0.2
 alignment = 1
 metadata/_edit_lock_ = true
 
-[node name="ResumeButton" type="Button" parent="Frame/BurronContainer" unique_id=332026996]
+[node name="ResumeButton" type="Button" parent="Frame/ButtonContainer" unique_id=332026996]
 layout_mode = 2
 size_flags_horizontal = 10
 text = "Resume"
 metadata/_edit_lock_ = true
 
-[node name="HSpacer" type="Control" parent="Frame/BurronContainer" unique_id=631905127]
+[node name="HSpacer" type="Control" parent="Frame/ButtonContainer" unique_id=631905127]
 layout_mode = 2
 size_flags_horizontal = 3
 metadata/_edit_lock_ = true
 
-[node name="EndGameButton" type="Button" parent="Frame/BurronContainer" unique_id=674617907]
+[node name="EndGameButton" type="Button" parent="Frame/ButtonContainer" unique_id=674617907]
 layout_mode = 2
 size_flags_horizontal = 2
 text = "End Game"
@@ -75,5 +76,5 @@ size_flags_vertical = 3
 size_flags_stretch_ratio = 0.05
 metadata/_edit_lock_ = true
 
-[connection signal="pressed" from="Frame/BurronContainer/ResumeButton" to="." method="_on_resume_button_pressed"]
-[connection signal="pressed" from="Frame/BurronContainer/EndGameButton" to="." method="_on_end_game_button_pressed"]
+[connection signal="pressed" from="Frame/ButtonContainer/ResumeButton" to="." method="_on_resume_button_pressed"]
+[connection signal="pressed" from="Frame/ButtonContainer/EndGameButton" to="." method="_on_end_game_button_pressed"]

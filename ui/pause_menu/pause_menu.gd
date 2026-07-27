@@ -1,20 +1,18 @@
 extends CanvasLayer
 
-## determined by loaded room
-var NEXT_ROUND_TIMER: Timer
-
 func _input(_event: InputEvent) -> void:
-	if Input.is_action_just_pressed("Pause"):
-		visible = not visible
-		get_tree().paused = not get_tree().paused
+	if not Input.is_action_just_pressed("Pause"): return
+	if get_parent().lobby_node.visible and get_parent().ingame_node == null: return
+	visible = not visible
+	get_tree().paused = not get_tree().paused
 
 func _on_resume_button_pressed() -> void:
-	$"../Lobby".unfocus()
+	get_parent().lobby_node.unfocus()
 	visible = false
 	get_tree().paused = false
 
 func _on_end_game_button_pressed() -> void:
-	$"../Lobby".unfocus()
+	get_parent().lobby_node.unfocus()
 	visible = false
 	get_tree().paused = false
-	$"..".end_ingame()
+	get_parent().end_ingame()
