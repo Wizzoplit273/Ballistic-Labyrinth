@@ -1,0 +1,79 @@
+[gd_scene format=3 uid="uid://cr2mhh6dbdg2q"]
+
+[ext_resource type="Script" uid="uid://tecvb1bo3wnl" path="res://ui/pause_menu/pause_menu.gd" id="1_jbgdu"]
+[ext_resource type="Texture2D" uid="uid://cfp23f081i35a" path="res://ui/noise_texture_1.tres" id="2_le02u"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_ppsw1"]
+font_size = 70
+
+[node name="PauseMenu" type="CanvasLayer" unique_id=2067027107]
+process_mode = 3
+visible = false
+script = ExtResource("1_jbgdu")
+
+[node name="Background" type="TextureRect" parent="." unique_id=1833014176]
+modulate = Color(1, 1, 1, 0.784314)
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_le02u")
+metadata/_edit_lock_ = true
+
+[node name="Frame" type="VBoxContainer" parent="." unique_id=1677209376]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+metadata/_edit_lock_ = true
+
+[node name="Title" type="Label" parent="Frame" unique_id=1158690795]
+layout_mode = 2
+size_flags_vertical = 10
+size_flags_stretch_ratio = 0.35
+text = "The game is paused.
+Press P, escape or resume to unpause"
+label_settings = SubResource("LabelSettings_ppsw1")
+horizontal_alignment = 1
+vertical_alignment = 2
+metadata/_edit_lock_ = true
+
+[node name="VSpacer1" type="Control" parent="Frame" unique_id=1521696043]
+layout_mode = 2
+size_flags_vertical = 3
+metadata/_edit_lock_ = true
+
+[node name="BurronContainer" type="HBoxContainer" parent="Frame" unique_id=1183064690]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.2
+alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="ResumeButton" type="Button" parent="Frame/BurronContainer" unique_id=332026996]
+layout_mode = 2
+size_flags_horizontal = 10
+text = "Resume"
+metadata/_edit_lock_ = true
+
+[node name="HSpacer" type="Control" parent="Frame/BurronContainer" unique_id=631905127]
+layout_mode = 2
+size_flags_horizontal = 3
+metadata/_edit_lock_ = true
+
+[node name="EndGameButton" type="Button" parent="Frame/BurronContainer" unique_id=674617907]
+layout_mode = 2
+size_flags_horizontal = 2
+text = "End Game"
+metadata/_edit_lock_ = true
+
+[node name="VSpacer2" type="Control" parent="Frame" unique_id=1292067146]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.05
+metadata/_edit_lock_ = true
+
+[connection signal="pressed" from="Frame/BurronContainer/ResumeButton" to="." method="_on_resume_button_pressed"]
+[connection signal="pressed" from="Frame/BurronContainer/EndGameButton" to="." method="_on_end_game_button_pressed"]

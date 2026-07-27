@@ -1,10 +1,10 @@
 [gd_scene format=3 uid="uid://bjlnlvac61t55"]
 
-[ext_resource type="Texture2D" uid="uid://bsnkweusjyp86" path="res://ui/main_menu/main_menu_background.jpg" id="1_i5wg5"]
-[ext_resource type="Script" uid="uid://desjpxlp4d326" path="res://ui/main_menu/main_menu.gd" id="1_omy8q"]
-[ext_resource type="Texture2D" uid="uid://cfp23f081i35a" path="res://ui/noise_texture_1.tres" id="2_i5wg5"]
-[ext_resource type="Texture2D" uid="uid://ufr4xvpydw1x" path="res://ingame/entities/player/player_regular.png" id="3_3c04x"]
-[ext_resource type="AudioStream" uid="uid://g7a62bk645rj" path="res://soundtrack_menu.mp3" id="3_joh67"]
+[ext_resource type="Texture2D" uid="uid://bsnkweusjyp86" path="res://ui/lobby/lobby_background.jpg" id="1_qp8cv"]
+[ext_resource type="Script" uid="uid://desjpxlp4d326" path="res://ui/lobby/lobby.gd" id="2_k0yk8"]
+[ext_resource type="AudioStream" uid="uid://g7a62bk645rj" path="res://soundtrack_menu.mp3" id="3_rk1hj"]
+[ext_resource type="Texture2D" uid="uid://cfp23f081i35a" path="res://ui/noise_texture_1.tres" id="4_5wkb4"]
+[ext_resource type="Texture2D" uid="uid://ufr4xvpydw1x" path="res://ingame/entities/player/player_regular.png" id="5_jvewa"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_xyqw4"]
 font_size = 75
@@ -24,7 +24,7 @@ font_size = 60
 [sub_resource type="LabelSettings" id="LabelSettings_bao8v"]
 font_size = 50
 
-[node name="MainMenu" type="TextureRect" unique_id=902416193]
+[node name="Lobby" type="TextureRect" unique_id=902416193]
 visible = false
 self_modulate = Color(0.168627, 0.168627, 0.168627, 0.419608)
 anchors_preset = 15
@@ -32,12 +32,12 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-texture = ExtResource("1_i5wg5")
-script = ExtResource("1_omy8q")
+texture = ExtResource("1_qp8cv")
+script = ExtResource("2_k0yk8")
 metadata/_edit_lock_ = true
 
 [node name="Soundtrack" type="AudioStreamPlayer" parent="." unique_id=807736029]
-stream = ExtResource("3_joh67")
+stream = ExtResource("3_rk1hj")
 
 [node name="ExitConfirmDialog" type="CanvasLayer" parent="." unique_id=1626898685]
 visible = false
@@ -49,7 +49,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-texture = ExtResource("2_i5wg5")
+texture = ExtResource("4_5wkb4")
 metadata/_edit_lock_ = true
 
 [node name="Frame" type="VBoxContainer" parent="ExitConfirmDialog" unique_id=785122869]
@@ -207,7 +207,7 @@ metadata/_edit_lock_ = true
 unique_name_in_owner = true
 custom_minimum_size = Vector2(200, 0)
 layout_mode = 2
-texture = ExtResource("3_3c04x")
+texture = ExtResource("5_jvewa")
 metadata/_edit_lock_ = true
 
 [node name="PlayerColorPicker" type="ColorPicker" parent="Frame/Side1/PlayerColor/PlayerColorContainer" unique_id=1690257158]

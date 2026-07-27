@@ -28,8 +28,3 @@ func _on_discard_button_pressed() -> void:
 
 func _on_confirm_button_pressed() -> void:
 	get_tree().quit()
-
-func _on_settings_button_pressed() -> void:
-	unfocus()
-	activate(false)
-	$"../SettingsMenu".visible = true

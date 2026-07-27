@@ -1,83 +1,9 @@
 [gd_scene format=3 uid="uid://dl53xfp6aj77b"]
 
 [ext_resource type="Script" uid="uid://wgurxu8fyrnf" path="res://general/origin.gd" id="1_nd25w"]
-[ext_resource type="Script" uid="uid://tecvb1bo3wnl" path="res://ui/pause_menu/pause_menu.gd" id="4_c6wdr"]
-[ext_resource type="Texture2D" uid="uid://cfp23f081i35a" path="res://ui/noise_texture_1.tres" id="5_ygt82"]
-
-[sub_resource type="LabelSettings" id="LabelSettings_ppsw1"]
-font_size = 70
+[ext_resource type="PackedScene" uid="uid://cr2mhh6dbdg2q" path="res://ui/pause_menu/pause_menu.tscn" id="2_20jav"]
 
 [node name="Origin" type="Node" unique_id=1976139409]
 script = ExtResource("1_nd25w")
 
-[node name="PauseMenu" type="CanvasLayer" parent="." unique_id=2072805945]
-process_mode = 3
-visible = false
-script = ExtResource("4_c6wdr")
-
-[node name="Background" type="TextureRect" parent="PauseMenu" unique_id=1061662770]
-modulate = Color(1, 1, 1, 0.784314)
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-texture = ExtResource("5_ygt82")
-metadata/_edit_lock_ = true
-
-[node name="Frame" type="VBoxContainer" parent="PauseMenu" unique_id=939871743]
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-metadata/_edit_lock_ = true
-
-[node name="Title" type="Label" parent="PauseMenu/Frame" unique_id=335758596]
-layout_mode = 2
-size_flags_vertical = 10
-size_flags_stretch_ratio = 0.35
-text = "The game is paused.
-Press P, escape or resume to unpause"
-label_settings = SubResource("LabelSettings_ppsw1")
-horizontal_alignment = 1
-vertical_alignment = 2
-metadata/_edit_lock_ = true
-
-[node name="VSpacer1" type="Control" parent="PauseMenu/Frame" unique_id=1431156158]
-layout_mode = 2
-size_flags_vertical = 3
-metadata/_edit_lock_ = true
-
-[node name="BurronContainer" type="HBoxContainer" parent="PauseMenu/Frame" unique_id=1399817963]
-layout_mode = 2
-size_flags_vertical = 3
-size_flags_stretch_ratio = 0.2
-alignment = 1
-metadata/_edit_lock_ = true
-
-[node name="ResumeButton" type="Button" parent="PauseMenu/Frame/BurronContainer" unique_id=1246592230]
-layout_mode = 2
-size_flags_horizontal = 10
-text = "Resume"
-metadata/_edit_lock_ = true
-
-[node name="HSpacer" type="Control" parent="PauseMenu/Frame/BurronContainer" unique_id=1182713730]
-layout_mode = 2
-size_flags_horizontal = 3
-metadata/_edit_lock_ = true
-
-[node name="BackToMainMenuButton" type="Button" parent="PauseMenu/Frame/BurronContainer" unique_id=667466834]
-layout_mode = 2
-size_flags_horizontal = 2
-text = "Back to Menu"
-metadata/_edit_lock_ = true
-
-[node name="VSpacer2" type="Control" parent="PauseMenu/Frame" unique_id=1631629016]
-layout_mode = 2
-size_flags_vertical = 3
-size_flags_stretch_ratio = 0.05
-metadata/_edit_lock_ = true
-
-[connection signal="pressed" from="PauseMenu/Frame/BurronContainer/ResumeButton" to="PauseMenu" method="_on_resume_button_pressed"]
-[connection signal="pressed" from="PauseMenu/Frame/BurronContainer/BackToMainMenuButton" to="PauseMenu" method="_on_back_to_main_menu_button_pressed"]
+[node name="PauseMenu" parent="." unique_id=2067027107 instance=ExtResource("2_20jav")]
