@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://qiuqpide21bp"]
+
+[ext_resource type="Texture2D" uid="uid://cfp23f081i35a" path="res://ui/noise_texture_1.tres" id="1_dhjtt"]
+
+[node name="LobbyWidget" type="TextureRect" unique_id=1761869791]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("1_dhjtt")
+metadata/_edit_lock_ = true
