@@ -16,7 +16,7 @@ func unfocus() -> void:
 
 func _on_start_mission_button_pressed() -> void:
 	activate(false)
-	$"..".create_ingame()
+	IngameManager.create_ingame()
 
 func _on_exit_game_button_pressed() -> void:
 	unfocus()

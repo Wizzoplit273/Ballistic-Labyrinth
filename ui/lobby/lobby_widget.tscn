@@ -1,12 +1,84 @@
 [gd_scene format=3 uid="uid://qiuqpide21bp"]
 
 [ext_resource type="Texture2D" uid="uid://cfp23f081i35a" path="res://ui/noise_texture_1.tres" id="1_dhjtt"]
+[ext_resource type="Script" uid="uid://0h8uvt6dd50p" path="res://ui/lobby/lobby_widget.gd" id="2_7v4du"]
+[ext_resource type="Texture2D" uid="uid://ufr4xvpydw1x" path="res://ingame/entities/player/player_regular.png" id="2_ty1rq"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_dhjtt"]
+font_size = 30
+
+[sub_resource type="LabelSettings" id="LabelSettings_03ljy"]
+font_size = 30
+
+[sub_resource type="LabelSettings" id="LabelSettings_x2qi5"]
+font_size = 30
 
 [node name="LobbyWidget" type="TextureRect" unique_id=1761869791]
+custom_minimum_size = Vector2(0, 560)
+custom_maximum_size = Vector2(470, 700)
+offset_right = 512.0
+offset_bottom = 512.0
+size_flags_horizontal = 0
+size_flags_vertical = 0
+texture = ExtResource("1_dhjtt")
+script = ExtResource("2_7v4du")
+metadata/_edit_lock_ = true
+
+[node name="Container" type="VBoxContainer" parent="." unique_id=1076566343]
+layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-texture = ExtResource("1_dhjtt")
+metadata/_edit_lock_ = true
+
+[node name="UsernameLabel" type="Label" parent="Container" unique_id=905197059]
+layout_mode = 2
+size_flags_vertical = 7
+text = "Username"
+label_settings = SubResource("LabelSettings_dhjtt")
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="TankTexture" type="TextureRect" parent="Container" unique_id=834318588]
+layout_mode = 2
+size_flags_vertical = 7
+size_flags_stretch_ratio = 3.0
+texture = ExtResource("2_ty1rq")
+stretch_mode = 5
+metadata/_edit_lock_ = true
+
+[node name="KillsScoreContainer" type="HBoxContainer" parent="Container" unique_id=110428075]
+layout_mode = 2
+size_flags_vertical = 7
+alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="KillsLabel" type="Label" parent="Container/KillsScoreContainer" unique_id=1507357193]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Kills: num"
+label_settings = SubResource("LabelSettings_03ljy")
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="ScoreLabel" type="Label" parent="Container/KillsScoreContainer" unique_id=1575626037]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Score: num"
+label_settings = SubResource("LabelSettings_03ljy")
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="SessionIDLabel" type="Label" parent="Container" unique_id=1210917916]
+layout_mode = 2
+size_flags_vertical = 7
+text = "SID: integer number"
+label_settings = SubResource("LabelSettings_x2qi5")
+horizontal_alignment = 1
+vertical_alignment = 1
 metadata/_edit_lock_ = true

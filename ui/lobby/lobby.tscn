@@ -5,6 +5,7 @@
 [ext_resource type="AudioStream" uid="uid://g7a62bk645rj" path="res://soundtrack_menu.mp3" id="3_rk1hj"]
 [ext_resource type="Texture2D" uid="uid://cfp23f081i35a" path="res://ui/noise_texture_1.tres" id="4_5wkb4"]
 [ext_resource type="Texture2D" uid="uid://ufr4xvpydw1x" path="res://ingame/entities/player/player_regular.png" id="5_jvewa"]
+[ext_resource type="PackedScene" uid="uid://qiuqpide21bp" path="res://ui/lobby/lobby_widget.tscn" id="6_k0yk8"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_xyqw4"]
 font_size = 75
@@ -263,13 +264,33 @@ metadata/_edit_lock_ = true
 [node name="PlayersList" type="ScrollContainer" parent="Frame" unique_id=35550605]
 layout_mode = 2
 size_flags_vertical = 3
+horizontal_scroll_mode = 0
 metadata/_edit_lock_ = true
 
 [node name="GridContainer" type="GridContainer" parent="Frame/PlayersList" unique_id=1095732806]
 layout_mode = 2
-size_flags_horizontal = 3
+size_flags_horizontal = 6
 size_flags_vertical = 3
+columns = 4
 metadata/_edit_lock_ = true
+
+[node name="LobbyWidget" parent="Frame/PlayersList/GridContainer" unique_id=1761869791 instance=ExtResource("6_k0yk8")]
+layout_mode = 2
+
+[node name="LobbyWidget2" parent="Frame/PlayersList/GridContainer" unique_id=639881252 instance=ExtResource("6_k0yk8")]
+layout_mode = 2
+
+[node name="LobbyWidget3" parent="Frame/PlayersList/GridContainer" unique_id=556675636 instance=ExtResource("6_k0yk8")]
+layout_mode = 2
+
+[node name="LobbyWidget4" parent="Frame/PlayersList/GridContainer" unique_id=1246468146 instance=ExtResource("6_k0yk8")]
+layout_mode = 2
+
+[node name="LobbyWidget5" parent="Frame/PlayersList/GridContainer" unique_id=1218517782 instance=ExtResource("6_k0yk8")]
+layout_mode = 2
+
+[node name="LobbyWidget6" parent="Frame/PlayersList/GridContainer" unique_id=1999988320 instance=ExtResource("6_k0yk8")]
+layout_mode = 2
 
 [connection signal="pressed" from="ExitConfirmDialog/Frame/ButtonContainer/DiscardButton" to="." method="_on_discard_button_pressed"]
 [connection signal="pressed" from="ExitConfirmDialog/Frame/ButtonContainer/ConfirmButton" to="." method="_on_confirm_button_pressed"]

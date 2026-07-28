@@ -46,10 +46,12 @@ func get_profile_kills() -> int:
 func get_profile_score() -> int:
 	return profile_data.get("score")
 
+signal update_lobby_ui()
 @rpc("authority", "reliable")
 func update_registry(server_data: Dictionary) -> void:
 	data.clear()
 	data.assign(server_data)
+	update_lobby_ui.emit()
 
 @rpc("any_peer", "reliable")
 func request_profile_update(profile: Dictionary) -> void:
