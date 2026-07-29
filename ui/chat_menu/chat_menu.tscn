@@ -1,0 +1,51 @@
+[gd_scene format=3 uid="uid://doeu5vjvk52gp"]
+
+[ext_resource type="Script" uid="uid://bkol1ftcl4xaw" path="res://ui/chat_menu/chat_menu.gd" id="1_2lmgt"]
+
+[node name="Window" type="Window" unique_id=67123143]
+disable_3d = true
+transparent_bg = true
+oversampling_override = 1.0
+title = "Chat"
+position = Vector2i(0, 36)
+transparent = true
+force_native = true
+script = ExtResource("1_2lmgt")
+
+[node name="Texture" type="TextureRect" parent="." unique_id=337031931]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+metadata/_edit_lock_ = true
+metadata/_edit_use_anchors_ = true
+
+[node name="Container" type="VBoxContainer" parent="Texture" unique_id=350228305]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="ChatText" type="RichTextLabel" parent="Texture/Container" unique_id=908706404]
+layout_mode = 2
+size_flags_vertical = 3
+text = "fejawi: fjeaiwj foawie
+ajrwe: fjeaiwgjwiejagwe jgkwaoie jgweipgjwpieaj gpiwaejgpia wjepig wjeip
+aaaa: fawefawe
+BAfagadB_gdAGOK: gwjeoigwja
+* workeiwgn ei
+* fjieja a3
+hewiojoe: fekjoawigkjoea"
+metadata/_edit_lock_ = true
+
+[node name="ChatInput" type="LineEdit" parent="Texture/Container" unique_id=420602209]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+placeholder_text = "write your message here"
+metadata/_edit_lock_ = true
