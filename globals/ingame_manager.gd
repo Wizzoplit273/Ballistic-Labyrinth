@@ -6,18 +6,25 @@ var scene_root: Node = null
 const INGAME_FILE: String = "res://ingame/ingame.tscn"
 var ingame_node: Node = null
 
+var is_ingame_configured: bool = false
+
+func start_ingame() -> void:
+	if UIManager.is_ui_configured: UIManager.lobby_node.activate(false)
+	create_ingame()
+
 func create_ingame() -> void:
 	if ingame_node != null: return
 	ingame_node = load(INGAME_FILE).instantiate()
 	
 	add_child(ingame_node)
-	if UIManager.is_ui_configured: UIManager.lobby_node.activate(false)
 	ingame_node.connect("_on_next_round", _on_ingame_next_round)
 	ingame_node.modified_ready()
+	is_ingame_configured = true
 
 func delete_ingame() -> void:
 	if ingame_node == null: return
 	ingame_node.queue_free()
+	is_ingame_configured = false
 
 func end_ingame() -> void:
 	delete_ingame()

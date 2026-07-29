@@ -26,6 +26,7 @@ font_size = 60
 font_size = 50
 
 [node name="Lobby" type="CanvasLayer" unique_id=1701394940]
+process_mode = 3
 script = ExtResource("2_k0yk8")
 metadata/_edit_lock_ = true
 

@@ -34,8 +34,7 @@ metadata/_edit_lock_ = true
 layout_mode = 2
 size_flags_vertical = 10
 size_flags_stretch_ratio = 0.35
-text = "The game is paused.
-Press P, escape or resume to unpause"
+text = "The game is paused"
 label_settings = SubResource("LabelSettings_ppsw1")
 horizontal_alignment = 1
 vertical_alignment = 2

@@ -2,7 +2,7 @@ extends CanvasLayer
 
 func _input(_event: InputEvent) -> void:
 	if not Input.is_action_just_pressed("Pause"): return
-	if UIManager.lobby_node.visible and UIManager.ingame_node == null: return
+	if UIManager.lobby_node.visible and not IngameManager.is_ingame_configured: return
 	visible = not visible
 	get_tree().paused = not get_tree().paused
 

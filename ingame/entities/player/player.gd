@@ -9,10 +9,10 @@ var weapon_type: String = "regular"
 ## updated by the parent level scene
 var bullet_count: int = 0
 
-func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
-	if not visible: return
-	if OS.is_debug_build() and Input.is_action_just_pressed("DEBUG_Teleport_Player"):
-		state.transform.origin = get_global_mouse_position()
+#func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
+	#if not visible: return
+	#if OS.is_debug_build() and Input.is_action_just_pressed("DEBUG_Teleport_Player"):
+		#state.transform.origin = get_global_mouse_position()
 
 signal shoot(weapon_type: String)
 func _physics_process(delta: float) -> void:
