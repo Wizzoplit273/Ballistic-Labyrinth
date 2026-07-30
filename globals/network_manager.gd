@@ -1,11 +1,19 @@
 extends Node
 
-const IP_ADDRESS: String = "localhost"
 const PORT: int = 42069
 const MAX_CLIENTS: int = 32
 const COMPRESSION: ENetConnection.CompressionMode = ENetConnection.CompressionMode.COMPRESS_FASTLZ
 
 var peer: ENetMultiplayerPeer
+var ip_address: String = "localhost"
+
+var is_online: bool = false
+var is_server: bool = false
+
+func set_local_online_status(value_online: bool, value_server: bool) -> void:
+	is_online = value_online
+	is_server = value_server
+	UIManager.update_online_status()
 
 func print_console(text: String) -> void:
 	print(text)
@@ -16,12 +24,14 @@ func print_error(text: String) -> void:
 	print_debug()
 
 func _enter_tree() -> void:
+	set_local_online_status(false, false)
 	multiplayer.peer_connected.connect(peer_connected)
 	multiplayer.peer_disconnected.connect(peer_disconnected)
 	multiplayer.connected_to_server.connect(connected_to_server)
 	multiplayer.connection_failed.connect(connection_failed)
 
 func start_server() -> void:
+	if is_online: return
 	peer = ENetMultiplayerPeer.new()
 	var error: Error = peer.create_server(PORT, MAX_CLIENTS)
 	if error != OK:
@@ -30,13 +40,18 @@ func start_server() -> void:
 	peer.get_host().compress(COMPRESSION)
 	multiplayer.set_multiplayer_peer(peer)
 	print_console("Server is up! Waiting for players...")
+	set_local_online_status(true, true)
 
-func start_client() -> void:
+func start_client(ip: String) -> void:
+	if is_online: return
+	print_console("Trying to connect to ip = " + ip)
 	peer = ENetMultiplayerPeer.new()
-	var error: Error = peer.create_client(IP_ADDRESS, PORT)
+	var error: Error = peer.create_client(ip, PORT)
 	if error != OK: return
+	ip_address = ip
 	peer.get_host().compress(COMPRESSION)
 	multiplayer.set_multiplayer_peer(peer)
+	set_local_online_status(true, false)
 
 func peer_connected(peer_id: int) -> void:
 	if not multiplayer.is_server(): return
@@ -69,14 +84,16 @@ func disconnect_client(peer_id: int) -> void:
 	if target_peer.get_connection_status() == MultiplayerPeer.CONNECTION_DISCONNECTED:
 		print_error("NETWORK ERROR: can't disconnect client with id " + str(peer_id) + ": already disconnected")
 		return
-	print_console("Kicked peer with id " + str(peer_id))
+	set_local_online_status.rpc_id(peer_id, false, false)
 	peer.disconnect_peer(peer_id)
+	print_console("Kicked peer with id " + str(peer_id))
 
 func disconnect_from_server() -> void:
 	if multiplayer.is_server(): return
 	SessionManager.clear_registry()
 	await get_tree().process_frame
 	multiplayer.multiplayer_peer.close()
+	set_local_online_status(false, false)
 	print_console("Successfully disconnected from server")
 
 func close_server() -> void:
@@ -89,10 +106,12 @@ func close_server() -> void:
 		multiplayer.multiplayer_peer.close()
 		multiplayer.multiplayer_peer = null
 	SessionManager.clear_registry()
+	set_local_online_status(false, false)
 	print_console("Server successfully closed: local machine is no longer a server")
 
 @rpc("authority", "reliable")
 func notify_server_shutdown() -> void:
 	if multiplayer.is_server(): return
 	SessionManager.clear_registry()
+	set_local_online_status(false, false)
 	print_console("Server is closing")

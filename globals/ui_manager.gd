@@ -12,6 +12,10 @@ var chat_menu_node: Window = null
 
 var is_ui_configured: bool = false
 
+func update_online_status() -> void:
+	if not is_ui_configured: return
+	lobby_node.update_online_status()
+
 func _input(event: InputEvent) -> void:
 	if not is_ui_configured: return # could work for dedicated server console as well so idk
 	if event.is_action_pressed(&"HideChat"):

@@ -65,7 +65,8 @@ grow_horizontal = 2
 grow_vertical = 2
 metadata/_edit_lock_ = true
 
-[node name="Title" type="Label" parent="ExitConfirmDialog/Frame" unique_id=941014730]
+[node name="ConfirmLeaveGameTitle" type="Label" parent="ExitConfirmDialog/Frame" unique_id=941014730]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 10
 size_flags_stretch_ratio = 0.17
@@ -138,18 +139,17 @@ horizontal_alignment = 1
 metadata/_edit_lock_ = true
 
 [node name="HOSTOPTIONS" type="HBoxContainer" parent="Frame" unique_id=604005830]
-visible = false
 layout_mode = 2
 metadata/_edit_lock_ = true
 
-[node name="HOSTBUTTON" type="Button" parent="Frame/HOSTOPTIONS" unique_id=987661017]
+[node name="HostButton" type="Button" parent="Frame/HOSTOPTIONS" unique_id=987661017]
 layout_mode = 2
 size_flags_horizontal = 6
 size_flags_vertical = 4
 text = "HOST GAME"
 metadata/_edit_lock_ = true
 
-[node name="STARTGAMEBUTTON" type="Button" parent="Frame/HOSTOPTIONS" unique_id=663712079]
+[node name="StartGameButton" type="Button" parent="Frame/HOSTOPTIONS" unique_id=663712079]
 layout_mode = 2
 size_flags_horizontal = 6
 size_flags_vertical = 4
@@ -181,6 +181,7 @@ vertical_alignment = 1
 metadata/_edit_lock_ = true
 
 [node name="IPEdit" type="LineEdit" parent="Frame/Side1/JoinContainer" unique_id=1884564064]
+unique_name_in_owner = true
 layout_mode = 2
 placeholder_text = "IP address"
 alignment = 1
@@ -244,6 +245,7 @@ size_flags_stretch_ratio = 0.05
 metadata/_edit_lock_ = true
 
 [node name="LeaveGameButton" type="Button" parent="Frame/Side1" unique_id=687722753]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 4
 text = "Leave Game"
@@ -295,6 +297,7 @@ layout_mode = 2
 
 [connection signal="pressed" from="ExitConfirmDialog/Frame/ButtonContainer/DiscardButton" to="." method="_on_discard_button_pressed"]
 [connection signal="pressed" from="ExitConfirmDialog/Frame/ButtonContainer/ConfirmButton" to="." method="_on_confirm_button_pressed"]
-[connection signal="pressed" from="Frame/HOSTOPTIONS/HOSTBUTTON" to="." method="_on_start_mission_button_pressed"]
-[connection signal="pressed" from="Frame/Side1/JoinContainer/JoinGameButton" to="." method="_on_start_mission_button_pressed"]
+[connection signal="pressed" from="Frame/HOSTOPTIONS/HostButton" to="." method="_on_host_button_pressed"]
+[connection signal="pressed" from="Frame/HOSTOPTIONS/StartGameButton" to="." method="_on_start_game_button_pressed"]
+[connection signal="pressed" from="Frame/Side1/JoinContainer/JoinGameButton" to="." method="_on_join_game_button_pressed"]
 [connection signal="pressed" from="Frame/Side1/LeaveGameButton" to="." method="_on_exit_game_button_pressed"]
