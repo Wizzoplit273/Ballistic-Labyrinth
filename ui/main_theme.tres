@@ -42,6 +42,10 @@ border_color = Color(0.355314, 0.355314, 0.355313, 1)
 shadow_size = 20
 shadow_offset = Vector2(20, 20)
 
+[sub_resource type="Texture2DRD" id="Texture2DRD_lv0ti"]
+
+[sub_resource type="Texture2DRD" id="Texture2DRD_oh6k4"]
+
 [resource]
 Button/colors/font_color = Color(1, 1, 1, 1)
 Button/font_sizes/font_size = 60
@@ -49,6 +53,11 @@ Button/styles/focus = SubResource("StyleBoxFlat_tsbh2")
 Button/styles/hover = SubResource("StyleBoxFlat_g1fjd")
 Button/styles/normal = SubResource("StyleBoxFlat_6tukj")
 Button/styles/pressed = SubResource("StyleBoxFlat_3xb56")
+CheckButton/font_sizes/font_size = 16
 ColorPicker/constants/sv_height = 200
 ColorPicker/constants/sv_width = 200
 LineEdit/font_sizes/font_size = 30
+Window/constants/resize_margin = 10
+Window/constants/title_height = 15
+Window/icons/close = SubResource("Texture2DRD_lv0ti")
+Window/icons/close_pressed = SubResource("Texture2DRD_oh6k4")

@@ -1,4 +1,4 @@
 extends Window
 
-func _ready():
-	visible = true
+func _input(event: InputEvent) -> void:
+	UIManager._input(event)

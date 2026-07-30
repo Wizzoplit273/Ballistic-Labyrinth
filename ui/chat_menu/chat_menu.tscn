@@ -2,22 +2,44 @@
 
 [ext_resource type="Script" uid="uid://bkol1ftcl4xaw" path="res://ui/chat_menu/chat_menu.gd" id="1_2lmgt"]
 
+[sub_resource type="Gradient" id="Gradient_pqpuc"]
+colors = PackedColorArray(0.2484, 0.2484, 0.2484, 1, 0.136826, 0.136826, 0.136826, 1)
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_xyqw4"]
+seed = 1
+frequency = 0.001
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_2lmgt"]
+noise = SubResource("FastNoiseLite_xyqw4")
+color_ramp = SubResource("Gradient_pqpuc")
+
+[sub_resource type="Gradient" id="Gradient_2lmgt"]
+offsets = PackedFloat32Array(0, 0.16568047, 0.71597636, 0.9881657)
+colors = PackedColorArray(0.41598046, 0.41598043, 0.4159804, 1, 0.38170326, 0.38170323, 0.38170323, 1, 0.24115604, 0.24115604, 0.24115604, 1, 0.35156274, 0.35156295, 0.35156274, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_g2pgw"]
+gradient = SubResource("Gradient_2lmgt")
+fill_from = Vector2(0.24034335, 0.8025751)
+fill_to = Vector2(0.9527897, 0.45064378)
+
 [node name="Window" type="Window" unique_id=67123143]
 disable_3d = true
 transparent_bg = true
 oversampling_override = 1.0
-title = "Chat"
-position = Vector2i(0, 36)
+position = Vector2i(0, 570)
+size = Vector2i(400, 500)
+borderless = true
 transparent = true
-force_native = true
 script = ExtResource("1_2lmgt")
 
 [node name="Texture" type="TextureRect" parent="." unique_id=337031931]
+self_modulate = Color(1, 1, 1, 0.61960787)
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+texture = SubResource("NoiseTexture2D_2lmgt")
 expand_mode = 1
 metadata/_edit_lock_ = true
 metadata/_edit_use_anchors_ = true
@@ -30,6 +52,26 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="ChatHeader" type="TextureRect" parent="Texture/Container" unique_id=1104628381]
+self_modulate = Color(1, 1, 1, 0.49803922)
+custom_minimum_size = Vector2(0, 17)
+layout_mode = 2
+texture = SubResource("GradientTexture2D_g2pgw")
+expand_mode = 1
+metadata/_edit_lock_ = true
+
+[node name="Label" type="Label" parent="Texture/Container/ChatHeader" unique_id=247762255]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Chat"
+horizontal_alignment = 1
+vertical_alignment = 1
 metadata/_edit_lock_ = true
 
 [node name="ChatText" type="RichTextLabel" parent="Texture/Container" unique_id=908706404]
