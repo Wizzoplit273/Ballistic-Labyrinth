@@ -13,6 +13,7 @@ var is_server: bool = false
 func set_local_online_status(value_online: bool, value_server: bool) -> void:
 	is_online = value_online
 	is_server = value_server
+	if multiplayer.is_server(): SessionManager.turn_local_to_online_profile()
 	UIManager.update_online_status()
 
 func print_console(text: String) -> void:

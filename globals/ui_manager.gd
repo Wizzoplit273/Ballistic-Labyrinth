@@ -12,6 +12,10 @@ var chat_menu_node: Window = null
 
 var is_ui_configured: bool = false
 
+func update_lobby_register() -> void:
+	if not is_ui_configured: return
+	lobby_node.update_lobby_register()
+
 func update_online_status() -> void:
 	if not is_ui_configured: return
 	lobby_node.update_online_status()

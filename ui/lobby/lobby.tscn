@@ -5,7 +5,6 @@
 [ext_resource type="AudioStream" uid="uid://g7a62bk645rj" path="res://soundtrack_menu.mp3" id="3_rk1hj"]
 [ext_resource type="Texture2D" uid="uid://cfp23f081i35a" path="res://ui/noise_texture_1.tres" id="4_5wkb4"]
 [ext_resource type="Texture2D" uid="uid://ufr4xvpydw1x" path="res://ingame/entities/player/player_regular.png" id="5_jvewa"]
-[ext_resource type="PackedScene" uid="uid://qiuqpide21bp" path="res://ui/lobby/lobby_widget.tscn" id="6_k0yk8"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_xyqw4"]
 font_size = 75
@@ -21,6 +20,9 @@ font_size = 30
 
 [sub_resource type="LabelSettings" id="LabelSettings_03ljy"]
 font_size = 60
+
+[sub_resource type="LabelSettings" id="LabelSettings_x2qi5"]
+font_size = 35
 
 [sub_resource type="LabelSettings" id="LabelSettings_bao8v"]
 font_size = 50
@@ -198,7 +200,35 @@ metadata/_edit_lock_ = true
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-size_flags_stretch_ratio = 0.05
+size_flags_stretch_ratio = 0.03
+metadata/_edit_lock_ = true
+
+[node name="NameContainer" type="VBoxContainer" parent="Frame/Side1" unique_id=1414096542]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.2
+alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="NameLabel" type="Label" parent="Frame/Side1/NameContainer" unique_id=674907342]
+layout_mode = 2
+text = "Username"
+label_settings = SubResource("LabelSettings_x2qi5")
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="UsernameEdit" type="LineEdit" parent="Frame/Side1/NameContainer" unique_id=1397378817]
+unique_name_in_owner = true
+layout_mode = 2
+placeholder_text = "username"
+metadata/_edit_lock_ = true
+
+[node name="Spacer3" type="Control" parent="Frame/Side1" unique_id=1559013663]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.03
 metadata/_edit_lock_ = true
 
 [node name="PlayerColor" type="VBoxContainer" parent="Frame/Side1" unique_id=1958408875]
@@ -237,7 +267,7 @@ hex_visible = false
 presets_visible = false
 metadata/_edit_lock_ = true
 
-[node name="Spacer3" type="Control" parent="Frame/Side1" unique_id=373069830]
+[node name="Spacer4" type="Control" parent="Frame/Side1" unique_id=373069830]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -251,7 +281,7 @@ size_flags_vertical = 4
 text = "Leave Game"
 metadata/_edit_lock_ = true
 
-[node name="Spacer4" type="Control" parent="Frame/Side1" unique_id=1409945194]
+[node name="Spacer5" type="Control" parent="Frame/Side1" unique_id=1409945194]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -264,40 +294,35 @@ size_flags_vertical = 3
 size_flags_stretch_ratio = 0.05
 metadata/_edit_lock_ = true
 
-[node name="PlayersList" type="ScrollContainer" parent="Frame" unique_id=35550605]
+[node name="TextureRect" type="TextureRect" parent="Frame" unique_id=1813913914]
+self_modulate = Color(1, 1, 1, 0.54901963)
 layout_mode = 2
+size_flags_vertical = 3
+texture = ExtResource("4_5wkb4")
+metadata/_edit_lock_ = true
+
+[node name="PlayersList" type="ScrollContainer" parent="Frame/TextureRect" unique_id=35550605]
+layout_mode = 0
+offset_top = 4.0
+offset_right = 1920.0
+offset_bottom = 484.0
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
 metadata/_edit_lock_ = true
 
-[node name="GridContainer" type="GridContainer" parent="Frame/PlayersList" unique_id=1095732806]
+[node name="SessionsList" type="GridContainer" parent="Frame/TextureRect/PlayersList" unique_id=1095732806]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 6
 size_flags_vertical = 3
 columns = 4
 metadata/_edit_lock_ = true
 
-[node name="LobbyWidget" parent="Frame/PlayersList/GridContainer" unique_id=1761869791 instance=ExtResource("6_k0yk8")]
-layout_mode = 2
-
-[node name="LobbyWidget2" parent="Frame/PlayersList/GridContainer" unique_id=639881252 instance=ExtResource("6_k0yk8")]
-layout_mode = 2
-
-[node name="LobbyWidget3" parent="Frame/PlayersList/GridContainer" unique_id=556675636 instance=ExtResource("6_k0yk8")]
-layout_mode = 2
-
-[node name="LobbyWidget4" parent="Frame/PlayersList/GridContainer" unique_id=1246468146 instance=ExtResource("6_k0yk8")]
-layout_mode = 2
-
-[node name="LobbyWidget5" parent="Frame/PlayersList/GridContainer" unique_id=1218517782 instance=ExtResource("6_k0yk8")]
-layout_mode = 2
-
-[node name="LobbyWidget6" parent="Frame/PlayersList/GridContainer" unique_id=1999988320 instance=ExtResource("6_k0yk8")]
-layout_mode = 2
-
 [connection signal="pressed" from="ExitConfirmDialog/Frame/ButtonContainer/DiscardButton" to="." method="_on_discard_button_pressed"]
 [connection signal="pressed" from="ExitConfirmDialog/Frame/ButtonContainer/ConfirmButton" to="." method="_on_confirm_button_pressed"]
 [connection signal="pressed" from="Frame/HOSTOPTIONS/HostButton" to="." method="_on_host_button_pressed"]
 [connection signal="pressed" from="Frame/HOSTOPTIONS/StartGameButton" to="." method="_on_start_game_button_pressed"]
 [connection signal="pressed" from="Frame/Side1/JoinContainer/JoinGameButton" to="." method="_on_join_game_button_pressed"]
+[connection signal="text_submitted" from="Frame/Side1/NameContainer/UsernameEdit" to="." method="_on_username_edit_text_submitted"]
+[connection signal="color_changed" from="Frame/Side1/PlayerColor/PlayerColorContainer/PlayerColorPicker" to="." method="_on_player_color_picker_color_changed"]
 [connection signal="pressed" from="Frame/Side1/LeaveGameButton" to="." method="_on_exit_game_button_pressed"]
