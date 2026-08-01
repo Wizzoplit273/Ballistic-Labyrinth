@@ -8,7 +8,7 @@ const PAUSE_MENU_FILE: String = "res://ui/pause_menu/pause_menu.tscn"
 const CHAT_MENU_FILE: String = "res://ui/chat_menu/chat_menu.tscn"
 var lobby_node: CanvasLayer = null
 var pause_menu_node: CanvasLayer = null
-var chat_menu_node: Window = null
+var chat_menu_node: Control = null
 
 var is_ui_configured: bool = false
 
@@ -22,15 +22,14 @@ func update_online_status() -> void:
 
 func _input(event: InputEvent) -> void:
 	if not is_ui_configured: return # could work for dedicated server console as well so idk
+	if chat_menu_node.is_blocked: return
 	if event.is_action_pressed(&"HideChat"):
-		chat_menu_node.get_node("Texture").visible = not chat_menu_node.get_node("Texture").visible
+		chat_menu_node.toggle_visibility()
 		return
 	if event.is_action(&"MoveWindow"):
-		if not chat_menu_node.get_node("Texture").visible: return
-		var mouse_pos: Vector2 = DisplayServer.mouse_get_position()
-		chat_menu_node.position = mouse_pos - (chat_menu_node.size / 2.0)
+		chat_menu_node.move_window()
 	if event.is_action_pressed(&"ToggleChatResize"):
-		chat_menu_node.borderless = not chat_menu_node.borderless
+		chat_menu_node.toggle_chat_resize()
 
 func master_enter_tree() -> void:
 	if OS.has_feature("server") or DisplayServer.get_name() == "headless": return
