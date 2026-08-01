@@ -10,10 +10,22 @@ const EXIT_GAME_CONFIRM: String = "Are you sure you want to exit the game?"
 const CLOSE_SERVER_CONFIRM: String = "Are you sure you want to close this server?"
 
 func update_lobby_register() -> void:
+	if not NetworkManager.is_online:
+		for lobby_widget: Node in %SessionsList.get_children():
+			if lobby_widget.get_session_id() == 0: continue
+			lobby_widget.free()
+		if %SessionsList.get_child_count() == 0:
+			create_lobby_widget(0, SessionManager.profile_data)
+			return
+		%SessionsList.get_child(0).update(0, SessionManager.profile_data)
+		return
 	var sid_ui: int
 	var temp_registry: Dictionary = SessionManager.data.duplicate(true)
 	for lobby_widget: Node in %SessionsList.get_children():
 		sid_ui = lobby_widget.get_session_id()
+		if sid_ui == 0:
+			lobby_widget.queue_free()
+			return
 		if temp_registry.has(sid_ui):
 			lobby_widget.update(sid_ui, temp_registry[sid_ui])
 			temp_registry.erase(sid_ui)
@@ -22,6 +34,7 @@ func update_lobby_register() -> void:
 		create_lobby_widget(profile_key, temp_registry[profile_key])
 
 func create_lobby_widget(profile_key: int, profile: Dictionary) -> void:
+	if profile_key == 0 and NetworkManager.is_online: return
 	var lobby_widget: Control = load(LOBBY_WIDGET_FILE).instantiate()
 	lobby_widget.update(profile_key, profile)
 	%SessionsList.add_child(lobby_widget)
@@ -30,15 +43,22 @@ func update_online_status() -> void:
 	if not NetworkManager.is_online:
 		%LeaveGameButton.text = EXIT_GAME_LABEL
 		%ConfirmLeaveGameTitle.text = EXIT_GAME_CONFIRM
-		for lobby_widget: Node in %SessionsList.get_children():
-			lobby_widget.queue_free()
-		UIManager.update_lobby_register()
+		update_lobby_register()
 	elif not NetworkManager.is_server:
 		%LeaveGameButton.text = EXIT_SERVER_LABEL
 		%ConfirmLeaveGameTitle.text = EXIT_SERVER_CONFIRM
 	else:
 		%LeaveGameButton.text = CLOSE_SERVER_LABEL
 		%ConfirmLeaveGameTitle.text = CLOSE_SERVER_CONFIRM
+		oneshot_update_lobby_register()
+
+func oneshot_update_lobby_register() -> void:
+	if NetworkManager.is_online and multiplayer.is_server():
+		if %SessionsList.get_child_count() == 0:
+			create_lobby_widget(1, SessionManager.profile_data)
+			return
+		%SessionsList.get_child(0).update(1, SessionManager.profile_data)
+		return
 
 func _ready() -> void:
 	$Frame/Version.text = "Version " + ProjectSettings.get_setting("application/config/version")

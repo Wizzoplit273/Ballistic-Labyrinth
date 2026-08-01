@@ -32,7 +32,7 @@ func _input(event: InputEvent) -> void:
 	if event.is_action_pressed(&"ToggleChatResize"):
 		chat_menu_node.borderless = not chat_menu_node.borderless
 
-func _enter_tree() -> void:
+func master_enter_tree() -> void:
 	if OS.has_feature("server") or DisplayServer.get_name() == "headless": return
 	initialize_ui()
 	is_ui_configured = true

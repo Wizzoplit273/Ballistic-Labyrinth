@@ -6,14 +6,14 @@ var profile_data: Dictionary = {}
 func is_bot(session_id: int) -> bool:
 	return session_id < 0
 
-func _enter_tree() -> void:
-	create_local_profile()
-
 func turn_local_to_online_profile() -> void:
 	if not NetworkManager.is_online: return
 	data.clear()
 	data[multiplayer.get_unique_id()] = profile_data
-	UIManager.update_lobby_register()
+	#UIManager.update_lobby_register() # happens right after exiting this scope
+
+func master_enter_tree() -> void:
+	create_local_profile()
 
 func create_local_profile() -> void:
 	if data.has(0): return

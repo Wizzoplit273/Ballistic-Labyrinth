@@ -13,7 +13,7 @@ var is_server: bool = false
 func set_local_online_status(value_online: bool, value_server: bool) -> void:
 	is_online = value_online
 	is_server = value_server
-	if multiplayer.is_server(): SessionManager.turn_local_to_online_profile()
+	if is_online: SessionManager.turn_local_to_online_profile()
 	UIManager.update_online_status()
 
 func print_console(text: String) -> void:
@@ -24,8 +24,10 @@ func print_error(text: String) -> void:
 	printerr(text)
 	print_debug()
 
-func _enter_tree() -> void:
+func master_enter_tree() -> void:
 	set_local_online_status(false, false)
+
+func _enter_tree() -> void:
 	multiplayer.peer_connected.connect(peer_connected)
 	multiplayer.peer_disconnected.connect(peer_disconnected)
 	multiplayer.connected_to_server.connect(connected_to_server)
