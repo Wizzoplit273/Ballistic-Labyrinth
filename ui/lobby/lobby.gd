@@ -25,7 +25,7 @@ func update_lobby_register() -> void:
 		sid_ui = lobby_widget.get_session_id()
 		if sid_ui == 0:
 			lobby_widget.queue_free()
-			return
+			continue
 		if temp_registry.has(sid_ui):
 			lobby_widget.update(sid_ui, temp_registry[sid_ui])
 			temp_registry.erase(sid_ui)

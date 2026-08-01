@@ -13,7 +13,7 @@ var is_server: bool = false
 func set_local_online_status(value_online: bool, value_server: bool) -> void:
 	is_online = value_online
 	is_server = value_server
-	if is_online: SessionManager.turn_local_to_online_profile()
+	if is_online and is_server: SessionManager.turn_local_to_online_profile()
 	UIManager.update_online_status()
 
 func print_console(text: String) -> void:
@@ -64,6 +64,7 @@ func peer_disconnected(peer_id: int) -> void:
 	if not multiplayer.is_server(): return
 	print_console("Player disconnected with peer id = " + str(peer_id))
 	SessionManager.data.erase(peer_id)
+	UIManager.update_lobby_register()
 	SessionManager.update_registry.rpc(SessionManager.data)
 
 ## called on clients
