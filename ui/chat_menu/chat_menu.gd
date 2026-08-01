@@ -22,9 +22,10 @@ func update_chat() -> void:
 		add_message(message)
 
 func add_message(message: Dictionary) -> void:
-	%ChatText.text += "(" + str(message.get("sender_sid")) + ") "
-	%ChatText.text += message.get("sender_name") + " :"
-	%ChatText.text += str(message.get("timestamp")) + ": "
+	var readable_sid: String = SessionManager.encode_session_id(message.get("sender_sid"))
+	%ChatText.text += str(message.get("timestamp")) + " "
+	%ChatText.text += message.get("sender_name")
+	%ChatText.text += "(" + readable_sid + "): "
 	%ChatText.text += message.get("text") + "\n"
 	pass
 

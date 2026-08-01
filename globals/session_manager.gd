@@ -81,3 +81,33 @@ func request_profile_update(profile: Dictionary) -> void:
 	data[sender_id] = new_session
 	UIManager.update_lobby_register()
 	update_registry.rpc(data)
+
+const ENCODE_ALPHABET: String = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+const ENCODE_BOT_PREFIX: String = "ai#"
+
+func encode_session_id(session_id: int) -> String:
+	if session_id == 0: return "0"
+	var is_negative: bool = session_id < 0
+	var num: int = abs(session_id)
+	var result: String = ""
+	var ENCODE_BASE: int = ENCODE_ALPHABET.length()
+	while num > 0:
+		var remainder: int = num % ENCODE_BASE
+		result += ENCODE_ALPHABET[remainder]
+		num /= ENCODE_BASE
+	return ENCODE_BOT_PREFIX + result if is_negative else result
+
+func decode_session_id(encoded_id: String) -> int:
+	if encoded_id.is_empty(): return 0
+	var is_negative: bool = encoded_id.begins_with(ENCODE_BOT_PREFIX)
+	if is_negative: encoded_id = encoded_id.substr(ENCODE_BOT_PREFIX.length())
+	var result: int = 0
+	var ENCODE_BASE: int = ENCODE_ALPHABET.length()
+	for i: int in range(encoded_id.length()):
+		var char: String = encoded_id[i]
+		var value: int = ENCODE_ALPHABET.find(char)
+		if value == -1:
+			push_error("CUSTOM ERROR in chat_manager.gd: Invalid character in encode string base")
+			return 0
+		result = result * ENCODE_BASE + value
+	return -result if is_negative else result

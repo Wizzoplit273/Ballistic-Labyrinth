@@ -1,7 +1,9 @@
 extends Control
 
+const SID_LABEL_PREFIX: String = "sid: "
+
 func get_session_id() -> int:
-	return session_id_ui.text.to_int()
+	return SessionManager.decode_session_id(session_id_ui.text.substr(SID_LABEL_PREFIX.length()))
 
 func get_username() -> String:
 	return username_ui.text
@@ -29,7 +31,7 @@ func update(profile_key: int, profile: Dictionary) -> void:
 	set_score(profile["score"])
 
 func set_session_id(sid: int) -> void:
-	$Container/SessionIDLabel.text = str(sid)
+	$Container/SessionIDLabel.text = SID_LABEL_PREFIX + SessionManager.encode_session_id(sid)
 
 func set_username(username: String) -> void:
 	$Container/UsernameLabel.text = username
