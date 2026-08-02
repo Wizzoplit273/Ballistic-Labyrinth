@@ -104,8 +104,8 @@ func decode_session_id(encoded_id: String) -> int:
 	var result: int = 0
 	var ENCODE_BASE: int = ENCODE_ALPHABET.length()
 	for i: int in range(encoded_id.length()):
-		var char: String = encoded_id[i]
-		var value: int = ENCODE_ALPHABET.find(char)
+		var character: String = encoded_id[i]
+		var value: int = ENCODE_ALPHABET.find(character)
 		if value == -1:
 			push_error("CUSTOM ERROR in chat_manager.gd: Invalid character in encode string base")
 			return 0

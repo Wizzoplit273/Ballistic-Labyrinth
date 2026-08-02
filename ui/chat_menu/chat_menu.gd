@@ -16,9 +16,8 @@ func toggle_chat_resize() -> void:
 func _ready() -> void:
 	ChatManager.connect(&"update_local_chat_ui", update_chat)
 
-func update_chat() -> void:
-	%ChatText.text = ""
-	for message: Dictionary in ChatManager.chat_history:
+func update_chat(new_messages: Array[Dictionary]) -> void:
+	for message: Dictionary in new_messages:
 		add_message(message)
 
 func add_message(message: Dictionary) -> void:

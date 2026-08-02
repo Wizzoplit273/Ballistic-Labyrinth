@@ -10,12 +10,14 @@ func send_message(text: String, channel: String = "global") -> void:
 	process_message(text, channel)
 
 @rpc("authority", "reliable")
-func update_chat_history(history: Array[Dictionary]) -> void:
-	chat_history.clear()
-	chat_history.assign(history)
-	update_local_chat_ui.emit()
+func update_chat_history(new_message: Dictionary) -> void:
+	chat_history.append(new_message)
+	while chat_history.size() > MAX_HISTORY:
+		chat_history.pop_front()
+	var new_array: Array[Dictionary] = [new_message]
+	update_local_chat_ui.emit(new_array)
 
-signal update_local_chat_ui()
+signal update_local_chat_ui(messages: Array[Dictionary])
 @rpc("any_peer", "reliable", "call_local")
 func process_message(text: String, channel: String = "global") -> void:
 	if NetworkManager.is_online and not multiplayer.is_server(): return
@@ -26,11 +28,12 @@ func process_message(text: String, channel: String = "global") -> void:
 		"sender_sid": sender_id,
 		"sender_name": SessionManager.data.get(sender_id).get("name"),
 		"text": final_text,
-		"timestamp": Time.get_time_string_from_unix_time(Time.get_unix_time_from_system()),
+		"timestamp": Time.get_time_string_from_unix_time(int(Time.get_unix_time_from_system())),
 		"channel": channel
 	}
 	chat_history.append(message)
 	while chat_history.size() > MAX_HISTORY:
 		chat_history.pop_front()
-	if NetworkManager.is_online: rpc("update_chat_history", chat_history)
-	update_local_chat_ui.emit()
+	if NetworkManager.is_online: rpc("update_chat_history", message)
+	var new_array: Array[Dictionary] = [message]
+	update_local_chat_ui.emit(new_array)
