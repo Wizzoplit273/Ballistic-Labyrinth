@@ -18,6 +18,7 @@ func set_local_online_status(value_online: bool, value_server: bool) -> void:
 
 func print_console(text: String) -> void:
 	print(text)
+	ChatManager.send_local_message(text, "system")
 
 func print_error(text: String) -> void:
 	push_error(text)
@@ -58,18 +59,21 @@ func start_client(ip: String) -> void:
 
 func peer_connected(peer_id: int) -> void:
 	if not multiplayer.is_server(): return
-	print_console("Player connected with peer id = " + str(peer_id))
+	var encoded_pid: String = SessionManager.encode_session_id(peer_id)
+	print_console("Player connected with peer id = " + encoded_pid)
 
 func peer_disconnected(peer_id: int) -> void:
 	if not multiplayer.is_server(): return
-	print_console("Player disconnected with peer id = " + str(peer_id))
+	var encoded_pid: String = SessionManager.encode_session_id(peer_id)
+	print_console("Player disconnected with peer id = " + encoded_pid)
 	SessionManager.data.erase(peer_id)
 	UIManager.update_lobby_register()
 	SessionManager.update_registry.rpc(SessionManager.data)
 
 ## called on clients
 func connected_to_server() -> void:
-	print_console("Successfully joined with peer id = " + str(multiplayer.get_unique_id()))
+	var encoded_pid: String = SessionManager.encode_session_id(multiplayer.get_unique_id())
+	print_console("Successfully joined with peer id = " + encoded_pid)
 	SessionManager.request_profile_update.rpc_id(1, SessionManager.profile_data)
 
 ## called on clients
@@ -78,19 +82,20 @@ func connection_failed() -> void:
 
 func disconnect_client(peer_id: int) -> void:
 	if not multiplayer.is_server(): return
+	var encoded_pid: String = SessionManager.encode_session_id(peer_id)
 	if peer_id <= 1:
-		print_error("NETWORK ERROR: can't disconnect client with id " + str(peer_id) + ": should be > 1")
+		print_error("NETWORK ERROR: can't disconnect client with id " + encoded_pid + ": should be > 1")
 		return
 	var target_peer: ENetMultiplayerPeer = multiplayer.multiplayer_peer as ENetMultiplayerPeer
 	if not target_peer:
-		print_error("NETWORK ERROR: can't disconnect client with id " + str(peer_id) + ": null peer object")
+		print_error("NETWORK ERROR: can't disconnect client with id " + encoded_pid + ": null peer object")
 		return
 	if target_peer.get_connection_status() == MultiplayerPeer.CONNECTION_DISCONNECTED:
-		print_error("NETWORK ERROR: can't disconnect client with id " + str(peer_id) + ": already disconnected")
+		print_error("NETWORK ERROR: can't disconnect client with id " + encoded_pid + ": already disconnected")
 		return
 	set_local_online_status.rpc_id(peer_id, false, false)
 	peer.disconnect_peer(peer_id)
-	print_console("Kicked peer with id " + str(peer_id))
+	print_console("Kicked peer with id " + encoded_pid)
 
 func disconnect_from_server() -> void:
 	if multiplayer.is_server(): return
