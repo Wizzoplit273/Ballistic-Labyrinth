@@ -25,11 +25,11 @@ config/icon="uid://bsnkweusjyp86"
 
 NetworkManager="*uid://db3pnn8xuboou"
 SessionManager="*uid://cqmpp882jy0b8"
-CommandManager="*uid://db7whopcojwf3"
 UIManager="*uid://etejeva0swls"
 IngameManager="*uid://bgrkr8b4vpemw"
 MasterManager="*uid://bmre2o6yqqp4y"
 ChatManager="*uid://dtud6btactpa7"
+ConsoleManager="*uid://d25xxhu2th33n"
 
 [display]
 
