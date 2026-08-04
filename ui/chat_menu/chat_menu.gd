@@ -28,6 +28,8 @@ func add_message(message: Dictionary) -> void:
 		%ChatText.text += "(" + readable_sid + "): "
 	elif message.get("channel") == "system":
 		%ChatText.text += "***: "
+	elif message.get("channel") == "shell":
+		%ChatText.text += "----- shell -----\n"
 	%ChatText.text += message.get("text") + "\n"
 
 func _input(event: InputEvent) -> void:
@@ -35,7 +37,9 @@ func _input(event: InputEvent) -> void:
 
 func _on_chat_input_text_submitted(raw: String) -> void:
 	%ChatInput.clear()
-	ChatManager.send_message(raw)
+	raw = raw.strip_edges()
+	if raw.begins_with("/"): ConsoleManager.execute_raw_string(raw)
+	else: ChatManager.send_message(raw)
 
 func _on_chat_input_focus_entered() -> void:
 	is_blocked = true

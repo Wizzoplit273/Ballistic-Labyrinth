@@ -2,52 +2,283 @@ extends Node
 
 var registry: Array[Dictionary] = []
 
-enum SHELL_CONTEXT {ANY, OFFLINE, CLIENT, ADMIN, HOST}
-
+## confirm("yes") command isn't registered and stores a command in a temporary buffer
 func _enter_tree() -> void:
 	register_command(
 		["help"],
 		cmd_help,
 		"shows available commands",
-		SHELL_CONTEXT.ANY
+		false,
+		true
+	)
+	register_command(
+		["connect", "join"],
+		cmd_connect,
+		"connects to a server using an IP address",
+		false,
+		true
+	)
+	register_command(
+		["disconnect", "leave"],
+		cmd_disconnect,
+		"leaves from the currently connected server",
+		false,
+		true
+	)
+	register_command(
+		["start_server", "open_server"],
+		cmd_start_server,
+		"configures this game instance as a server",
+		true,
+		true
+	)
+	register_command(
+		["close_server", "end_server", "stop_server", "disconnect_server"],
+		cmd_close_server,
+		"closes the server",
+		true,
+		true
+	)
+	register_command(
+		["get"],
+		cmd_get,
+		"get attributes from yourself or a certain player",
+		false,
+		true
 	)
 
 func register_command(
 	aliases: PackedStringArray,
 	callback: Callable,
 	description: String,
-	shell_context: SHELL_CONTEXT) -> void:
+	requires_admin: bool,
+	is_local: bool) -> void:
 	registry.append({
 		"aliases": aliases,
 		"callback": callback,
 		"description": description,
-		"shell_context": shell_context
+		"requires_admin": requires_admin,
+		"is_local": is_local
 	})
 
-func process_raw_string(raw_text: String, pid: int) -> String:
-	if pid < 0: return ""
-	if NetworkManager.is_online and pid == 0: return ""
-	#if NetworkManager.is_online and not multiplayer.is_server() and pid != 1: return ""
+func print_output(text: String) -> void:
+	ChatManager.send_local_message(text, "shell")
+
+func execute_raw_string(raw_text: String) -> void:
 	var text: String = raw_text.strip_edges()
 	if text.begins_with("/"): text = text.substr(1)
-	text = text.to_lower()
 	var tokens: PackedStringArray = text.split(" ", false)
-	var invoked: String = tokens[0]
+	var invoked: String = ""
+	if not text.is_empty(): invoked = tokens[0]
+	if is_confirming_command:
+		if invoked == "yes": execute_cmd(confirmed_cmd, confirmed_args, confirmed_flags)
+		return
 	tokens.remove_at(0)
 	var active_cmd: Dictionary = {}
 	for cmd: Dictionary in registry:
 		if invoked in cmd["aliases"]:
 			active_cmd = cmd
 			break
-	if active_cmd.is_empty(): return "command not found: %s" % invoked
-	var flags: Array[Dictionary] = []
+	if active_cmd.is_empty():
+		print_output("command not found: %s" % invoked)
+		return
+	## temporary setup for testing the game
+	## cmd_start_server isn't shown in help list but can be used nonetheless
+	## in the future, client-only exports won't have cmd_start_server and cmd_close_server
+	if active_cmd["requires_admin"] and active_cmd["callback"] != cmd_start_server:
+		if not NetworkManager.is_online:
+			print_output("command not found: %s" % invoked)
+			return
+		if SessionManager.data.get(multiplayer.get_unique_id()).get("admin") == false:
+			print_output("command not found: %s" % invoked)
+			return
+	var flags: Array[PackedStringArray] = []
 	var args: PackedStringArray = []
+	var is_previous_token_argument_flag: bool = false
 	for token: String in tokens:
-		if token.begins_with("-"): flags.append(token)
-		else: 					   args.append(token)
-	return active_cmd["callback"].call(args, flags, pid)
+		if token.begins_with("-"):
+			if is_previous_token_argument_flag:
+				print_output("invalid flag syntax: expected argument after = flag")
+				return
+			flags.append([token])
+		elif token.begins_with("="):
+			if is_previous_token_argument_flag:
+				print_output("invalid flag syntax: expected argument after = flag")
+				return
+			flags.append([token])
+			is_previous_token_argument_flag = true
+		elif is_previous_token_argument_flag: flags[-1].append(token)
+		else: args.append(token)
+	execute_cmd(active_cmd, args, flags)
 
-func cmd_help(args: PackedStringArray, flags: Dictionary, pid: int) -> String:
+var is_confirming_command: bool = false
+var confirmed_cmd: Dictionary = {}
+var confirmed_args: PackedStringArray = []
+var confirmed_flags: Array[PackedStringArray] = []
+func confirm_cmd(cmd: Dictionary, args: PackedStringArray, flags: Array[PackedStringArray]) -> void:
+	is_confirming_command = true
+	print_output(
+		"are you sure you want to execute this command? " + cmd["aliases"][0] + "\n" +
+		"use the \"yes\" command to confirm or cancel by typing a dummy command(one / suffices)\n"
+	)
+	confirmed_cmd = cmd
+	confirmed_args = args
+	confirmed_flags = flags
+
+## wrapper function for commands that require confirmation
+## to make a command cmd_foo confirm-only, this line is appended right before the actual
+## command execution in the function body:
+## if not is_cmd_confirmed(cmd_foo, args, flags): return
+func is_cmd_confirmed(callback: Callable, args: PackedStringArray, flags: Array[PackedStringArray]) -> bool:
+	if is_confirming_command:
+		is_confirming_command = false
+		return true
+	for cmd: Dictionary in registry:
+		if cmd["callback"] != callback: continue
+		confirm_cmd(cmd, args, flags)
+		return false
+	return false
+
+func execute_cmd(cmd: Dictionary, args: PackedStringArray, flags: Array[PackedStringArray]) -> void:
+	if cmd["is_local"]:
+		cmd["callback"].call(args, flags)
+		return
+	if multiplayer.is_server():
+		cmd["callback"].call(args, flags)
+		client_execute_cmd.rpc(cmd, args, flags)
+		return
+	request_network_cmd(cmd, args, flags)
+
+@rpc("any_peer", "reliable")
+func request_network_cmd(cmd: Dictionary, args: PackedStringArray, flags: Array[PackedStringArray]) -> void:
+	var pid: int = multiplayer.get_remote_sender_id()
+	if not cmd in registry: return
+	if cmd["is_local"]: return
+	if cmd["requires_admin"] and not SessionManager.data[pid]["admin"]: return
+	cmd["callback"].call(args, flags)
+	client_execute_cmd.rpc(cmd, args, flags)
+
+@rpc("authority", "reliable")
+func client_execute_cmd(cmd: Dictionary, args: PackedStringArray, flags: Array[PackedStringArray]) -> void:
+	if not cmd in registry: return
+	cmd["callback"].call(args, flags)
+
+func cmd_help(args: PackedStringArray, _flags: Array[PackedStringArray]) -> void:
+	var command_list: String = ""
+	if args.is_empty():
+		for command: Dictionary in registry:
+			var is_admin: bool = false
+			if NetworkManager.is_online: is_admin = SessionManager.data.get(multiplayer.get_unique_id()).get("admin")
+			if command["requires_admin"] == true and not is_admin: continue
+			var length: int = command["aliases"].size()
+			var index: int = 0
+			for alias: String in command["aliases"]:
+				if index == length - 1: command_list += alias
+				else: command_list += alias + "/"
+				index += 1
+			command_list += ": " + command["description"] + "\n"
+		print_output(command_list)
+		return
+	for command: Dictionary in registry:
+		if not args[0] in command["aliases"]: continue
+		var length: int = command["aliases"].size()
+		var index: int = 0
+		for alias: String in command["aliases"]:
+			if index == length - 1: command_list += alias
+			else: command_list += alias + "/"
+			index += 1
+		command_list += ": " + command["description"] + "\n"
+		print_output(command_list)
+		return
+	print_output("command not found: %s" % args[0])
+	return
+
+func cmd_connect(args: PackedStringArray, flags: Array[PackedStringArray]) -> void:
+	if NetworkManager.is_online:
+		print_output("already online/connected")
+		return
 	if args.is_empty() and flags.is_empty():
-		return ""
-	return ""
+		print_output("provide an IP address to connect to")
+		return
+	if not args.is_empty() and not flags.is_empty():
+		print_output("invalid args/flag syntax: either provide IP directly or via ==ip flag")
+		return
+	if not args.is_empty():
+		NetworkManager.start_client(args[0])
+		return
+	for flag: PackedStringArray in flags:
+		if flag[0] != "==ip": continue
+		NetworkManager.start_client(flag[1])
+	print_output("invalid flag syntax: provide IP via ==ip flag")
+
+func cmd_disconnect(args: PackedStringArray, flags: Array[PackedStringArray]) -> void:
+	if not NetworkManager.is_online:
+		print_output("already offline/disconnected")
+		return
+	if multiplayer.is_server():
+		print_output("can't disconnect with this command. Consider using close_server instead")
+		return
+	if not is_cmd_confirmed(cmd_disconnect, args, flags): return
+	NetworkManager.disconnect_from_server()
+
+func cmd_start_server(_args: PackedStringArray, _flags: Array[PackedStringArray]) -> void:
+	if NetworkManager.is_online:
+		print_output("server is already started")
+		return
+	NetworkManager.start_server()
+
+func cmd_close_server(args: PackedStringArray, flags: Array[PackedStringArray]) -> void:
+	if not NetworkManager.is_online:
+		print_output("already offline/disconnected")
+		return
+	if not multiplayer.is_server():
+		print_output("permission denied: only host can close the server")
+		return
+	if not is_cmd_confirmed(cmd_close_server, args, flags): return
+	NetworkManager.close_server()
+
+func cmd_get(args: PackedStringArray, flags: Array[PackedStringArray]) -> void:
+	if args.is_empty():
+		print_output("usage: get PROPERTY [pid/=u NAME]")
+		return
+	var target_sid: int = 0
+	if NetworkManager.is_online: target_sid = multiplayer.get_unique_id()
+	if flags.is_empty():
+		if args.size() > 1: target_sid = SessionManager.decode_session_id(args[1])
+	else:
+		var flag: PackedStringArray = []
+		const ALIASES: PackedStringArray = ["=u", "=n", "==name", "==username", "==user"]
+		for f: PackedStringArray in flags:
+			if f[0] in ALIASES:
+				flag = f
+				break
+		if flag.is_empty():
+			print_output("usage: get PROPERTY [pid/=u NAME]")
+			return
+		var match_count: int = 0
+		for key: int in SessionManager.data.keys():
+			if match_count == 1 and key == 0: continue
+			if SessionManager.data[key].get("name") != flag[1]: continue
+			target_sid = key
+			match_count += 1
+		if match_count == 0:
+			print_output("couldn't get player with name %s" % flag[1])
+			return
+		if match_count > 1:
+			print_output("multiple players have the same name, consider searching by sid")
+			return
+	if args[0] == "name" or args[0] == "username":
+		print_output("name: " + SessionManager.data[target_sid].get("name"))
+		return
+	if args[0] == "admin" or args[0] == "is_admin":
+		print_output("is admin: " + str(SessionManager.data[target_sid].get("admin")))
+		return
+	if args[0] == "color" or args[0] == "colour":
+		print_output("color: " + str(SessionManager.data[target_sid].get("color")))
+		return
+	if args[0] == "kills":
+		print_output("kills: " + str(SessionManager.data[target_sid].get("kills")))
+		return
+	if args[0] == "score":
+		print_output("score: " + str(SessionManager.data[target_sid].get("score")))
+		return

@@ -8,6 +8,7 @@ func is_bot(session_id: int) -> bool:
 
 func turn_local_to_online_profile() -> void:
 	data.clear()
+	profile_data["admin"] = true
 	data[multiplayer.get_unique_id()] = profile_data
 	#UIManager.update_lobby_register() # happens right after exiting this scope
 
@@ -18,6 +19,7 @@ func create_local_profile() -> void:
 	if data.has(0): return
 	profile_data = {
 		"name": "unnamed",
+		"admin": false,
 		"color": Color(1.0, 1.0, 1.0, 1.0),
 		"kills": 0,
 		"score": 0
@@ -60,6 +62,9 @@ func get_profile_kills() -> int:
 func get_profile_score() -> int:
 	return profile_data.get("score")
 
+func get_profile_admin() -> bool:
+	return profile_data.get("admin")
+
 @rpc("authority", "reliable")
 func update_registry(server_data: Dictionary) -> void:
 	data.clear()
@@ -74,6 +79,7 @@ func request_profile_update(profile: Dictionary) -> void:
 	if clean_name.is_empty(): clean_name = "Player " + str(sender_id)
 	var new_session: Dictionary = {
 		"name": clean_name,
+		"admin": profile.get("admin", false),
 		"color": profile.get("color", Color(1.0, 1.0, 1.0, 1.0)),
 		"kills": 0,
 		"score": 0
