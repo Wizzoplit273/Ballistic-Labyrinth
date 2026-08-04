@@ -72,6 +72,8 @@ func execute_raw_string(raw_text: String) -> void:
 	if not text.is_empty(): invoked = tokens[0]
 	if is_confirming_command:
 		if invoked == "yes": execute_cmd(confirmed_cmd, confirmed_args, confirmed_flags)
+		else: print_output("command aborted")
+		is_confirming_command = false
 		return
 	tokens.remove_at(0)
 	var active_cmd: Dictionary = {}
