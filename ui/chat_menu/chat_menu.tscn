@@ -36,7 +36,9 @@ metadata/_edit_lock_ = true
 disable_3d = true
 transparent_bg = true
 oversampling_override = 1.0
+position = Vector2i(0, 15)
 size = Vector2i(400, 500)
+transient = true
 borderless = true
 transparent = true
 
@@ -87,6 +89,9 @@ metadata/_edit_lock_ = true
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
+focus_mode = 2
+theme_override_font_sizes/normal_font_size = 16
+selection_enabled = true
 metadata/_edit_lock_ = true
 
 [node name="ChatInput" type="LineEdit" parent="Window/Texture/Container" unique_id=420602209]

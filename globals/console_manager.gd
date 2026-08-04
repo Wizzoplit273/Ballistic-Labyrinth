@@ -46,6 +46,13 @@ func _enter_tree() -> void:
 		false,
 		true
 	)
+	register_command( # temporary quick configuration
+		["chat_resize"],
+		cmd_chat_resize,
+		"resize chat text to a specific size",
+		false,
+		true
+	)
 
 func register_command(
 	aliases: PackedStringArray,
@@ -284,3 +291,13 @@ func cmd_get(args: PackedStringArray, flags: Array[PackedStringArray]) -> void:
 	if args[0] == "score":
 		print_output("score: " + str(SessionManager.data[target_sid].get("score")))
 		return
+
+# temporary quick configuration
+func cmd_chat_resize(args: PackedStringArray, _flags: Array[PackedStringArray]) -> void:
+	if not UIManager.is_ui_configured:
+		print_output("no chat menu connected")
+		return
+	if args.is_empty():
+		print_output("provide a font size")
+		return
+	UIManager.chat_menu_node.set_font_size(int(args[0]))

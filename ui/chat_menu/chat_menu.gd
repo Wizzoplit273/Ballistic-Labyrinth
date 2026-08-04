@@ -49,3 +49,6 @@ func _on_chat_input_focus_exited() -> void:
 
 func _on_focus_entered() -> void:
 	is_blocked = false
+
+func set_font_size(value: int) -> void:
+	%ChatText.add_theme_font_size_override(&"normal_font_size", value)
