@@ -34,6 +34,36 @@ func add_session(session_id: int, profile: Dictionary) -> void:
 	if session_id == 0: return
 	data[session_id] = profile
 
+func add_bot(count: int = 1) -> void:
+	if count <= 0: return
+	var new_sid: int = -1
+	while count > 0:
+		while data.has(new_sid): new_sid -= 1
+		add_session(new_sid, {
+			"name": "bot " + str(abs(new_sid)),
+			"admin": false,
+			"color": Color(1.0, 1.0, 1.0, 1.0),
+			"kills": 0,
+			"score": 0
+		})
+		count -= 1
+	UIManager.update_lobby_register()
+
+func remove_bot_sid(sid: int) -> void:
+	if sid >= 0: return
+	if not data.has(sid): return
+	data.erase(sid)
+	UIManager.update_lobby_register()
+
+func remove_bot_count(count: int = 1) -> void:
+	if count <= 0: return
+	for sid: int in data.keys():
+		if count <= 0: break
+		if sid >= 0: continue
+		data.erase(sid)
+		count -= 1
+	UIManager.update_lobby_register()
+
 func set_profile_name(name_string: String) -> void:
 	profile_data["name"] = name_string
 	wrap_request_profile_update()

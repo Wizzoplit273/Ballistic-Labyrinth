@@ -59,12 +59,19 @@ func _enter_tree() -> void:
 		cmd_set,
 		"set one of your attributes to a specific value",
 		false,
-		true
+		false
 	)
 	register_command(
 		["assign", "set_admin"],
 		cmd_set,
 		"modify any attribute from any session except admin role",
+		true,
+		false
+	)
+	register_command(
+		["bot", "ai"],
+		cmd_bot,
+		"create or delete bots",
 		true,
 		false
 	)
@@ -178,11 +185,12 @@ func execute_cmd(cmd: Dictionary, args: PackedStringArray, flags: Array[PackedSt
 		cmd["callback"].call(args, flags)
 		client_execute_cmd.rpc(cmd, args, flags)
 		return
-	request_network_cmd(cmd, args, flags)
+	request_network_cmd.rpc_id(1, cmd, args, flags)
 
 @rpc("any_peer", "reliable")
 func request_network_cmd(cmd: Dictionary, args: PackedStringArray, flags: Array[PackedStringArray]) -> void:
 	var pid: int = multiplayer.get_remote_sender_id()
+	if NetworkManager.is_online and not multiplayer.is_server(): return
 	if not cmd in registry: return
 	if cmd["is_local"]: return
 	if cmd["requires_admin"] and not SessionManager.data[pid]["admin"]: return
@@ -313,7 +321,7 @@ func cmd_get(args: PackedStringArray, flags: Array[PackedStringArray], _pid: int
 		return true
 	return false
 
-func cmd_set(args: PackedStringArray, _flags: Array[PackedStringArray], _pid: int = 0) -> bool:
+func cmd_set(args: PackedStringArray, _flags: Array[PackedStringArray], pid: int = 0) -> bool:
 	if args.is_empty():
 		print_output("usage: set PROPERTY VALUE")
 		return false
@@ -321,17 +329,19 @@ func cmd_set(args: PackedStringArray, _flags: Array[PackedStringArray], _pid: in
 		print_output("provide a value to set your attribute to")
 		return false
 	var property: String = ""
-	for key: PackedStringArray in ATTRIBUTE_ALIASES:
-		if not args[0] in key: continue
-		property = key[0]
+	for value: PackedStringArray in ATTRIBUTE_ALIASES.values():
+		if not args[0] in value: continue
+		property = value[0]
 		break
 	if property.is_empty():
 		print_output("nonexistent attribute %s" % args[0])
 		return false
-	if property == "admin":
+	const PROHIBITED = ["admin", "kills", "score"]
+	if property in PROHIBITED:
 		print_output("nonexistent attribute %s" % args[0])
 		return false
-	SessionManager.assign_from_str(multiplayer.get_unique_id(), args[0], args[1])
+	if NetworkManager.is_online: pid = multiplayer.get_unique_id()
+	SessionManager.assign_from_str(pid, args[0], args[1])
 	return true
 
 func cmd_assign(args: PackedStringArray, flags: Array[PackedStringArray], pid: int = 0) -> bool:
@@ -366,6 +376,43 @@ func cmd_assign(args: PackedStringArray, flags: Array[PackedStringArray], pid: i
 		return false
 	SessionManager.assign_from_str(target_sid, args[0], args[1])
 	return true
+
+func cmd_bot(args: PackedStringArray, _flags: Array[PackedStringArray], _pid: int = 0) -> bool:
+	if args.is_empty():
+		print_output("usage: bot [add [COUNT]]/[delete sid/count SID/[COUNT]")
+		return false
+	const ALIASES_1 = ["add", "create"]
+	if args[0] in ALIASES_1: # BOT add ...
+		var count: int = 1
+		if args.size() >= 2: count = abs(int(args[1])) # BOT add 1 [2] [3] [4] ...
+		SessionManager.add_bot(count)
+		return true
+	const ALIASES_2 = ["remove", "delete", "erase"]
+	if not args[0] in ALIASES_2: # BOT remove ...
+		print_output("invalid first argument. Should be add or delete")
+		return false
+	if args.size() <= 1: # BOT remove {missing}
+		print_output("delete bot by sid or count")
+		return false
+	if args[1] == "sid": # BOT remove sid ...
+		if args.size() <= 2: # BOT remove sid {missing}
+			print_output("can't delete bot with no SID")
+			return false
+		var sid: int = SessionManager.decode_session_id(args[2])
+		sid = -abs(sid)
+		if not SessionManager.data.has(sid):
+			print_output("bot with SID = %s doesn't exist" % args[2])
+			return false
+		SessionManager.remove_bot_sid(sid)
+		return true
+	const ALIASES_3 = ["count", "number", "c", "num", "n"]
+	if args[1] in ALIASES_3:
+		var count: int = 1
+		if args.size() >= 3: count = abs(int(args[2])) # BOT remove count 1 [2] [3] [4] ...
+		SessionManager.remove_bot_count(count)
+		return true
+	print_output("delete bot by sid or count")
+	return false
 
 # temporary quick configuration
 func cmd_chat_resize(args: PackedStringArray, _flags: Array[PackedStringArray], _pid: int = 0) -> bool:
