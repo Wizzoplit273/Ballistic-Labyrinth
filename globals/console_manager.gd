@@ -246,6 +246,14 @@ func cmd_close_server(args: PackedStringArray, flags: Array[PackedStringArray]) 
 	if not is_cmd_confirmed(cmd_close_server, args, flags): return
 	NetworkManager.close_server()
 
+const ATTRIBUTE_ALIASES: Dictionary = {
+	"name": ["name", "username", "user", "n", "u"],
+	"admin": ["admin", "is_admin", "a"],
+	"color": ["color", "colour", "rgb", "c"],
+	"kills": ["kills", "kill", "k"],
+	"score": ["score", "win", "wins", "s", "w"]
+}
+
 func cmd_get(args: PackedStringArray, flags: Array[PackedStringArray]) -> void:
 	if args.is_empty():
 		print_output("usage: get PROPERTY [pid/=u NAME]")
@@ -276,21 +284,50 @@ func cmd_get(args: PackedStringArray, flags: Array[PackedStringArray]) -> void:
 		if match_count > 1:
 			print_output("multiple players have the same name, consider searching by sid")
 			return
-	if args[0] == "name" or args[0] == "username":
-		print_output("name: " + SessionManager.data[target_sid].get("name"))
+	for key: PackedStringArray in ATTRIBUTE_ALIASES:
+		if not args[0] in key: continue
+		print_output(key[0] + ": " + SessionManager.data[target_sid].get(key[0]))
 		return
-	if args[0] == "admin" or args[0] == "is_admin":
-		print_output("is admin: " + str(SessionManager.data[target_sid].get("admin")))
+
+func cmd_set(args: PackedStringArray, _flags: Array[PackedStringArray]) -> void:
+	if args.is_empty():
+		print_output("usage: set PROPERTY VALUE")
 		return
-	if args[0] == "color" or args[0] == "colour":
-		print_output("color: " + str(SessionManager.data[target_sid].get("color")))
+	if args.size() < 2:
+		print_output("provide a value to set your attribute to")
 		return
-	if args[0] == "kills":
-		print_output("kills: " + str(SessionManager.data[target_sid].get("kills")))
+	var property: String = ""
+	for key: PackedStringArray in ATTRIBUTE_ALIASES:
+		if not args[0] in key: continue
+		property = key[0]
+		break
+	if property.is_empty():
+		print_output("nonexistent attribute %s" % args[0])
 		return
-	if args[0] == "score":
-		print_output("score: " + str(SessionManager.data[target_sid].get("score")))
+	SessionManager.assign_from_str(multiplayer.get_unique_id(), args[0], args[1])
+	## UNFINISHED
+
+func cmd_assign(args: PackedStringArray, flags: Array[PackedStringArray]) -> void:
+	if args.is_empty():
+		print_output("usage: assign PROPERTY VALUE [=s/==sid SID]")
 		return
+	if args.size() < 2:
+		print_output("usage: assign PROPERTY VALUE [=s/==sid SID]")
+		return
+	var property: String = ""
+	for key: PackedStringArray in ATTRIBUTE_ALIASES:
+		if not args[0] in key: continue
+		property = key[0]
+		break
+	if property.is_empty():
+		print_output("nonexistent attribute %s" % args[0])
+		return
+	var target_sid: int = multiplayer.get_unique_id()
+	for flag: PackedStringArray in flags:
+		if flag[0] != "=s" and flag[0] != "==sid": continue
+		target_sid = SessionManager.decode_session_id(flag[1])
+		break
+	SessionManager.assign_from_str(target_sid, args[0], args[1])
 
 # temporary quick configuration
 func cmd_chat_resize(args: PackedStringArray, _flags: Array[PackedStringArray]) -> void:

@@ -42,6 +42,16 @@ func set_profile_color(color: Color) -> void:
 	profile_data["color"] = color
 	wrap_request_profile_update()
 
+func assign_from_str(sid: int, attribute: String, value: String) -> void:
+	if not data.has(sid): return
+	if typeof(data[sid][attribute]) == TYPE_BOOL:
+		if value == "false" or value == "0": data[sid][attribute] = false
+		else: data[sid][attribute] = true
+	if typeof(data[sid][attribute]) == TYPE_INT: data[sid][attribute] = int(value)
+	if typeof(data[sid][attribute]) == TYPE_FLOAT: data[sid][attribute] = float(value)
+	if typeof(data[sid][attribute]) == TYPE_STRING: data[sid][attribute] = value
+	UIManager.update_lobby_register()
+
 func wrap_request_profile_update() -> void:
 	if not NetworkManager.is_online:
 		UIManager.update_lobby_register()
