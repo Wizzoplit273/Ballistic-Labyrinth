@@ -203,7 +203,7 @@ func client_execute_cmd(cmd: Dictionary, args: PackedStringArray, flags: Array[P
 	if not cmd in registry: return
 	cmd["callback"].call(args, flags)
 
-func cmd_help(args: PackedStringArray, _flags: Array[PackedStringArray], _pid: int = 0) -> bool:
+func cmd_help(args: PackedStringArray, _flags: Array[PackedStringArray], _pid: int = 0, _headless: bool = false) -> bool:
 	var command_list: String = ""
 	if args.is_empty():
 		for command: Dictionary in registry:
