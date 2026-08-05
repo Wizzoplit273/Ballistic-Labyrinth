@@ -2,6 +2,14 @@ extends Node
 
 var registry: Array[Dictionary] = []
 
+const ATTRIBUTE_ALIASES: Dictionary = {
+	"name": ["name", "username", "user", "n", "u"],
+	"admin": ["admin", "is_admin", "a"],
+	"color": ["color", "colour", "rgb", "c"],
+	"kills": ["kills", "kill", "k"],
+	"score": ["score", "win", "wins", "s", "w"]
+}
+
 ## confirm("yes") command isn't registered and stores a command in a temporary buffer
 func _enter_tree() -> void:
 	register_command(
@@ -35,7 +43,7 @@ func _enter_tree() -> void:
 	register_command(
 		["close_server", "end_server", "stop_server", "disconnect_server"],
 		cmd_close_server,
-		"closes the server",
+		"closes the server(host only)",
 		true,
 		true
 	)
@@ -45,6 +53,20 @@ func _enter_tree() -> void:
 		"get attributes from yourself or a certain player",
 		false,
 		true
+	)
+	register_command(
+		["set"],
+		cmd_set,
+		"set one of your attributes to a specific value",
+		false,
+		true
+	)
+	register_command(
+		["assign", "set_admin"],
+		cmd_set,
+		"modify any attribute from any session except admin role",
+		true,
+		false
 	)
 	register_command( # temporary quick configuration
 		["chat_resize"],
@@ -137,7 +159,7 @@ func confirm_cmd(cmd: Dictionary, args: PackedStringArray, flags: Array[PackedSt
 ## wrapper function for commands that require confirmation
 ## to make a command cmd_foo confirm-only, this line is appended right before the actual
 ## command execution in the function body:
-## if not is_cmd_confirmed(cmd_foo, args, flags): return
+## if not is_cmd_confirmed(cmd_foo, args, flags): return false
 func is_cmd_confirmed(callback: Callable, args: PackedStringArray, flags: Array[PackedStringArray]) -> bool:
 	if is_confirming_command:
 		is_confirming_command = false
@@ -164,7 +186,8 @@ func request_network_cmd(cmd: Dictionary, args: PackedStringArray, flags: Array[
 	if not cmd in registry: return
 	if cmd["is_local"]: return
 	if cmd["requires_admin"] and not SessionManager.data[pid]["admin"]: return
-	cmd["callback"].call(args, flags)
+	var host_approved: bool = cmd["callback"].call(args, flags, pid)
+	if not host_approved: return
 	client_execute_cmd.rpc(cmd, args, flags)
 
 @rpc("authority", "reliable")
@@ -172,7 +195,7 @@ func client_execute_cmd(cmd: Dictionary, args: PackedStringArray, flags: Array[P
 	if not cmd in registry: return
 	cmd["callback"].call(args, flags)
 
-func cmd_help(args: PackedStringArray, _flags: Array[PackedStringArray]) -> void:
+func cmd_help(args: PackedStringArray, _flags: Array[PackedStringArray], _pid: int = 0) -> bool:
 	var command_list: String = ""
 	if args.is_empty():
 		for command: Dictionary in registry:
@@ -187,7 +210,7 @@ func cmd_help(args: PackedStringArray, _flags: Array[PackedStringArray]) -> void
 				index += 1
 			command_list += ": " + command["description"] + "\n"
 		print_output(command_list)
-		return
+		return true
 	for command: Dictionary in registry:
 		if not args[0] in command["aliases"]: continue
 		var length: int = command["aliases"].size()
@@ -198,66 +221,66 @@ func cmd_help(args: PackedStringArray, _flags: Array[PackedStringArray]) -> void
 			index += 1
 		command_list += ": " + command["description"] + "\n"
 		print_output(command_list)
-		return
+		return true
 	print_output("command not found: %s" % args[0])
-	return
+	return false
 
-func cmd_connect(args: PackedStringArray, flags: Array[PackedStringArray]) -> void:
+func cmd_connect(args: PackedStringArray, flags: Array[PackedStringArray], _pid: int = 0) -> bool:
 	if NetworkManager.is_online:
 		print_output("already online/connected")
-		return
+		return false
 	if args.is_empty() and flags.is_empty():
 		print_output("provide an IP address to connect to")
-		return
+		return false
 	if not args.is_empty() and not flags.is_empty():
 		print_output("invalid args/flag syntax: either provide IP directly or via ==ip flag")
-		return
+		return false
 	if not args.is_empty():
 		NetworkManager.start_client(args[0])
-		return
+		return true
 	for flag: PackedStringArray in flags:
 		if flag[0] != "==ip": continue
 		NetworkManager.start_client(flag[1])
+		return true
 	print_output("invalid flag syntax: provide IP via ==ip flag")
+	return false
 
-func cmd_disconnect(args: PackedStringArray, flags: Array[PackedStringArray]) -> void:
+func cmd_disconnect(args: PackedStringArray, flags: Array[PackedStringArray], _pid: int = 0) -> bool:
 	if not NetworkManager.is_online:
 		print_output("already offline/disconnected")
-		return
+		return false
 	if multiplayer.is_server():
 		print_output("can't disconnect with this command. Consider using close_server instead")
-		return
-	if not is_cmd_confirmed(cmd_disconnect, args, flags): return
+		return false
+	if not is_cmd_confirmed(cmd_disconnect, args, flags): return false
 	NetworkManager.disconnect_from_server()
+	return true
 
-func cmd_start_server(_args: PackedStringArray, _flags: Array[PackedStringArray]) -> void:
+func cmd_start_server(_args: PackedStringArray, _flags: Array[PackedStringArray], _pid: int = 0) -> bool:
 	if NetworkManager.is_online:
 		print_output("server is already started")
-		return
+		return false
 	NetworkManager.start_server()
+	return true
 
-func cmd_close_server(args: PackedStringArray, flags: Array[PackedStringArray]) -> void:
+func cmd_close_server(args: PackedStringArray, flags: Array[PackedStringArray], pid: int = 0) -> bool:
 	if not NetworkManager.is_online:
 		print_output("already offline/disconnected")
-		return
-	if not multiplayer.is_server():
+		return false
+	if pid <= 0:
+		print_output("invalid peer id sender")
+		return false
+	if pid != 1 or not multiplayer.is_server():
 		print_output("permission denied: only host can close the server")
-		return
-	if not is_cmd_confirmed(cmd_close_server, args, flags): return
+		return false
+	if not is_cmd_confirmed(cmd_close_server, args, flags): return false
 	NetworkManager.close_server()
+	return true
 
-const ATTRIBUTE_ALIASES: Dictionary = {
-	"name": ["name", "username", "user", "n", "u"],
-	"admin": ["admin", "is_admin", "a"],
-	"color": ["color", "colour", "rgb", "c"],
-	"kills": ["kills", "kill", "k"],
-	"score": ["score", "win", "wins", "s", "w"]
-}
-
-func cmd_get(args: PackedStringArray, flags: Array[PackedStringArray]) -> void:
+func cmd_get(args: PackedStringArray, flags: Array[PackedStringArray], _pid: int = 0) -> bool:
 	if args.is_empty():
 		print_output("usage: get PROPERTY [pid/=u NAME]")
-		return
+		return false
 	var target_sid: int = 0
 	if NetworkManager.is_online: target_sid = multiplayer.get_unique_id()
 	if flags.is_empty():
@@ -271,7 +294,7 @@ func cmd_get(args: PackedStringArray, flags: Array[PackedStringArray]) -> void:
 				break
 		if flag.is_empty():
 			print_output("usage: get PROPERTY [pid/=u NAME]")
-			return
+			return false
 		var match_count: int = 0
 		for key: int in SessionManager.data.keys():
 			if match_count == 1 and key == 0: continue
@@ -280,22 +303,23 @@ func cmd_get(args: PackedStringArray, flags: Array[PackedStringArray]) -> void:
 			match_count += 1
 		if match_count == 0:
 			print_output("couldn't get player with name %s" % flag[1])
-			return
+			return false
 		if match_count > 1:
 			print_output("multiple players have the same name, consider searching by sid")
-			return
+			return false
 	for key: PackedStringArray in ATTRIBUTE_ALIASES:
 		if not args[0] in key: continue
 		print_output(key[0] + ": " + SessionManager.data[target_sid].get(key[0]))
-		return
+		return true
+	return false
 
-func cmd_set(args: PackedStringArray, _flags: Array[PackedStringArray]) -> void:
+func cmd_set(args: PackedStringArray, _flags: Array[PackedStringArray], _pid: int = 0) -> bool:
 	if args.is_empty():
 		print_output("usage: set PROPERTY VALUE")
-		return
+		return false
 	if args.size() < 2:
 		print_output("provide a value to set your attribute to")
-		return
+		return false
 	var property: String = ""
 	for key: PackedStringArray in ATTRIBUTE_ALIASES:
 		if not args[0] in key: continue
@@ -303,17 +327,20 @@ func cmd_set(args: PackedStringArray, _flags: Array[PackedStringArray]) -> void:
 		break
 	if property.is_empty():
 		print_output("nonexistent attribute %s" % args[0])
-		return
+		return false
+	if property == "admin":
+		print_output("nonexistent attribute %s" % args[0])
+		return false
 	SessionManager.assign_from_str(multiplayer.get_unique_id(), args[0], args[1])
-	## UNFINISHED
+	return true
 
-func cmd_assign(args: PackedStringArray, flags: Array[PackedStringArray]) -> void:
+func cmd_assign(args: PackedStringArray, flags: Array[PackedStringArray], pid: int = 0) -> bool:
 	if args.is_empty():
 		print_output("usage: assign PROPERTY VALUE [=s/==sid SID]")
-		return
+		return false
 	if args.size() < 2:
 		print_output("usage: assign PROPERTY VALUE [=s/==sid SID]")
-		return
+		return false
 	var property: String = ""
 	for key: PackedStringArray in ATTRIBUTE_ALIASES:
 		if not args[0] in key: continue
@@ -321,20 +348,32 @@ func cmd_assign(args: PackedStringArray, flags: Array[PackedStringArray]) -> voi
 		break
 	if property.is_empty():
 		print_output("nonexistent attribute %s" % args[0])
-		return
+		return false
+	if property == "admin":
+		if pid <= 0:
+			print_output("invalid peer id sender")
+			return false
+		if pid != 1 or not multiplayer.is_server():
+			print_output("permission denied: only host can change admin permissions")
+			return false
 	var target_sid: int = multiplayer.get_unique_id()
 	for flag: PackedStringArray in flags:
 		if flag[0] != "=s" and flag[0] != "==sid": continue
 		target_sid = SessionManager.decode_session_id(flag[1])
 		break
+	if property == "admin" and target_sid == 1:
+		print_output("host can't change its own admin role")
+		return false
 	SessionManager.assign_from_str(target_sid, args[0], args[1])
+	return true
 
 # temporary quick configuration
-func cmd_chat_resize(args: PackedStringArray, _flags: Array[PackedStringArray]) -> void:
+func cmd_chat_resize(args: PackedStringArray, _flags: Array[PackedStringArray], _pid: int = 0) -> bool:
 	if not UIManager.is_ui_configured:
 		print_output("no chat menu connected")
-		return
+		return false
 	if args.is_empty():
 		print_output("provide a font size")
-		return
+		return false
 	UIManager.chat_menu_node.set_font_size(int(args[0]))
+	return true
