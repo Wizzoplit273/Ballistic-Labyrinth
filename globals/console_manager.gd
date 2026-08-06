@@ -90,10 +90,18 @@ func print_output(text: String, pid: int = 0) -> void:
 		ChatManager.send_local_message(text, "shell")
 	else: ChatManager.send_local_message.rpc_id(pid, text, "shell")
 
+func split_respecting_quotes(text: String) -> Array[String]:
+	var regex := RegEx.new()
+	regex.compile('"[^"]*"|\'[^\']*\'|\\S+')
+	var result: Array[String] = []
+	for item in regex.search_all(text):
+		result.append(item.get_string())
+	return result
+
 func execute_raw_string(raw_text: String) -> void:
 	var text: String = raw_text.strip_edges()
 	if text.begins_with("/"): text = text.substr(1)
-	var tokens: PackedStringArray = text.split(" ", false)
+	var tokens: PackedStringArray = split_respecting_quotes(text)
 	var invoked: String = ""
 	if not text.is_empty(): invoked = tokens[0]
 	if is_confirming_command:
@@ -123,6 +131,8 @@ func execute_raw_string(raw_text: String) -> void:
 	var args: PackedStringArray = []
 	var is_previous_token_argument_flag: bool = false
 	for token: String in tokens:
+		if token.begins_with("\"") and token.ends_with("\""):
+			token = token.trim_prefix("\"").trim_suffix("\"")
 		if token.begins_with("-"):
 			if is_previous_token_argument_flag:
 				print_output("invalid flag syntax: expected argument after = flag")
@@ -185,6 +195,53 @@ func request_network_cmd(cmd: Dictionary, args: PackedStringArray, flags: Array[
 	if cmd["is_local"]: return
 	if cmd["requires_admin"] and not SessionManager.data[pid]["admin"]: return
 	Callable(self, "cmd_" + cmd["aliases"][0]).call(args, flags, pid)
+
+## if y entry is < 0, then x entry refers to a number of SIDs(no specific SIDs)
+## if y entry is = 0, then x entry refers to a target SID
+## if y entry is = 1, then it's a silent exception
+## if y entry is > 2, then it prints the exception
+func get_session_reference_from_flags(flags: Array[PackedStringArray], pid: int = 0) -> Vector2i:
+	var result: int = multiplayer.get_unique_id()
+	const COUNT_FLAGS = ["=c", "==count", "==num", "==number"]
+	const SID_FLAGS = ["=s", "==sid"]
+	const NAME_FLAGS = ["=u", "==username", "=n", "==name"]
+	for flag: PackedStringArray in flags:
+		if not flag[0] in COUNT_FLAGS and not flag[0] in SID_FLAGS and not flag[0] in NAME_FLAGS: continue
+		if flag[0] in COUNT_FLAGS:
+			if flag.size() <= 1:
+				print_output("provide a count integer to ==count", pid)
+				return Vector2i(2, 2)
+			result = abs(int(flag[1]))
+			result = min(result, SessionManager.data.size())
+			return Vector2i(result, -1)
+		if flag[0] in SID_FLAGS:
+			if flag.size() <= 1:
+				print_output("provide an sid to ==sid to filter session ids", pid)
+				return Vector2i(2, 2)
+			result = SessionManager.decode_session_id(flag[1])
+			if not result in SessionManager.data.keys():
+				print_output("session with ID = " + flag[1] + " doesn't exist", pid)
+				return Vector2i(2, 2)
+			return Vector2i(result, 0)
+		# flag[0] in NAME_FLAGS:
+		if flag.size() <= 1:
+			print_output("provide a name to ==name to filter session ids", pid)
+			return Vector2i(2, 2)
+		var match_count: int = 0
+		for key: int in SessionManager.data.keys():
+			if match_count == 1 and key == 0: continue
+			if SessionManager.data[key].get("name") != flag[1]: continue
+			result = key
+			match_count += 1
+			if match_count >= 2: break
+		if match_count == 0:
+			print_output("session with name = \"%s\" doesn't exist" % flag[1], pid)
+			return Vector2i(2, 2)
+		if match_count > 1:
+			print_output("multiple sessions have the same name, consider filtering by sid", pid)
+			return Vector2i(2, 2)
+		return Vector2i(result, 0)
+	return Vector2i(1, 1)
 
 func cmd_help(args: PackedStringArray, _flags: Array[PackedStringArray], _pid: int = 0) -> void:
 	var command_list: String = ""
@@ -266,37 +323,24 @@ func cmd_close_server(args: PackedStringArray, flags: Array[PackedStringArray], 
 
 func cmd_get(args: PackedStringArray, flags: Array[PackedStringArray], _pid: int = 0) -> void:
 	if args.is_empty():
-		print_output("usage: get PROPERTY [pid/=u NAME]")
+		print_output("usage: get PROPERTY [SID/=s SID/=u NAME]")
 		return
 	var target_sid: int = 0
 	if NetworkManager.is_online: target_sid = multiplayer.get_unique_id()
 	if flags.is_empty():
 		if args.size() > 1: target_sid = SessionManager.decode_session_id(args[1])
 	else:
-		var flag: PackedStringArray = []
-		const ALIASES: PackedStringArray = ["=u", "=n", "==name", "==username", "==user"]
-		for f: PackedStringArray in flags:
-			if f[0] in ALIASES:
-				flag = f
-				break
-		if flag.is_empty():
-			print_output("usage: get PROPERTY [pid/=u NAME]")
-			return
-		var match_count: int = 0
-		for key: int in SessionManager.data.keys():
-			if match_count == 1 and key == 0: continue
-			if SessionManager.data[key].get("name") != flag[1]: continue
-			target_sid = key
-			match_count += 1
-		if match_count == 0:
-			print_output("couldn't get player with name %s" % flag[1])
-			return
-		if match_count > 1:
-			print_output("multiple players have the same name, consider searching by sid")
+		var filter: Vector2i = get_session_reference_from_flags(flags)
+		if filter[1] >= 2: return
+		if filter[1] == 1: target_sid = multiplayer.get_unique_id()
+		if filter[1] == 0: target_sid = filter[0]
+		if filter[1] < 0:
+			print_output("can't get attributes from a bulk number")
 			return
 	for key: PackedStringArray in ATTRIBUTE_ALIASES.values():
 		if not args[0] in key: continue
-		print_output(key[0] + ": " + SessionManager.data[target_sid].get(key[0]))
+		var result: String = str(SessionManager.data[target_sid].get(key[0]))
+		print_output(key[0] + ": " + result)
 		return
 
 func cmd_set(args: PackedStringArray, _flags: Array[PackedStringArray], pid: int = 0) -> void:
@@ -342,27 +386,40 @@ func cmd_assign(args: PackedStringArray, flags: Array[PackedStringArray], pid: i
 		if pid != 1 or not multiplayer.is_server():
 			print_output("permission denied: only host can change admin permissions", pid)
 			return
-	var target_sid: int = multiplayer.get_unique_id()
-	for flag: PackedStringArray in flags:
-		if flag[0] != "=s" and flag[0] != "==sid": continue
-		if flag.size() <= 1:
-			print_output("provide an sid to modify its attribute", pid)
+	var target_sid: int = 0
+	var filter: Vector2i = get_session_reference_from_flags(flags, pid)
+	if filter[1] >= 2: return
+	if filter[1] == 1: target_sid = multiplayer.get_unique_id()
+	if filter[1] == 0: target_sid = filter[0]
+	if filter[1] < 0:
+		print_output("can't get attributes from a bulk number", pid)
+		return
+	if filter[1] == 1: target_sid = multiplayer.get_unique_id()
+	if property == "admin":
+		if target_sid <= 0:
+			print_output("can't modify admin permissions for bots")
 			return
-		target_sid = SessionManager.decode_session_id(flag[1])
-		break
-	if property == "admin" and target_sid == 1:
-		print_output("host can't change its own admin role")
-		return
-	if not target_sid in SessionManager.data.keys():
-		print_output("player with SID = " +
-		SessionManager.encode_session_id(target_sid) +
-		" doesn't exist")
-		return
+		if target_sid == 1:
+			print_output("host can't change its own admin role")
+			return
 	SessionManager.assign_from_str(target_sid, args[0], args[1])
+	if property != "admin": return
+	var admin_value: bool = args[1] == "true"
+	var has_admin_changed: bool = SessionManager.data[target_sid]["admin"] != admin_value
+	if not has_admin_changed:
+		if admin_value == true: print_output("this player is already an admin", pid)
+		else: print_output("this player already doesn't have admin", pid)
+		return
+	if SessionManager.data[target_sid]["admin"] == true:
+		if target_sid <= 0: return
+		print_output("!!! you have been granted admin permissions", target_sid)
+		return
+	if target_sid <= 0: return
+	print_output("!!! you are no longer an admin", target_sid)
 
-func cmd_bot(args: PackedStringArray, _flags: Array[PackedStringArray], pid: int = 0) -> void:
+func cmd_bot(args: PackedStringArray, flags: Array[PackedStringArray], pid: int = 0) -> void:
 	if args.is_empty():
-		print_output("usage: bot [add [COUNT]]/[delete sid/count SID/[COUNT]", pid)
+		print_output("usage: bot [add [COUNT]]/[delete =s/=c/=n SID/COUNT/NAME", pid)
 		return
 	const ALIASES_1 = ["add", "create"]
 	if args[0] in ALIASES_1: # BOT add ...
@@ -371,30 +428,22 @@ func cmd_bot(args: PackedStringArray, _flags: Array[PackedStringArray], pid: int
 		SessionManager.add_bot(count)
 		return
 	const ALIASES_2 = ["remove", "delete", "erase"]
-	if not args[0] in ALIASES_2: # BOT remove ...
+	if not args[0] in ALIASES_2: # BOT ...
 		print_output("invalid first argument. Should be add or delete", pid)
 		return
-	if args.size() <= 1: # BOT remove {missing}
-		print_output("delete bot by sid or count", pid)
+	var filter: Vector2i = get_session_reference_from_flags(flags, pid)
+	if filter[1] >= 2: return
+	if filter[1] == 1:
+		print_output("usage: bot [add [COUNT]]/[delete =s/=c/=n SID/COUNT/NAME", pid)
 		return
-	if args[1] == "sid": # BOT remove sid ...
-		if args.size() <= 2: # BOT remove sid {missing}
-			print_output("can't delete bot with no SID", pid)
-			return
-		var sid: int = SessionManager.decode_session_id(args[2])
+	if filter[1] == 0:
+		var sid: int = filter[0]
 		sid = -abs(sid)
-		if not SessionManager.data.has(sid):
-			print_output("bot with SID = %s doesn't exist" % args[2], pid)
-			return
 		SessionManager.remove_bot_sid(sid)
 		return
-	const ALIASES_3 = ["count", "number", "c", "num", "n"]
-	if args[1] in ALIASES_3:
-		var count: int = 1
-		if args.size() >= 3: count = abs(int(args[2])) # BOT remove count 1 [2] [3] [4] ...
-		SessionManager.remove_bot_count(count)
-		return
-	print_output("delete bot by sid or count", pid)
+	#if filter[1] < 0:
+	var count: int = filter[0]
+	SessionManager.remove_bot_count(count)
 
 # temporary quick configuration
 func cmd_chat_resize(args: PackedStringArray, _flags: Array[PackedStringArray], _pid: int = 0) -> void:

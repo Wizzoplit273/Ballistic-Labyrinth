@@ -93,8 +93,12 @@ func assign_from_str(sid: int, attribute: String, value: String) -> void:
 	if sid == 0 and NetworkManager.is_online: sid = multiplayer.get_unique_id()
 	if not data.has(sid): return
 	if typeof(data[sid][attribute]) == TYPE_BOOL:
-		if value == "false" or value == "0": data[sid][attribute] = false
-		else: data[sid][attribute] = true
+		if attribute == "admin": # stricter console set for admin permission
+			if value == "true": data[sid][attribute] = true
+			else: data[sid][attribute] = false
+		else:
+			if value == "false" or value == "0": data[sid][attribute] = false
+			else: data[sid][attribute] = true
 	if typeof(data[sid][attribute]) == TYPE_INT: data[sid][attribute] = int(value)
 	if typeof(data[sid][attribute]) == TYPE_FLOAT: data[sid][attribute] = float(value)
 	if typeof(data[sid][attribute]) == TYPE_STRING: data[sid][attribute] = value
