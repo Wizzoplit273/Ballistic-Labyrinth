@@ -402,12 +402,13 @@ func cmd_assign(args: PackedStringArray, flags: Array[PackedStringArray], pid: i
 		if target_sid == 1:
 			print_output("host can't change its own admin role")
 			return
+	var old_admin_value: bool = SessionManager.data[target_sid]["admin"]
 	SessionManager.assign_from_str(target_sid, args[0], args[1])
 	if property != "admin": return
-	var admin_value: bool = args[1] == "true"
-	var has_admin_changed: bool = SessionManager.data[target_sid]["admin"] != admin_value
+	var current_admin_value: bool = args[1] == "true"
+	var has_admin_changed: bool = current_admin_value != old_admin_value
 	if not has_admin_changed:
-		if admin_value == true: print_output("this player is already an admin", pid)
+		if current_admin_value == true: print_output("this player is already an admin", pid)
 		else: print_output("this player already doesn't have admin", pid)
 		return
 	if SessionManager.data[target_sid]["admin"] == true:
@@ -423,9 +424,9 @@ func cmd_bot(args: PackedStringArray, flags: Array[PackedStringArray], pid: int 
 		return
 	const ALIASES_1 = ["add", "create"]
 	if args[0] in ALIASES_1: # BOT add ...
-		var count: int = 1
-		if args.size() >= 2: count = abs(int(args[1])) # BOT add 1 [2] [3] [4] ...
-		SessionManager.add_bot(count)
+		var count1: int = 1
+		if args.size() >= 2: count1 = abs(int(args[1])) # BOT add 1 [2] [3] [4] ...
+		SessionManager.add_bot(count1)
 		return
 	const ALIASES_2 = ["remove", "delete", "erase"]
 	if not args[0] in ALIASES_2: # BOT ...
