@@ -30,10 +30,15 @@ func clear_registry() -> void:
 	data.clear()
 	data[0] = profile_data
 
+@rpc("authority", "reliable")
 func add_session(session_id: int, profile: Dictionary) -> void:
 	if session_id == 0: return
 	data[session_id] = profile
+	if not NetworkManager.is_online: return
+	if not multiplayer.is_server(): return
+	add_session.rpc(session_id, profile)
 
+@rpc("authority", "reliable")
 func add_bot(count: int = 1) -> void:
 	if count <= 0: return
 	var new_sid: int = -1
@@ -48,13 +53,21 @@ func add_bot(count: int = 1) -> void:
 		})
 		count -= 1
 	UIManager.update_lobby_register()
+	if not NetworkManager.is_online: return
+	if not multiplayer.is_server(): return
+	add_bot.rpc(count)
 
+@rpc("authority", "reliable")
 func remove_bot_sid(sid: int) -> void:
 	if sid >= 0: return
 	if not data.has(sid): return
 	data.erase(sid)
 	UIManager.update_lobby_register()
+	if not NetworkManager.is_online: return
+	if not multiplayer.is_server(): return
+	remove_bot_sid.rpc(sid)
 
+@rpc("authority", "reliable")
 func remove_bot_count(count: int = 1) -> void:
 	if count <= 0: return
 	for sid: int in data.keys():
@@ -63,6 +76,9 @@ func remove_bot_count(count: int = 1) -> void:
 		data.erase(sid)
 		count -= 1
 	UIManager.update_lobby_register()
+	if not NetworkManager.is_online: return
+	if not multiplayer.is_server(): return
+	remove_bot_count.rpc(count)
 
 func set_profile_name(name_string: String) -> void:
 	profile_data["name"] = name_string
@@ -72,7 +88,9 @@ func set_profile_color(color: Color) -> void:
 	profile_data["color"] = color
 	wrap_request_profile_update()
 
+@rpc("authority", "reliable")
 func assign_from_str(sid: int, attribute: String, value: String) -> void:
+	if sid == 0 and NetworkManager.is_online: sid = multiplayer.get_unique_id()
 	if not data.has(sid): return
 	if typeof(data[sid][attribute]) == TYPE_BOOL:
 		if value == "false" or value == "0": data[sid][attribute] = false
@@ -80,7 +98,11 @@ func assign_from_str(sid: int, attribute: String, value: String) -> void:
 	if typeof(data[sid][attribute]) == TYPE_INT: data[sid][attribute] = int(value)
 	if typeof(data[sid][attribute]) == TYPE_FLOAT: data[sid][attribute] = float(value)
 	if typeof(data[sid][attribute]) == TYPE_STRING: data[sid][attribute] = value
+	if sid == multiplayer.get_unique_id(): profile_data[attribute] = data[sid][attribute]
 	UIManager.update_lobby_register()
+	if not NetworkManager.is_online: return
+	if not multiplayer.is_server(): return
+	assign_from_str.rpc(sid, attribute, value)
 
 func wrap_request_profile_update() -> void:
 	if not NetworkManager.is_online:
@@ -139,7 +161,7 @@ func encode_session_id(session_id: int) -> String:
 	var ENCODE_BASE: int = ENCODE_ALPHABET.length()
 	while num > 0:
 		var remainder: int = num % ENCODE_BASE
-		result += ENCODE_ALPHABET[remainder]
+		result = ENCODE_ALPHABET[remainder] + result
 		num /= ENCODE_BASE
 	return ENCODE_BOT_PREFIX + result if is_negative else result
 

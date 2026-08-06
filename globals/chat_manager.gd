@@ -3,6 +3,7 @@ extends Node
 var chat_history: Array[Dictionary] = []
 var MAX_HISTORY: int = 100
 
+@rpc("authority", "reliable")
 func send_local_message(text: String, channel: String = "global") -> void:
 	if not UIManager.is_ui_configured: return
 	process_message(text, channel)
@@ -22,7 +23,7 @@ func update_chat_history(new_message: Dictionary) -> void:
 	update_local_chat_ui.emit(new_array)
 
 signal update_local_chat_ui(messages: Array[Dictionary])
-@rpc("any_peer", "reliable", "call_local")
+@rpc("any_peer", "reliable")
 func process_message(text: String, channel: String = "global") -> void:
 	var sender_id: int = multiplayer.get_remote_sender_id()
 	var final_text: String = text.strip_edges()
