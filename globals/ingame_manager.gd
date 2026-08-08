@@ -9,14 +9,15 @@ var ingame_node: Node = null
 var is_ingame_configured: bool = false
 
 func start_ingame() -> void:
+	if not NetworkManager.is_online: return
+	if SessionManager.profile_data.get("admin") == false: return
 	if UIManager.is_ui_configured: UIManager.lobby_node.activate(false)
 	create_ingame()
 
 func create_ingame() -> void:
 	if ingame_node != null: return
 	ingame_node = load(INGAME_FILE).instantiate()
-	
-	add_child(ingame_node)
+	scene_root.add_child(ingame_node)
 	ingame_node.connect("_on_next_round", _on_ingame_next_round)
 	ingame_node.modified_ready()
 	is_ingame_configured = true

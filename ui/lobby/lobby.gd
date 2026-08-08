@@ -107,9 +107,7 @@ func _on_host_button_pressed() -> void:
 	NetworkManager.start_server()
 
 func _on_start_game_button_pressed() -> void:
-	pass
-	#activate(false)
-	#IngameManager.start_ingame()
+	IngameManager.start_ingame()
 
 func _on_username_edit_text_submitted(new_text: String) -> void:
 	var username: String = new_text.strip_edges()
