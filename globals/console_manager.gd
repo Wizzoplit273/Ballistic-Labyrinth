@@ -73,6 +73,7 @@ func _enter_tree() -> void:
 		true
 	)
 
+## first string in alias list corresponds with a callable's name(ex: "connect" corresponds with cmd_connect)
 func register_command(
 	aliases: PackedStringArray,
 	description: String,
@@ -107,6 +108,7 @@ func execute_raw_string(raw_text: String) -> void:
 	if is_confirming_command:
 		if invoked == "yes": execute_cmd(confirmed_cmd, confirmed_args, confirmed_flags)
 		else: print_output("command aborted")
+		is_confirming_command = false
 		return
 	tokens.remove_at(0)
 	var active_cmd: Dictionary = {}
@@ -172,7 +174,7 @@ func is_cmd_confirmed(callback: Callable, args: PackedStringArray, flags: Array[
 		is_confirming_command = false
 		return true
 	for cmd: Dictionary in registry:
-		if cmd["callback"] != callback: continue
+		if "cmd_" + cmd["aliases"][0] != callback.get_method(): continue
 		confirm_cmd(cmd, args, flags, pid)
 		return false
 	return false
@@ -311,10 +313,10 @@ func cmd_close_server(args: PackedStringArray, flags: Array[PackedStringArray], 
 	if not NetworkManager.is_online:
 		print_output("already offline/disconnected")
 		return
-	if pid <= 0:
+	if pid < 0:
 		print_output("cmd_close_server: invalid peer id sender")
 		return
-	if pid != 1 or not multiplayer.is_server():
+	if not multiplayer.is_server():
 		print_output("permission denied: only host can close the server", pid)
 		return
 	if not is_cmd_confirmed(cmd_close_server, args, flags, pid): return
