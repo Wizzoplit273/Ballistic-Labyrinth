@@ -22,14 +22,16 @@ func update_chat(new_messages: Array[Dictionary]) -> void:
 
 func add_message(message: Dictionary) -> void:
 	var readable_sid: String = SessionManager.encode_session_id(message.get("sender_sid"))
-	%ChatText.text += str(message.get("timestamp")) + " "
+	if message.get("channel") != "shell_input": %ChatText.text += str(message.get("timestamp")) + " "
 	if message.get("channel") == "global":
 		%ChatText.text += message.get("sender_name")
 		%ChatText.text += "(" + readable_sid + "): "
 	elif message.get("channel") == "system":
 		%ChatText.text += "***: "
-	elif message.get("channel") == "shell":
-		%ChatText.text += "----- shell -----\n"
+	elif message.get("channel") == "shell_input":
+		%ChatText.text += ":: "
+	elif message.get("channel") == "shell_output":
+		%ChatText.text += "-SH-: "
 	%ChatText.text += message.get("text") + "\n"
 
 func _input(event: InputEvent) -> void:

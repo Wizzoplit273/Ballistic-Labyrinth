@@ -92,10 +92,13 @@ func register_command(
 		"is_local": is_local
 	})
 
-func print_output(text: String, pid: int = 0) -> void:
+## CHANNELS
+## --- shell_execute: output of a command(success or error message)
+## --- shell_input: rewrites input command(only for configured chat menu UI)
+func print_output(text: String, pid: int = 0, channel: String = "shell_output") -> void:
 	if pid <= 0 or not NetworkManager.is_online or pid == multiplayer.get_unique_id():
-		ChatManager.send_local_message(text, "shell")
-	else: ChatManager.send_local_message.rpc_id(pid, text, "shell")
+		ChatManager.send_local_message(text, channel)
+	else: ChatManager.send_local_message.rpc_id(pid, text, channel)
 
 func split_respecting_quotes(text: String) -> Array[String]:
 	var regex := RegEx.new()
@@ -107,6 +110,7 @@ func split_respecting_quotes(text: String) -> Array[String]:
 
 func execute_raw_string(raw_text: String) -> void:
 	var text: String = raw_text.strip_edges()
+	if UIManager.is_ui_configured: ChatManager.send_local_message(text, "shell_input")
 	if text.begins_with("/"): text = text.substr(1)
 	var tokens: PackedStringArray = split_respecting_quotes(text)
 	var invoked: String = ""
