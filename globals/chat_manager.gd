@@ -30,7 +30,7 @@ func process_message(text: String, channel: String = "global") -> void:
 	var message: Dictionary = {}
 	var new_array: Array[Dictionary] = []
 	if NetworkManager.is_online and not multiplayer.is_server():
-		if sender_id != 0: return
+		#if sender_id != 0: return
 		message = {
 			"sender_sid": sender_id,
 			"sender_name": SessionManager.profile_data.get("name"),
@@ -56,6 +56,7 @@ func process_message(text: String, channel: String = "global") -> void:
 	chat_history.append(message)
 	while chat_history.size() > MAX_HISTORY:
 		chat_history.pop_front()
-	if NetworkManager.is_online: rpc("update_chat_history", message)
+	if NetworkManager.is_online and multiplayer.is_server() and channel != "shell":
+		rpc("update_chat_history", message)
 	new_array.append(message)
 	update_local_chat_ui.emit(new_array)
