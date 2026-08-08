@@ -72,6 +72,12 @@ func _enter_tree() -> void:
 		false,
 		true
 	)
+	register_command(
+		["start_game", "play"],
+		"starts the game",
+		true,
+		false
+	)
 
 ## first string in alias list corresponds with a callable's name(ex: "connect" corresponds with cmd_connect)
 func register_command(
@@ -457,3 +463,6 @@ func cmd_chat_resize(args: PackedStringArray, _flags: Array[PackedStringArray], 
 		print_output("provide a font size")
 		return
 	UIManager.chat_menu_node.set_font_size(int(args[0]))
+
+func cmd_start_game(args: PackedStringArray, _flags: Array[PackedStringArray], _pid: int = 0) -> void:
+	pass
