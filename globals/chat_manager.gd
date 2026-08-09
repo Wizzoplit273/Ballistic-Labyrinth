@@ -46,9 +46,11 @@ func process_message(text: String, channel: String = "global") -> void:
 		return
 	if sender_id == 0 and NetworkManager.is_online: sender_id = 1
 	if sender_id > 1: channel = "global"
+	var sender_name: String = ""
+	if SessionManager.data.has(sender_id): sender_name = SessionManager.data.get(sender_id).get("name")
 	message = {
 		"sender_sid": sender_id,
-		"sender_name": SessionManager.data.get(sender_id).get("name"),
+		"sender_name": sender_name,
 		"text": final_text,
 		"timestamp": Time.get_time_string_from_unix_time(int(Time.get_unix_time_from_system())),
 		"channel": channel
