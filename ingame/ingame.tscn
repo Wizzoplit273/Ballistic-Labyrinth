@@ -56,7 +56,7 @@ metadata/_edit_lock_ = true
 [node name="Timers" type="Node" parent="." unique_id=452980816]
 
 [node name="Await" type="Timer" parent="Timers" unique_id=780148569]
-wait_time = 0.00999999999999999
+wait_time = 0.005
 one_shot = true
 
 [node name="CrateSpawnDelay" type="Timer" parent="Timers" unique_id=108254139]
@@ -121,8 +121,8 @@ max_polyphony = 60
 [node name="MazeGenerationNoise" type="AudioStreamPlayer" parent="Sounds" unique_id=1303161301]
 stream = ExtResource("2_qj304")
 volume_db = -22.0
-pitch_scale = 0.8
-max_polyphony = 10
+pitch_scale = 0.4
+max_polyphony = 10000
 
 [node name="TerrainGenerationNoise" type="AudioStreamPlayer" parent="Sounds" unique_id=1773927033]
 stream = ExtResource("3_hqbxh")
@@ -145,7 +145,7 @@ max_polyphony = 10
 stream = ExtResource("2_qj304")
 volume_db = -28.0
 pitch_scale = 0.1
-max_polyphony = 80
+max_polyphony = 1000
 
 [node name="EquipWeaponNoise" type="AudioStreamPlayer" parent="Sounds" unique_id=2139951534]
 stream = ExtResource("4_qj304")

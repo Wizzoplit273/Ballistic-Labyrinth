@@ -16,6 +16,9 @@ signal wall_remove_finished
 
 var is_finished_loading: bool = false
 
+const MAZE_GENERATION_NOISE_VARIANCE: float = 0.1
+@onready var MAZE_GENERATION_NOISE_SCALE: float = $Sounds/MazeGenerationNoise.pitch_scale
+
 @onready var scale_ratio: int = $Map/Ground.scale.x / $Map/Walls.scale.x
 
 #const TILE_SIZE: int = 16
@@ -279,7 +282,9 @@ func generate_maze_with_randomized_prim() -> void:
 	#var i: int = 0
 	while frontier_cells.size() != 0:
 		$Timers/Await.start()
+		#$Sounds/MazeGenerationNoise.pitch_scale = MAZE_GENERATION_NOISE_SCALE
 		await finish_await
+		#$Sounds/MazeGenerationNoise.pitch_scale += SEEDED_RNG.randf_range(-MAZE_GENERATION_NOISE_VARIANCE, MAZE_GENERATION_NOISE_VARIANCE)
 		$Sounds/MazeGenerationNoise.play()
 		if SEEDED_RNG.randi_range(0, 2) == 0:
 			selected_frontier_cell_index = 0
