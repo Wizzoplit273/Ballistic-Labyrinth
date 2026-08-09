@@ -468,5 +468,6 @@ func cmd_chat_resize(args: PackedStringArray, _flags: Array[PackedStringArray], 
 		return
 	UIManager.chat_menu_node.set_font_size(int(args[0]))
 
-func cmd_start_game(_args: PackedStringArray, _flags: Array[PackedStringArray], _pid: int = 0) -> void:
-	IngameManager.start_ingame()
+func cmd_start_game(_args: PackedStringArray, _flags: Array[PackedStringArray], pid: int = 0) -> void:
+	if pid == 0 or pid == 1: IngameManager.start_game()
+	else: IngameManager.start_game.rpc_id(1)

@@ -106,6 +106,7 @@ func disconnect_from_server() -> void:
 	print_console("Successfully disconnected from server")
 
 func close_server() -> void:
+	if not is_online: return
 	if not multiplayer.is_server(): return
 	print_console("Shutting down server...")
 	if multiplayer.get_peers().size() > 0:
