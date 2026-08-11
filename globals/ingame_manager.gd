@@ -13,6 +13,12 @@ var is_ingame_configured: bool = false
 
 var finished_clients: Array = [] 
 
+func attach_controllers() -> void:
+	pass
+
+func detach_controllers() -> void:
+	pass
+
 @rpc("any_peer", "reliable")
 func start_game():
 	var pid: int = multiplayer.get_remote_sender_id()
