@@ -414,6 +414,9 @@ func cmd_assign(args: PackedStringArray, flags: Array[PackedStringArray], pid: i
 		if target_sid == 1:
 			print_output("host can't change its own admin role")
 			return
+	if target_sid <= 0 and property == "personality":
+		print_output("can't change bot personality using the assign command. Consider using bot set instead")
+		return
 	var old_admin_value: bool = SessionManager.data[target_sid]["admin"]
 	SessionManager.assign_from_str(target_sid, args[0], args[1])
 	if property != "admin": return
@@ -432,31 +435,60 @@ func cmd_assign(args: PackedStringArray, flags: Array[PackedStringArray], pid: i
 
 func cmd_bot(args: PackedStringArray, flags: Array[PackedStringArray], pid: int = 0) -> void:
 	if args.is_empty():
-		print_output("usage: bot [add [COUNT]]/[delete =s/=c/=n SID/COUNT/NAME", pid)
+		print_output(
+			"usage: bot [add [COUNT]]/[delete =s/=c/=n SID/COUNT/NAME]/[set =s/=n SID/NAME \"trait\" VALUE]",
+			pid)
 		return
-	const ALIASES_1 = ["add", "create"]
+	const ALIASES_1 := ["add", "create"]
+	const ALIASES_2 := ["remove", "delete", "erase"]
+	const ALIASES_3 := ["set", "assign", "set_personality", "assign_personality", "set_trait", "assign_trait", "trait"]
 	if args[0] in ALIASES_1: # BOT add ...
 		var count1: int = 1
 		if args.size() >= 2: count1 = abs(int(args[1])) # BOT add 1 [2] [3] [4] ...
 		SessionManager.add_bot(count1)
 		return
-	const ALIASES_2 = ["remove", "delete", "erase"]
-	if not args[0] in ALIASES_2: # BOT ...
-		print_output("invalid first argument. Should be add or delete", pid)
+	elif args[0] in ALIASES_2: # BOT remove ...
+		var filter: Vector2i = get_session_reference_from_flags(flags, pid)
+		if filter[1] >= 2: return
+		if filter[1] == 1:
+			print_output("usage: bot delete =s/=c/=n SID/COUNT/NAME", pid)
+			return
+		if filter[1] == 0:
+			var sid: int = filter[0]
+			sid = -abs(sid)
+			SessionManager.remove_bot_sid(sid)
+			return
+	elif args[0] in ALIASES_3: # BOT set ...
+		if args.size() < 3: # BOT set ?"trait"? ?VALUE?
+			print_output("provide a bot trait and modify it to a value")
+			return
+		var filter: Vector2i = get_session_reference_from_flags(flags, pid)
+		var sid: int
+		if filter[1] >= 2: return
+		if filter[1] == 1:
+			print_output("usage: bot set =s/=n SID/NAME \"trait\" VALUE", pid)
+			return
+		if filter[1] == 0:
+			sid = filter[0]
+			sid = -abs(sid)
+		if filter[1] <= -1:
+			print_output("can't refer to bots using a count integer when modifying traits", pid)
+			return
+		var ATTRIBUTE: String = args[1]
+		var VALUE: String = args[2]
+		if not SessionManager.data[sid]["personality"].has(ATTRIBUTE):
+			var ERROR: String = "nonexistent trait \"" + ATTRIBUTE + "\"\n"
+			var HELP: String = "available bot traits:\n"
+			var traits: String = ""
+			for trait_attribute: String in SessionManager.data[sid]["personality"].keys():
+				traits += trait_attribute + "\n"
+			print_output(ERROR + HELP + traits, pid)
+			return
+		SessionManager.set_bot_trait_from_str(sid, ATTRIBUTE, VALUE)
 		return
-	var filter: Vector2i = get_session_reference_from_flags(flags, pid)
-	if filter[1] >= 2: return
-	if filter[1] == 1:
-		print_output("usage: bot [add [COUNT]]/[delete =s/=c/=n SID/COUNT/NAME", pid)
+	else: # BOT ...
+		print_output("invalid first argument. Should be add, delete or set", pid)
 		return
-	if filter[1] == 0:
-		var sid: int = filter[0]
-		sid = -abs(sid)
-		SessionManager.remove_bot_sid(sid)
-		return
-	#if filter[1] < 0:
-	var count: int = filter[0]
-	SessionManager.remove_bot_count(count)
 
 # temporary quick configuration
 func cmd_chat_resize(args: PackedStringArray, _flags: Array[PackedStringArray], _pid: int = 0) -> void:

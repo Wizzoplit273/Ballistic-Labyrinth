@@ -49,7 +49,8 @@ func add_bot(count: int = 1) -> void:
 			"admin": false,
 			"color": Color(1.0, 1.0, 1.0, 1.0),
 			"kills": 0,
-			"score": 0
+			"score": 0,
+			"personality": {}
 		})
 		count -= 1
 	UIManager.update_lobby_register()
@@ -92,6 +93,7 @@ func set_profile_color(color: Color) -> void:
 func assign_from_str(sid: int, attribute: String, value: String) -> void:
 	if sid == 0 and NetworkManager.is_online: sid = multiplayer.get_unique_id()
 	if not data.has(sid): return
+	if not data[sid].has(attribute): return
 	if typeof(data[sid][attribute]) == TYPE_BOOL:
 		if attribute == "admin": # stricter console set for admin permission
 			if value == "true": data[sid][attribute] = true
@@ -107,6 +109,25 @@ func assign_from_str(sid: int, attribute: String, value: String) -> void:
 	if not NetworkManager.is_online: return
 	if not multiplayer.is_server(): return
 	assign_from_str.rpc(sid, attribute, value)
+
+@rpc("authority", "reliable")
+func set_bot_trait_from_str(sid: int, attribute: String, value: String) -> void:
+	if sid >= 0: return
+	if not data.has(sid): return
+	if not data[sid]["personality"].has(attribute): return
+	if typeof(data[sid]["personality"][attribute]) == TYPE_BOOL:
+		if value == "false" or value == "0": data[sid]["personality"][attribute] = false
+		else: data[sid]["personality"][attribute] = true
+	if typeof(data[sid]["personality"][attribute]) == TYPE_INT:
+		data[sid]["personality"][attribute] = int(value)
+	if typeof(data[sid]["personality"][attribute]) == TYPE_FLOAT:
+		data[sid]["personality"][attribute] = float(value)
+	if typeof(data[sid]["personality"][attribute]) == TYPE_STRING:
+		data[sid]["personality"][attribute] = value
+	UIManager.update_lobby_register()
+	if not NetworkManager.is_online: return
+	if not multiplayer.is_server(): return
+	set_bot_trait_from_str.rpc(sid, attribute, value)
 
 func wrap_request_profile_update() -> void:
 	if not NetworkManager.is_online:
