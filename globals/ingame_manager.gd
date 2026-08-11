@@ -3,10 +3,15 @@ extends Node
 ## updated once by origin node, remains constant
 var scene_root: Node = null
 
+var current_seed: int = 0
+var current_maze_dimensions: Vector2i = Vector2i(20, 12) ## first entry is width, second is height
+
 const INGAME_FILE: String = "res://ingame/ingame.tscn"
 var ingame_node: Node = null
 
 var is_ingame_configured: bool = false
+
+var finished_clients: Array = [] 
 
 @rpc("any_peer", "reliable")
 func start_game():
@@ -14,7 +19,8 @@ func start_game():
 	if not NetworkManager.is_online: return
 	if not multiplayer.is_server(): return
 	if pid != 0 and SessionManager.data[pid].get("admin") == false: return
-	start_ingame()
+	current_seed = randi()
+	start_ingame.rpc(current_seed, current_maze_dimensions, true)
 
 @rpc("any_peer", "reliable")
 func end_game():
@@ -24,20 +30,27 @@ func end_game():
 	if pid != 0 and SessionManager.data[pid].get("admin") == false: return
 	end_ingame()
 
-@rpc("authority", "reliable")
-func start_ingame() -> void:
+@rpc("authority", "reliable", "call_local")
+func start_ingame(maze_seed: int, maze_dimensions: Vector2i, is_animated: bool = false) -> void:
 	if not NetworkManager.is_online: return
 	if UIManager.is_ui_configured: UIManager.lobby_node.activate(false)
-	create_ingame()
-	if multiplayer.is_server: start_ingame.rpc()
+	current_seed = maze_seed
+	current_maze_dimensions = maze_dimensions
+	create_ingame(is_animated)
 
-func create_ingame() -> void:
+func create_ingame(is_animated: bool = false) -> void:
 	if ingame_node != null: return
 	ingame_node = load(INGAME_FILE).instantiate()
 	scene_root.add_child(ingame_node)
 	ingame_node.connect("_on_next_round", _on_ingame_next_round)
-	ingame_node.modified_ready()
 	is_ingame_configured = true
+	ingame_node.modified_ready(is_animated)
+
+@rpc("authority", "reliable")
+func restart_ingame(maze_seed: int, maze_dimensions: Vector2i, is_animated: bool = false) -> void:
+	delete_ingame()
+	await get_tree().process_frame
+	start_ingame(maze_seed, maze_dimensions, is_animated)
 
 @rpc("authority", "reliable")
 func delete_ingame() -> void:
@@ -55,4 +68,24 @@ func end_ingame() -> void:
 func _on_ingame_next_round() -> void:
 	delete_ingame()
 	await get_tree().process_frame
-	create_ingame()
+	create_ingame(true)
+
+func finish_network_maze_generation() -> void:
+	if not multiplayer.is_server(): return
+	for pid: int in multiplayer.get_peers():
+		if pid in finished_clients: continue
+		restart_ingame.rpc_id(pid, current_seed, current_maze_dimensions, false)
+
+@rpc("any_peer", "reliable")
+func add_finished_generation() -> void:
+	var pid: int = multiplayer.get_remote_sender_id()
+	if pid <= 1: return
+	finished_clients.append(pid)
+
+const FINISH_GENERATION_DELAY: float = 1.0
+func broadcast_generation_finish() -> void:
+	if multiplayer.is_server():
+		await get_tree().create_timer(FINISH_GENERATION_DELAY).timeout
+		finish_network_maze_generation()
+		return
+	add_finished_generation.rpc_id(1)

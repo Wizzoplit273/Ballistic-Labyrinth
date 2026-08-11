@@ -12,7 +12,7 @@ var player_color: Color = Color.WHITE
 signal dimensions_finished
 #signal carve_finished
 signal generation_finished
-signal wall_remove_finished
+#signal wall_remove_finished
 
 var is_finished_loading: bool = false
 
@@ -21,42 +21,43 @@ const MAZE_GENERATION_NOISE_VARIANCE: float = 0.1
 
 @onready var scale_ratio: int = $Map/Ground.scale.x / $Map/Walls.scale.x
 
-#const TILE_SIZE: int = 16
-## called by the origin scene after initial configuration
-func modified_ready() -> void:
-	process_mode = Node.PROCESS_MODE_INHERIT
-	set_seeded_rng("")
-	$Camera.position.x = $Map/Ground.tile_set.tile_size.x * $Map/Ground.scale.x * MAZE_SIZE.x / 2
-	$Camera.position.y = $Map/Ground.tile_set.tile_size.y * $Map/Ground.scale.y * MAZE_SIZE.y / 2
+var SEEDED_RNG: RandomNumberGenerator = RandomNumberGenerator.new()
+
+func setup_camera_and_background_noise() -> void:
+	$Camera.position.x = $Map/Ground.tile_set.tile_size.x * $Map/Ground.scale.x * IngameManager.current_maze_dimensions.x / 2
+	$Camera.position.y = $Map/Ground.tile_set.tile_size.y * $Map/Ground.scale.y * IngameManager.current_maze_dimensions.y / 2
 	$Map/GroundNoise.position = $Camera.position
 	$Map/GroundNoise.texture.noise.seed = SEEDED_RNG.randi_range(0, 10000)
-	#initialize_score_ui()
+
+var is_generation_animated: bool = false
+
+#const TILE_SIZE: int = 16
+## called by ingame_manager.gd
+func modified_ready(is_animated: bool = false) -> void:
+	is_generation_animated = is_animated
+	process_mode = Node.PROCESS_MODE_INHERIT
+	SEEDED_RNG.seed = IngameManager.current_seed
+	setup_camera_and_background_noise()
 	create_maze_rectangle()
-	await dimensions_finished
-	#carve_maze_rectangle()
-	#await carve_finished
+	if is_generation_animated: await dimensions_finished
 	generate_maze_with_randomized_prim()
-	await generation_finished
+	if is_generation_animated: await generation_finished
 	remove_remaining_maze_cells()
-	remove_random_maze_walls()
-	await wall_remove_finished
+	#remove_random_maze_walls()
+	#if is_generation_animated: await wall_remove_finished
 	implement_maze_edges_physics()
 	implement_maze_walls_physics()
 	implement_navigation()
 	place_player_on_map()
 	place_bots_on_map()
-	is_finished_loading = true
 	#$Players/Player/Camera.zoom = Vector2.ONE * INGAME_CAMERA_ZOOM
 	$Players/Player.bullet_count = 0
 	$Players/Player.process_mode = Node.PROCESS_MODE_INHERIT
 	$Players/Player.visible = true
 	$Players/Player/Rest.visible = true
 	$Timers/CrateSpawnDelay.start()
-
-var SEEDED_RNG: RandomNumberGenerator = RandomNumberGenerator.new()
-func set_seeded_rng(string: String) -> void:
-	if string != "": SEEDED_RNG.seed = string.hash()
-	#$ScoresLayer/RoomHashLabel.text = "seed: " + str(SEEDED_RNG.state)
+	is_finished_loading = true
+	IngameManager.broadcast_generation_finish()
 
 const SCROLL_VALUE: float = 1.1
 func _process(_delta: float) -> void:
@@ -74,15 +75,14 @@ func _on_await_timeout() -> void:
 func _on_main_menu_visibility_changed() -> void:
 	finish_await.emit()
 
-## first vector entry is width, second is height
-const MAZE_SIZE: Vector2i = Vector2i(20, 12)
 var maze_bottom_corner: Vector2i = Vector2i.ZERO
 func create_maze_rectangle() -> void:
-	for row: int in range(0, MAZE_SIZE.y):
-		for column: int in range(0, MAZE_SIZE.x):
-			$Timers/Await.start()
-			await finish_await
-			$Sounds/DimensionsGenerationNoise.play()
+	for row: int in range(0, IngameManager.current_maze_dimensions.y):
+		for column: int in range(0, IngameManager.current_maze_dimensions.x):
+			if is_generation_animated:
+				$Timers/Await.start()
+				await finish_await
+				$Sounds/DimensionsGenerationNoise.play()
 			var selected_cell: Vector2i = Vector2i(column, row)
 			$Map/Ground.set_cell(selected_cell, 0, Vector2i(0, 0), 1)
 			maze_cells.push_back(selected_cell)
@@ -281,11 +281,10 @@ func generate_maze_with_randomized_prim() -> void:
 	var selected_frontier_cell_index: int
 	#var i: int = 0
 	while frontier_cells.size() != 0:
-		$Timers/Await.start()
-		#$Sounds/MazeGenerationNoise.pitch_scale = MAZE_GENERATION_NOISE_SCALE
-		await finish_await
-		#$Sounds/MazeGenerationNoise.pitch_scale += SEEDED_RNG.randf_range(-MAZE_GENERATION_NOISE_VARIANCE, MAZE_GENERATION_NOISE_VARIANCE)
-		$Sounds/MazeGenerationNoise.play()
+		if is_generation_animated:
+			$Timers/Await.start()
+			await finish_await
+			$Sounds/MazeGenerationNoise.play()
 		if SEEDED_RNG.randi_range(0, 2) == 0:
 			selected_frontier_cell_index = 0
 		elif SEEDED_RNG.randi_range(0, 2) == 0:
@@ -344,8 +343,8 @@ func rotate_integer_vector(vector: Vector2i) -> Vector2i:
 
 func remove_remaining_maze_cells() -> void:
 	var selected_cell: Vector2i
-	for x: int in range(0, MAZE_SIZE.x):
-		for y: int in range(0, MAZE_SIZE.y):
+	for x: int in range(0, IngameManager.current_maze_dimensions.x):
+		for y: int in range(0, IngameManager.current_maze_dimensions.y):
 			selected_cell = Vector2i(x, y)
 			var is_black_cell: bool = $Map/Ground.get_cell_alternative_tile(selected_cell) == 1
 			var is_visual_outside_cell: bool = $Map/Ground.get_cell_source_id(selected_cell) == 1
@@ -362,30 +361,30 @@ func remove_remaining_maze_cells() -> void:
 						delete_maze_visual_wall(selected_cell, 2)
 						delete_maze_visual_wall(selected_cell, 3)
 
-var wall_remove_interval: Vector2i = Vector2i(0, 0)
-func remove_random_maze_walls() -> void:
-	var remove_count: int = SEEDED_RNG.randi_range(wall_remove_interval.x, wall_remove_interval.y)
-	await get_tree().create_timer(0.01).timeout
-	if remove_count == 0:
-		wall_remove_finished.emit()
-		return
-	var removed: int = 0
-	while removed < remove_count:
-		await get_tree().create_timer(0.03).timeout
-		$Sounds/WallRemoveNoise.play()
-		var selected_cell: Vector2i = maze_cells.get(SEEDED_RNG.randi_range(0, maze_cells.size() - 1))
-		var possible_adjacencies: Array[int] = []
-		for selected_adjacency: int in range(4):
-			var selected_wall_exists: bool = maze_visual_wall_exists(selected_cell, selected_adjacency)
-			var selected_neighbor_is_maze_cell: bool = maze_cells.find(get_maze_cell_neighbor(selected_cell, selected_adjacency), 0) != -1
-			if selected_wall_exists and selected_neighbor_is_maze_cell:
-				possible_adjacencies.push_back(selected_adjacency)
-		if possible_adjacencies.size() == 0: continue
-		var deleted_adjacency: int = SEEDED_RNG.randi_range(0, possible_adjacencies.size() - 1)
-		deleted_adjacency = possible_adjacencies[deleted_adjacency]
-		delete_maze_visual_wall(selected_cell, deleted_adjacency)
-		removed += 1
-	wall_remove_finished.emit()
+#var wall_remove_interval: Vector2i = Vector2i(0, 0)
+#func remove_random_maze_walls() -> void:
+	#var remove_count: int = SEEDED_RNG.randi_range(wall_remove_interval.x, wall_remove_interval.y)
+	#await get_tree().create_timer(0.01).timeout
+	#if remove_count == 0:
+		#wall_remove_finished.emit()
+		#return
+	#var removed: int = 0
+	#while removed < remove_count:
+		#await get_tree().create_timer(0.03).timeout
+		#$Sounds/WallRemoveNoise.play()
+		#var selected_cell: Vector2i = maze_cells.get(SEEDED_RNG.randi_range(0, maze_cells.size() - 1))
+		#var possible_adjacencies: Array[int] = []
+		#for selected_adjacency: int in range(4):
+			#var selected_wall_exists: bool = maze_visual_wall_exists(selected_cell, selected_adjacency)
+			#var selected_neighbor_is_maze_cell: bool = maze_cells.find(get_maze_cell_neighbor(selected_cell, selected_adjacency), 0) != -1
+			#if selected_wall_exists and selected_neighbor_is_maze_cell:
+				#possible_adjacencies.push_back(selected_adjacency)
+		#if possible_adjacencies.size() == 0: continue
+		#var deleted_adjacency: int = SEEDED_RNG.randi_range(0, possible_adjacencies.size() - 1)
+		#deleted_adjacency = possible_adjacencies[deleted_adjacency]
+		#delete_maze_visual_wall(selected_cell, deleted_adjacency)
+		#removed += 1
+	#wall_remove_finished.emit()
 
 func get_maze_cell_neighbor(selected_cell: Vector2i, adjacency: int) -> Vector2i:
 	if adjacency < 0 or adjacency > 3: return Vector2i.ONE * -1
@@ -398,24 +397,24 @@ func get_maze_cell_neighbor(selected_cell: Vector2i, adjacency: int) -> Vector2i
 
 func implement_maze_edges_physics() -> void:
 	var maze_corner: Vector2
-	maze_corner.x = MAZE_SIZE.x * $Map/Ground.scale.x * $Map/Ground.scale.x / $Map/Walls.scale.x
-	maze_corner.y = MAZE_SIZE.y * $Map/Ground.scale.y * $Map/Ground.scale.y / $Map/Walls.scale.y
+	maze_corner.x = IngameManager.current_maze_dimensions.x * $Map/Ground.scale.x * $Map/Ground.scale.x / $Map/Walls.scale.x
+	maze_corner.y = IngameManager.current_maze_dimensions.y * $Map/Ground.scale.y * $Map/Ground.scale.y / $Map/Walls.scale.y
 	
 	%RightEdgeWall.position.x = maze_corner.x
 	%RightEdgeWall.position.y = maze_corner.y / 2
-	%RightEdgeWall.scale.y = MAZE_SIZE.y * $Map/Ground.scale.y * $Map/Ground.scale.y / $Map/Walls.scale.y
+	%RightEdgeWall.scale.y = IngameManager.current_maze_dimensions.y * $Map/Ground.scale.y * $Map/Ground.scale.y / $Map/Walls.scale.y
 	
 	%DownEdgeWall.position.x = maze_corner.x / 2
 	%DownEdgeWall.position.y = maze_corner.y
-	%DownEdgeWall.scale.x = MAZE_SIZE.x * $Map/Ground.scale.x * $Map/Ground.scale.x / $Map/Walls.scale.x
+	%DownEdgeWall.scale.x = IngameManager.current_maze_dimensions.x * $Map/Ground.scale.x * $Map/Ground.scale.x / $Map/Walls.scale.x
 	
 	%LeftEdgeWall.position.x = 0
 	%LeftEdgeWall.position.y = maze_corner.y / 2
-	%LeftEdgeWall.scale.y = MAZE_SIZE.y * $Map/Ground.scale.y * $Map/Ground.scale.y / $Map/Walls.scale.y
+	%LeftEdgeWall.scale.y = IngameManager.current_maze_dimensions.y * $Map/Ground.scale.y * $Map/Ground.scale.y / $Map/Walls.scale.y
 	
 	%UpEdgeWall.position.x = maze_corner.x / 2
 	%UpEdgeWall.position.y = 0
-	%UpEdgeWall.scale.x = MAZE_SIZE.x * $Map/Ground.scale.x * $Map/Ground.scale.x / $Map/Walls.scale.x
+	%UpEdgeWall.scale.x = IngameManager.current_maze_dimensions.x * $Map/Ground.scale.x * $Map/Ground.scale.x / $Map/Walls.scale.x
 	for body: StaticBody2D in $Map/Edges.get_children():
 		body.set_meta("type", "wall")
 
@@ -445,10 +444,10 @@ func implement_maze_horizontal_walls_physics() -> void:
 	var is_extending_wall: bool
 	var physics_wall_ins: StaticBody2D
 	print_debug_log(DEBUG_is_checking_maze, "\t\t\t\t\t\t\t\t\t\timplementing maze horizontal walls physics")
-	for row: int in range(0, MAZE_SIZE.y - 1):
+	for row: int in range(0, IngameManager.current_maze_dimensions.y - 1):
 		print_debug_log(DEBUG_is_checking_maze, "on row: " + str(row))
 		is_extending_wall = false
-		for column: int in range(0, MAZE_SIZE.x):
+		for column: int in range(0, IngameManager.current_maze_dimensions.x):
 			print_debug_log(DEBUG_is_checking_maze, "on column: " + str(column))
 			selected_cell = Vector2i(column, row)
 			print_debug_log(DEBUG_is_checking_maze, "selected cell: " + str(selected_cell))
@@ -475,10 +474,10 @@ func implement_maze_vertical_walls_physics() -> void:
 	var is_extending_wall: bool
 	var physics_wall_ins: StaticBody2D
 	print_debug_log(DEBUG_is_checking_maze, "\t\t\t\t\t\t\t\t\t\timplementing maze vertical walls physics")
-	for column: int in range(0, MAZE_SIZE.x - 1):
+	for column: int in range(0, IngameManager.current_maze_dimensions.x - 1):
 		print_debug_log(DEBUG_is_checking_maze, "on column: " + str(column))
 		is_extending_wall = false
-		for row: int in range(0, MAZE_SIZE.y):
+		for row: int in range(0, IngameManager.current_maze_dimensions.y):
 			print_debug_log(DEBUG_is_checking_maze, "on row: " + str(row))
 			selected_cell = Vector2i(column, row)
 			print_debug_log(DEBUG_is_checking_maze, "selected cell: " + str(selected_cell))
@@ -503,8 +502,8 @@ func implement_maze_vertical_walls_physics() -> void:
 # this function presupposes that at every maze cell has at least one accessible neighbour
 # probably could be optimised
 func implement_navigation() -> void:
-	for row: int in range(0, MAZE_SIZE.y):
-		for column: int in range(0, MAZE_SIZE.x):
+	for row: int in range(0, IngameManager.current_maze_dimensions.y):
+		for column: int in range(0, IngameManager.current_maze_dimensions.x):
 			var directions: Array[bool]
 			for i: int in range(4):
 				directions.push_back(not maze_visual_wall_exists(Vector2i(column, row), i))
