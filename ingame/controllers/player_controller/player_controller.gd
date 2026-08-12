@@ -21,3 +21,10 @@ var linear_input: int = 0
 ## if = 0 idle
 ## if > 0 rotate clockwise
 var angular_input: int = 0
+
+func _ready() -> void:
+	set_process(is_multiplayer_authority())
+
+func _process(_delta: float) -> void:
+	linear_input = int(Input.get_axis(&"MoveBackward", &"MoveForward"))
+	angular_input = int(Input.get_axis(&"RotateCounterclockwise", &"RotateClockwise"))

@@ -12,24 +12,24 @@ size = Vector2(10, 6)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_2w6dw"]
 size = Vector2(16, 13)
 
-[sub_resource type="Gradient" id="Gradient_ll50v"]
+[sub_resource type="Gradient" id="Gradient_htyoa"]
 offsets = PackedFloat32Array(0.17307693, 0.53846157, 0.86538464)
 colors = PackedColorArray(0.5781947, 0.57819486, 0, 1, 0.6347943, 0.5059565, 0.20497683, 1, 0.81213886, 0.73213935, 0.33107692, 1)
 
-[sub_resource type="FastNoiseLite" id="FastNoiseLite_1vkw8"]
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_ll50v"]
 seed = 2
 frequency = 0.1
 
 [sub_resource type="NoiseTexture2D" id="NoiseTexture2D_ll50v"]
 width = 10
 height = 10
-noise = SubResource("FastNoiseLite_1vkw8")
-color_ramp = SubResource("Gradient_ll50v")
+noise = SubResource("FastNoiseLite_ll50v")
+color_ramp = SubResource("Gradient_htyoa")
 
 [sub_resource type="Gradient" id="Gradient_1vkw8"]
 colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
 
-[sub_resource type="GradientTexture1D" id="GradientTexture1D_cy2ya"]
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_1vkw8"]
 gradient = SubResource("Gradient_1vkw8")
 
 [sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_cy2ya"]
@@ -47,7 +47,7 @@ radial_accel_max = -2.23517e-06
 tangential_accel_min = -2.23517e-06
 tangential_accel_max = -2.23517e-06
 scale_min = 0.5
-color_ramp = SubResource("GradientTexture1D_cy2ya")
+color_ramp = SubResource("GradientTexture1D_1vkw8")
 
 [node name="Player" type="RigidBody2D" unique_id=757195374]
 process_mode = 4

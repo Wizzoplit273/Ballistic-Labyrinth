@@ -1,0 +1,108 @@
+[gd_scene format=3 uid="uid://cjity5nny1uxh"]
+
+[ext_resource type="Script" uid="uid://ch06pqypfkh4e" path="res://ingame/entities/tank_pawn/tank_pawn.gd" id="1_86qf6"]
+[ext_resource type="Texture2D" uid="uid://ufr4xvpydw1x" path="res://ingame/entities/player/player_regular.png" id="2_q4xwi"]
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_q4xwi"]
+properties/0/path = NodePath(".:linear_velocity")
+properties/0/spawn = true
+properties/0/replication_mode = 1
+properties/1/path = NodePath(".:angular_velocity")
+properties/1/spawn = true
+properties/1/replication_mode = 1
+properties/2/path = NodePath(".:position")
+properties/2/spawn = true
+properties/2/replication_mode = 1
+properties/3/path = NodePath(".:rotation")
+properties/3/spawn = true
+properties/3/replication_mode = 1
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_22na7"]
+size = Vector2(10, 6)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_th6qd"]
+size = Vector2(16, 13)
+
+[sub_resource type="Gradient" id="Gradient_ll50v"]
+offsets = PackedFloat32Array(0.17307693, 0.53846157, 0.86538464)
+colors = PackedColorArray(0.5781947, 0.57819486, 0, 1, 0.6347943, 0.5059565, 0.20497683, 1, 0.81213886, 0.73213935, 0.33107692, 1)
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_1vkw8"]
+seed = 2
+frequency = 0.1
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_i8epx"]
+width = 10
+height = 10
+noise = SubResource("FastNoiseLite_1vkw8")
+color_ramp = SubResource("Gradient_ll50v")
+
+[sub_resource type="Gradient" id="Gradient_ruqgs"]
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_cy2ya"]
+gradient = SubResource("Gradient_ruqgs")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_ehvdi"]
+particle_flag_disable_z = true
+angle_min = 1.07288e-05
+angle_max = 720.0
+velocity_pivot = Vector3(100, 0, 0)
+spread = 180.0
+initial_velocity_max = 46.15
+angular_velocity_min = -244.38
+angular_velocity_max = 255.27
+gravity = Vector3(0, 0, 0)
+radial_accel_min = -2.23517e-06
+radial_accel_max = -2.23517e-06
+tangential_accel_min = -2.23517e-06
+tangential_accel_max = -2.23517e-06
+scale_min = 0.5
+color_ramp = SubResource("GradientTexture1D_cy2ya")
+
+[node name="TankPawn" type="RigidBody2D" unique_id=2062779136]
+script = ExtResource("1_86qf6")
+
+[node name="Sync" type="MultiplayerSynchronizer" parent="." unique_id=383817068]
+replication_config = SubResource("SceneReplicationConfig_q4xwi")
+
+[node name="ShootCooldown" type="Timer" parent="." unique_id=1120006351]
+wait_time = 0.05
+one_shot = true
+
+[node name="TunnelHitbox" type="Area2D" parent="." unique_id=1743188374]
+visible = false
+position = Vector2(1, 0)
+metadata/_edit_lock_ = true
+
+[node name="Hitbox" type="CollisionShape2D" parent="TunnelHitbox" unique_id=397254893]
+position = Vector2(22, 0)
+shape = SubResource("RectangleShape2D_22na7")
+metadata/_edit_lock_ = true
+
+[node name="Hitbox" type="CollisionShape2D" parent="." unique_id=2040906465]
+visible = false
+scale = Vector2(2.5, 2.292)
+shape = SubResource("RectangleShape2D_th6qd")
+metadata/_edit_lock_ = true
+
+[node name="DeathParticles" type="GPUParticles2D" parent="." unique_id=1363133363]
+process_mode = 1
+emitting = false
+amount = 100
+texture = SubResource("NoiseTexture2D_i8epx")
+lifetime = 5.0
+one_shot = true
+speed_scale = 4.0
+explosiveness = 1.0
+process_material = SubResource("ParticleProcessMaterial_ehvdi")
+metadata/_edit_lock_ = true
+
+[node name="Rest" type="Node2D" parent="." unique_id=753367009]
+scale = Vector2(2.5, 2.5)
+metadata/_edit_lock_ = true
+
+[node name="Image" type="Sprite2D" parent="Rest" unique_id=2040168764]
+modulate = Color(0.9293644, 0.7059703, 0.20295957, 1)
+texture = ExtResource("2_q4xwi")
+metadata/_edit_lock_ = true
