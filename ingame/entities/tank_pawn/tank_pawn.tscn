@@ -61,6 +61,7 @@ scale_min = 0.5
 color_ramp = SubResource("GradientTexture1D_cy2ya")
 
 [node name="TankPawn" type="RigidBody2D" unique_id=2062779136]
+gravity_scale = 0.0
 script = ExtResource("1_86qf6")
 
 [node name="Sync" type="MultiplayerSynchronizer" parent="." unique_id=383817068]

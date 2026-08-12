@@ -13,11 +13,14 @@ var is_ingame_configured: bool = false
 
 var finished_clients: Array = []
 
+## this node will have every controller node as a child node so they're easier to access
+
 const NEW_PLAYER_CONTROLLER_FILE: String = "res://ingame/controllers/player_controller/player_controller.tscn"
+@rpc("authority", "reliable")
 func create_player_controller(sid: int) -> void:
 	if sid <= 0: return
 	var control: Node = load(NEW_PLAYER_CONTROLLER_FILE).instantiate()
-	scene_root.get_node("Controllers").add_child(control)
+	add_child(control)
 	control.sid = sid
 	if not NetworkManager.is_online: return
 	if not multiplayer.is_server(): return
@@ -60,6 +63,7 @@ func start_ingame(maze_seed: int, maze_dimensions: Vector2i, is_animated: bool =
 	if UIManager.is_ui_configured: UIManager.lobby_node.activate(false)
 	current_seed = maze_seed
 	current_maze_dimensions = maze_dimensions
+	create_controllers()
 	create_ingame(is_animated)
 
 func create_ingame(is_animated: bool = false) -> void:

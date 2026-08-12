@@ -545,15 +545,23 @@ const NEW_TANK_PAWN_PATH: String = "res://ingame/entities/tank_pawn/tank_pawn.ts
 func place_sessions_on_map() -> void:
 	#bot_count = SEEDED_RNG.randi_range(bot_count_interval.x, bot_count_interval.y)
 	#alive_tanks_count += bot_count
-	var session_count: int = SessionManager.data.size()
 	var tank_pawn: RigidBody2D = null
-	for index: int in range(0, session_count):
+	for sid: int in SessionManager.data.keys():
+		if sid == 0: continue
 		tank_pawn = load(NEW_TANK_PAWN_PATH).instantiate()
-		#set_bot_personality(tank_pawn)
-		$TankPawns.add_child(tank_pawn)
+		var target_controller: Node = null
+		for controller: Node in IngameManager.get_children():
+			if controller.sid != sid: continue
+			target_controller = controller
+			break
+		if target_controller == null: continue # normally shouldn't happen
+		target_controller.pawn = tank_pawn
+		tank_pawn.controller = target_controller
 		var selected_cell: Vector2i = maze_cells.get(SEEDED_RNG.randi_range(0, maze_cells.size() - 1))
 		tank_pawn.global_position = maze_cell_to_world(selected_cell)
 		tank_pawn.rotation = SEEDED_RNG.randf_range(0, PI * 2)
+		$TankPawns.add_child(tank_pawn)
+		#set_bot_personality(tank_pawn)
 		#tank_pawn.bot_friendly_fire = bot_friendly_fire
 		#while ($Players/Player.global_position - tank_pawn.global_position).length() <= MIN_SPAWNPOINT_DISTANCING:
 		#tank_pawn.process_mode = Node.PROCESS_MODE_DISABLED

@@ -4,5 +4,3 @@
 
 [node name="Origin" type="Node" unique_id=1976139409]
 script = ExtResource("1_nd25w")
-
-[node name="Controllers" type="Node" parent="." unique_id=785845721]
