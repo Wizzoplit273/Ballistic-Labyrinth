@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://cuj8rv6hu14tq"]
+
+[ext_resource type="Script" uid="uid://hebypaaefciq" path="res://ingame/controllers/bot_controller/bot_controller.gd" id="1_0x8vh"]
+
+[node name="BotController" type="Node" unique_id=442885069]
+script = ExtResource("1_0x8vh")

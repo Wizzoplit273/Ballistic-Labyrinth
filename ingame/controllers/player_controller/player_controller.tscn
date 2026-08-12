@@ -1,0 +1,11 @@
+[gd_scene format=3 uid="uid://cuiedt47vc3on"]
+
+[ext_resource type="Script" uid="uid://ihp6yseoukgv" path="res://ingame/controllers/player_controller/player_controller.gd" id="1_kfqpx"]
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_kfqpx"]
+
+[node name="PlayerController" type="Node" unique_id=1013022651]
+script = ExtResource("1_kfqpx")
+
+[node name="Sync" type="MultiplayerSynchronizer" parent="." unique_id=1979509290]
+replication_config = SubResource("SceneReplicationConfig_kfqpx")

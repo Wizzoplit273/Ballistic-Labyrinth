@@ -11,16 +11,34 @@ var ingame_node: Node = null
 
 var is_ingame_configured: bool = false
 
-var finished_clients: Array = [] 
+var finished_clients: Array = []
 
-func attach_controllers() -> void:
-	pass
+const NEW_PLAYER_CONTROLLER_FILE: String = "res://ingame/controllers/player_controller/player_controller.tscn"
+func create_player_controller(sid: int) -> void:
+	if sid <= 0: return
+	var control: Node = load(NEW_PLAYER_CONTROLLER_FILE).instantiate()
+	scene_root.get_node("Controllers").add_child(control)
+	control.sid = sid
+	if not NetworkManager.is_online: return
+	if not multiplayer.is_server(): return
+	rpc_id
 
-func detach_controllers() -> void:
-	pass
+const NEW_BOT_CONTROLLER_FILE: String = "res://ingame/controllers/bot_controller/bot_controller.tscn"
+func create_bot_controller(sid: int) -> void:
+	if sid >= 0: return
+
+func create_controllers() -> void:
+	if not multiplayer.is_server(): return
+	for sid: int in SessionManager.data:
+		if sid >= 1: create_player_controller(sid)
+		elif sid == 0: continue
+		else: create_bot_controller(sid)
+
+func delete_controllers() -> void:
+	if not multiplayer.is_server(): return
 
 @rpc("any_peer", "reliable")
-func start_game():
+func start_game() -> void:
 	var pid: int = multiplayer.get_remote_sender_id()
 	if not NetworkManager.is_online: return
 	if not multiplayer.is_server(): return
@@ -29,7 +47,7 @@ func start_game():
 	start_ingame.rpc(current_seed, current_maze_dimensions, true)
 
 @rpc("any_peer", "reliable")
-func end_game():
+func end_game() -> void:
 	var pid: int = multiplayer.get_remote_sender_id()
 	if not NetworkManager.is_online: return
 	if not multiplayer.is_server(): return
