@@ -21,7 +21,7 @@ func create_player_controller(sid: int) -> void:
 	control.sid = sid
 	if not NetworkManager.is_online: return
 	if not multiplayer.is_server(): return
-	rpc_id
+	create_player_controller.rpc(sid)
 
 const NEW_BOT_CONTROLLER_FILE: String = "res://ingame/controllers/bot_controller/bot_controller.tscn"
 func create_bot_controller(sid: int) -> void:

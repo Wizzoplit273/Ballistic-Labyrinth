@@ -48,8 +48,9 @@ func modified_ready(is_animated: bool = false) -> void:
 	implement_maze_edges_physics()
 	implement_maze_walls_physics()
 	implement_navigation()
-	place_player_on_map()
-	place_bots_on_map()
+	place_sessions_on_map()
+	#place_player_on_map()
+	#place_bots_on_map()
 	#$Players/Player/Camera.zoom = Vector2.ONE * INGAME_CAMERA_ZOOM
 	$Players/Player.bullet_count = 0
 	$Players/Player.process_mode = Node.PROCESS_MODE_INHERIT
@@ -540,6 +541,31 @@ func maze_cell_to_world(selected_cell: Vector2i) -> Vector2:
 	result.y *= $Map/Ground.scale.y
 	return result
 
+const NEW_TANK_PAWN_PATH: String = "res://ingame/entities/tank_pawn/tank_pawn.tscn"
+func place_sessions_on_map() -> void:
+	#bot_count = SEEDED_RNG.randi_range(bot_count_interval.x, bot_count_interval.y)
+	#alive_tanks_count += bot_count
+	var session_count: int = SessionManager.data.size()
+	var tank_pawn: RigidBody2D = null
+	for index: int in range(0, session_count):
+		tank_pawn = load(NEW_TANK_PAWN_PATH).instantiate()
+		#set_bot_personality(tank_pawn)
+		$TankPawns.add_child(tank_pawn)
+		var selected_cell: Vector2i = maze_cells.get(SEEDED_RNG.randi_range(0, maze_cells.size() - 1))
+		tank_pawn.global_position = maze_cell_to_world(selected_cell)
+		tank_pawn.rotation = SEEDED_RNG.randf_range(0, PI * 2)
+		#tank_pawn.bot_friendly_fire = bot_friendly_fire
+		#while ($Players/Player.global_position - tank_pawn.global_position).length() <= MIN_SPAWNPOINT_DISTANCING:
+		#tank_pawn.process_mode = Node.PROCESS_MODE_DISABLED
+		#tank_pawn.visible = false
+		#var ground_tile_size: Vector2i = load(GROUND_TILE_SET).tile_size
+		#tank_pawn.visible = true
+		#if not tank_pawn.is_connected("shoot", _on_bot_shoot):
+			#tank_pawn.connect("shoot", _on_bot_shoot)
+		#if not tank_pawn.is_connected("level_die", _on_bot_level_die):
+			#tank_pawn.connect("level_die", _on_bot_level_die)
+		#tank_pawn.process_mode = Node.PROCESS_MODE_INHERIT
+
 const GROUND_TILE_SET: String = "res://ingame/tiles/base_tileset.tres"
 const OFFSET_SUBTRACT: float = 20.0
 func place_player_on_map() -> void:
@@ -587,37 +613,37 @@ var bot_count_interval: Vector2i = Vector2i(3, 10)
 func place_bots_on_map() -> void:
 	bot_count = SEEDED_RNG.randi_range(bot_count_interval.x, bot_count_interval.y)
 	alive_tanks_count += bot_count
-	var bot_instance: RigidBody2D = null
+	var tank_pawn: RigidBody2D = null
 	for index: int in range(0, bot_count):
-		bot_instance = load(NEW_ENEMY_INSTANCE_PATH).instantiate()
-		set_bot_personality(bot_instance)
-		$Bots.add_child(bot_instance)
-		bot_instance.global_position = $Players/Player.global_position
-		bot_instance.player_parent_node = $Players
-		bot_instance.bot_parent_node = $Bots
-		bot_instance.crate_parent_node = $Crates
-		bot_instance.bot_friendly_fire = bot_friendly_fire
-		while ($Players/Player.global_position - bot_instance.global_position).length() <= MIN_SPAWNPOINT_DISTANCING:
-			bot_instance.process_mode = Node.PROCESS_MODE_DISABLED
-			bot_instance.visible = false
+		tank_pawn = load(NEW_ENEMY_INSTANCE_PATH).instantiate()
+		set_bot_personality(tank_pawn)
+		$Bots.add_child(tank_pawn)
+		tank_pawn.global_position = $Players/Player.global_position
+		tank_pawn.player_parent_node = $Players
+		tank_pawn.bot_parent_node = $Bots
+		tank_pawn.crate_parent_node = $Crates
+		tank_pawn.bot_friendly_fire = bot_friendly_fire
+		while ($Players/Player.global_position - tank_pawn.global_position).length() <= MIN_SPAWNPOINT_DISTANCING:
+			tank_pawn.process_mode = Node.PROCESS_MODE_DISABLED
+			tank_pawn.visible = false
 			var selected_cell: Vector2i
 			#var ground_tile_size: Vector2i = load(GROUND_TILE_SET).tile_size
 			selected_cell = maze_cells.get(SEEDED_RNG.randi_range(0, maze_cells.size() - 1))
 			var selected_position: Vector2 = maze_cell_to_world(selected_cell)
-			bot_instance.position = selected_position
+			tank_pawn.position = selected_position
 			var offset_vector: Vector2
 			var max_offset_scalar: Vector2 = $Map/Ground.scale / 2 - Vector2.ONE * OFFSET_SUBTRACT
 			offset_vector.x = SEEDED_RNG.randf_range(-max_offset_scalar.x, max_offset_scalar.x)
 			offset_vector.y = SEEDED_RNG.randf_range(-max_offset_scalar.y, max_offset_scalar.y)
-			bot_instance.position += offset_vector
-			bot_instance.rotation = SEEDED_RNG.randf_range(0, PI * 2)
-			bot_instance.visible = true
-			if not bot_instance.is_connected("shoot", _on_bot_shoot):
-				bot_instance.connect("shoot", _on_bot_shoot)
-			if not bot_instance.is_connected("level_die", _on_bot_level_die):
-				bot_instance.connect("level_die", _on_bot_level_die)
-			bot_instance.process_mode = Node.PROCESS_MODE_INHERIT
-			#bot_instance.get_node("Rest/Image").scale += Vector2.ONE * SEEDED_RNG.randf_range(-0.1, 0.1)
+			tank_pawn.position += offset_vector
+			tank_pawn.rotation = SEEDED_RNG.randf_range(0, PI * 2)
+			tank_pawn.visible = true
+			if not tank_pawn.is_connected("shoot", _on_bot_shoot):
+				tank_pawn.connect("shoot", _on_bot_shoot)
+			if not tank_pawn.is_connected("level_die", _on_bot_level_die):
+				tank_pawn.connect("level_die", _on_bot_level_die)
+			tank_pawn.process_mode = Node.PROCESS_MODE_INHERIT
+			#tank_pawn.get_node("Rest/Image").scale += Vector2.ONE * SEEDED_RNG.randf_range(-0.1, 0.1)
 
 const NEW_BULLET_PATH: String = "res://ingame/entities/projectiles/bullet.tscn"
 const REGULAR_SPAWN_OFFSET: float = 26.0

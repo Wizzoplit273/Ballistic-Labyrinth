@@ -15,12 +15,12 @@ func update_pawn() -> void:
 ## if < 0 move backwards
 ## if = 0 idle
 ## if > 0 move forwards
-var linear_input: int = 0
+@export var linear_input: int = 0
 
 ## if < 0 rotate counterclockwise
 ## if = 0 idle
 ## if > 0 rotate clockwise
-var angular_input: int = 0
+@export var angular_input: int = 0
 
 func _ready() -> void:
 	set_process(is_multiplayer_authority())

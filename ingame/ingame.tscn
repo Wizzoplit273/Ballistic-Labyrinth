@@ -243,6 +243,8 @@ metadata/_edit_lock_ = true
 [node name="Crates" type="Node2D" parent="." unique_id=294075892]
 metadata/_edit_lock_ = true
 
+[node name="TankPawns" type="Node" parent="." unique_id=249030837]
+
 [node name="Players" type="Node2D" parent="." unique_id=840329032]
 metadata/_edit_lock_ = true
 
