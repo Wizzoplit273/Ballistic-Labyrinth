@@ -3,7 +3,7 @@ extends RigidBody2D
 var controller: Node = null
 
 var linear_speed: float = 200.0
-var angular_speed: float = 30.0
+var angular_speed: float = 6.0
 
 func toggle(value: bool) -> void:
 	if value:
@@ -22,5 +22,5 @@ func _physics_process(_delta: float) -> void:
 	angular_velocity = 0.0
 	if not controller: return
 	angular_velocity = controller.angular_input * angular_speed
-	var forward_direction := Vector2.UP.rotated(rotation)
+	var forward_direction := Vector2.RIGHT.rotated(rotation)
 	linear_velocity = forward_direction * controller.linear_input * linear_speed
