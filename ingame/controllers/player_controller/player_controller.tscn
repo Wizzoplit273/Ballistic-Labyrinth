@@ -10,8 +10,7 @@ properties/1/path = NodePath(".:angular_input")
 properties/1/spawn = true
 properties/1/replication_mode = 1
 
-[node name="PlayerController" type="Node" unique_id=1013022651]
-script = ExtResource("1_kfqpx")
-
-[node name="Sync" type="MultiplayerSynchronizer" parent="." unique_id=1979509290]
+[node name="PlayerController" type="MultiplayerSynchronizer" unique_id=1979509290]
+root_path = NodePath(".")
 replication_config = SubResource("SceneReplicationConfig_kfqpx")
+script = ExtResource("1_kfqpx")

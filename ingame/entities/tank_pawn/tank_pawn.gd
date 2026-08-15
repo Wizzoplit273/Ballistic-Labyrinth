@@ -3,7 +3,15 @@ extends RigidBody2D
 var controller: Node = null
 
 var linear_speed: float = 200.0
-var angular_speed: float = 300.0
+var angular_speed: float = 30.0
+
+func toggle(value: bool) -> void:
+	if value:
+		visible = true
+		process_mode = Node.PROCESS_MODE_INHERIT
+	else:
+		visible = false
+		process_mode = Node.PROCESS_MODE_DISABLED
 
 func _ready() -> void:
 	$Sync.set_multiplayer_authority(1)

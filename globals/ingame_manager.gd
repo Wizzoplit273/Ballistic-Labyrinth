@@ -1,4 +1,4 @@
-extends Node
+extends MultiplayerSpawner
 
 ## updated once by origin node, remains constant
 var scene_root: Node = null
@@ -7,7 +7,7 @@ var current_seed: int = 0
 var current_maze_dimensions: Vector2i = Vector2i(20, 12) ## first entry is width, second is height
 
 const INGAME_FILE: String = "res://ingame/ingame.tscn"
-var ingame_node: Node = null
+var ingame: Node = null
 
 var is_ingame_configured: bool = false
 
@@ -15,30 +15,35 @@ var finished_clients: Array = []
 
 ## this node will have every controller node as a child node so they're easier to access
 
-const NEW_PLAYER_CONTROLLER_FILE: String = "res://ingame/controllers/player_controller/player_controller.tscn"
-@rpc("authority", "reliable")
-func create_player_controller(sid: int) -> void:
-	if sid <= 0: return
-	var control: Node = load(NEW_PLAYER_CONTROLLER_FILE).instantiate()
-	add_child(control)
-	control.sid = sid
+func _enter_tree() -> void:
+	spawn_path = get_path()
+	spawn_function = _custom_spawn
+
+func create_controller(sid: int) -> void:
+	if sid == 0: return
 	if not NetworkManager.is_online: return
 	if not multiplayer.is_server(): return
-	create_player_controller.rpc(sid)
+	spawn(sid)
 
+const NEW_PLAYER_CONTROLLER_FILE: String = "res://ingame/controllers/player_controller/player_controller.tscn"
 const NEW_BOT_CONTROLLER_FILE: String = "res://ingame/controllers/bot_controller/bot_controller.tscn"
-func create_bot_controller(sid: int) -> void:
-	if sid >= 0: return
+func _custom_spawn(sid: int) -> Node:
+	if sid == 0: return null
+	var controller: Node
+	if sid >= 1: controller = load(NEW_PLAYER_CONTROLLER_FILE).instantiate()
+	if sid <= -1: controller = load(NEW_BOT_CONTROLLER_FILE).instantiate()
+	controller.set_sid(sid)
+	return controller
 
 func create_controllers() -> void:
+	if not NetworkManager.is_online: return
 	if not multiplayer.is_server(): return
-	for sid: int in SessionManager.data:
-		if sid >= 1: create_player_controller(sid)
-		elif sid == 0: continue
-		else: create_bot_controller(sid)
+	for sid: int in SessionManager.data: create_controller(sid)
 
 func delete_controllers() -> void:
+	if not NetworkManager.is_online: return
 	if not multiplayer.is_server(): return
+	for controller: Node in get_children(): controller.queue_free()
 
 @rpc("any_peer", "reliable")
 func start_game() -> void:
@@ -67,12 +72,12 @@ func start_ingame(maze_seed: int, maze_dimensions: Vector2i, is_animated: bool =
 	create_ingame(is_animated)
 
 func create_ingame(is_animated: bool = false) -> void:
-	if ingame_node != null: return
-	ingame_node = load(INGAME_FILE).instantiate()
-	scene_root.add_child(ingame_node)
-	ingame_node.connect("_on_next_round", _on_ingame_next_round)
+	if ingame != null: return
+	ingame = load(INGAME_FILE).instantiate()
+	scene_root.add_child(ingame)
+	ingame.connect("_on_next_round", _on_ingame_next_round)
 	is_ingame_configured = true
-	ingame_node.modified_ready(is_animated)
+	ingame.modified_ready(is_animated)
 
 @rpc("authority", "reliable")
 func restart_ingame(maze_seed: int, maze_dimensions: Vector2i, is_animated: bool = false) -> void:
@@ -82,8 +87,8 @@ func restart_ingame(maze_seed: int, maze_dimensions: Vector2i, is_animated: bool
 
 @rpc("authority", "reliable")
 func delete_ingame() -> void:
-	if ingame_node == null: return
-	ingame_node.queue_free()
+	if ingame == null: return
+	ingame.queue_free()
 	is_ingame_configured = false
 
 @rpc("authority", "reliable")
@@ -99,10 +104,13 @@ func _on_ingame_next_round() -> void:
 	create_ingame(true)
 
 func finish_network_maze_generation() -> void:
+	if not NetworkManager.is_online: return
 	if not multiplayer.is_server(): return
 	for pid: int in multiplayer.get_peers():
 		if pid in finished_clients: continue
 		restart_ingame.rpc_id(pid, current_seed, current_maze_dimensions, false)
+	place_pawns()
+	ingame.toggle_pawns.rpc(true)
 
 @rpc("any_peer", "reliable")
 func add_finished_generation() -> void:
@@ -117,3 +125,38 @@ func broadcast_generation_finish() -> void:
 		finish_network_maze_generation()
 		return
 	add_finished_generation.rpc_id(1)
+
+const NEW_TANK_PAWN_PATH: String = "res://ingame/entities/tank_pawn/tank_pawn.tscn"
+func place_pawns() -> void:
+	if not NetworkManager.is_online: return
+	if not multiplayer.is_server(): return
+	#bot_count = SEEDED_RNG.randi_range(bot_count_interval.x, bot_count_interval.y)
+	#alive_tanks_count += bot_count
+	var tank_pawn: RigidBody2D = null
+	for sid: int in SessionManager.data.keys():
+		if sid == 0: continue
+		tank_pawn = load(NEW_TANK_PAWN_PATH).instantiate()
+		var target_controller: Node = null
+		for controller: Node in get_children():
+			if controller.sid != sid: continue
+			target_controller = controller
+			break
+		if target_controller == null: continue # normally shouldn't happen
+		target_controller.pawn = tank_pawn
+		tank_pawn.controller = target_controller
+		var selected_cell: Vector2i = ingame.maze_cells.get(ingame.SEEDED_RNG.randi_range(0, ingame.maze_cells.size() - 1))
+		tank_pawn.global_position = ingame.maze_cell_to_world(selected_cell)
+		tank_pawn.rotation = ingame.SEEDED_RNG.randf_range(0, PI * 2)
+		ingame.get_node("TankPawns").add_child(tank_pawn, true)
+		#set_bot_personality(tank_pawn)
+		#tank_pawn.bot_friendly_fire = bot_friendly_fire
+		#while ($Players/Player.global_position - tank_pawn.global_position).length() <= MIN_SPAWNPOINT_DISTANCING:
+		#tank_pawn.process_mode = Node.PROCESS_MODE_DISABLED
+		#tank_pawn.visible = false
+		#var ground_tile_size: Vector2i = load(GROUND_TILE_SET).tile_size
+		#tank_pawn.visible = true
+		#if not tank_pawn.is_connected("shoot", _on_bot_shoot):
+			#tank_pawn.connect("shoot", _on_bot_shoot)
+		#if not tank_pawn.is_connected("level_die", _on_bot_level_die):
+			#tank_pawn.connect("level_die", _on_bot_level_die)
+		#tank_pawn.process_mode = Node.PROCESS_MODE_INHERIT

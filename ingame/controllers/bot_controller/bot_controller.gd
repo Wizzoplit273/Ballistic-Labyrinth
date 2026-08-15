@@ -1,10 +1,13 @@
-class_name BotController
 extends Node
 
 var sid: int = 0
 var pawn: Node = null
 
-func update_pawn() -> void:
+func set_sid(id: int) -> void:
+	if id >= 0: return
+	sid = id
+
+func set_pawn() -> void:
 	if pawn == null: return
 
 ## if < 0 move backwards

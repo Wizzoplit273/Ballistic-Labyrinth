@@ -1,15 +1,14 @@
-class_name PlayerController
-extends Node
+extends MultiplayerSynchronizer
 
+var sid: int = 0
 var pawn: Node = null
 
-var sid: int = 0:
-	set(id):
-		if id <= 0: return
-		sid = id
-		$Sync.set_multiplayer_authority(id)
+func set_sid(id: int) -> void:
+	if id <= 0: return
+	sid = id
+	set_multiplayer_authority(id)
 
-func update_pawn() -> void:
+func set_pawn() -> void:
 	if pawn == null: return
 
 ## if < 0 move backwards
