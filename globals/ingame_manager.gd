@@ -144,6 +144,8 @@ func place_pawns() -> void:
 		if target_controller == null: continue # normally shouldn't happen
 		target_controller.pawn = tank_pawn
 		tank_pawn.controller = target_controller
+		tank_pawn.get_node("Rest/Image").modulate = SessionManager.data[sid]["color"]
+		tank_pawn.get_node("NameLabel").text = SessionManager.data[sid]["name"]
 		var selected_cell: Vector2i = ingame.maze_cells.get(ingame.SEEDED_RNG.randi_range(0, ingame.maze_cells.size() - 1))
 		tank_pawn.global_position = ingame.maze_cell_to_world(selected_cell)
 		tank_pawn.rotation = ingame.SEEDED_RNG.randf_range(0, PI * 2)

@@ -16,6 +16,12 @@ properties/2/replication_mode = 1
 properties/3/path = NodePath(".:rotation")
 properties/3/spawn = true
 properties/3/replication_mode = 1
+properties/4/path = NodePath("Rest/Image:modulate")
+properties/4/spawn = true
+properties/4/replication_mode = 2
+properties/5/path = NodePath("NameLabel:text")
+properties/5/spawn = true
+properties/5/replication_mode = 2
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_22na7"]
 size = Vector2(10, 6)
@@ -59,6 +65,11 @@ tangential_accel_min = -2.23517e-06
 tangential_accel_max = -2.23517e-06
 scale_min = 0.5
 color_ramp = SubResource("GradientTexture1D_cy2ya")
+
+[sub_resource type="LabelSettings" id="LabelSettings_03ljy"]
+font_size = 10
+outline_size = 7
+outline_color = Color(0, 0, 0, 1)
 
 [node name="TankPawn" type="RigidBody2D" unique_id=2062779136]
 process_mode = 4
@@ -108,4 +119,15 @@ metadata/_edit_lock_ = true
 [node name="Image" type="Sprite2D" parent="Rest" unique_id=2040168764]
 modulate = Color(0.9293644, 0.7059703, 0.20295957, 1)
 texture = ExtResource("2_q4xwi")
+metadata/_edit_lock_ = true
+
+[node name="NameLabel" type="Label" parent="." unique_id=238060681]
+offset_right = 40.0
+offset_bottom = 23.0
+offset_transform_enabled = true
+offset_transform_position_ratio = Vector2(-0.5, -1.6)
+offset_transform_visual_only = false
+label_settings = SubResource("LabelSettings_03ljy")
+horizontal_alignment = 1
+vertical_alignment = 1
 metadata/_edit_lock_ = true
