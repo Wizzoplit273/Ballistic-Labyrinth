@@ -21,9 +21,12 @@ func set_pawn() -> void:
 ## if > 0 rotate clockwise
 @export var angular_input: int = 0
 
+@export var is_drifting: bool = false
+
 func _ready() -> void:
 	set_process(is_multiplayer_authority())
 
 func _process(_delta: float) -> void:
 	linear_input = int(Input.get_axis(&"MoveBackward", &"MoveForward"))
 	angular_input = int(Input.get_axis(&"RotateCounterclockwise", &"RotateClockwise"))
+	is_drifting = Input.is_action_pressed(&"Drift")

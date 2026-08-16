@@ -19,3 +19,5 @@ var linear_input: int = 0
 ## if = 0 idle
 ## if > 0 rotate clockwise
 var angular_input: int = 0
+
+var is_drifting: bool = false
