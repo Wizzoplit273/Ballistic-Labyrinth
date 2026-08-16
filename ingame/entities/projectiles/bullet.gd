@@ -24,7 +24,8 @@ const TRAP_TEXTURE_PATH: String = "res://ingame/entities/projectiles/bullet_trap
 const TRAP_SCALE_MODIFIER_TEXTURE: float = 4.2
 const TRAP_SCALE_MODIFIER_REST: float = 0.4
 func _ready() -> void:
-	if not multiplayer.is_server(): disable_process_mode()
+	if multiplayer.is_server(): process_mode = Node.PROCESS_MODE_INHERIT
+	else: process_mode = Node.PROCESS_MODE_DISABLED
 	apply_central_impulse(Vector2(initial_velocity_speed, 0).rotated(initial_velocity_direction))
 	if type == "rocket":
 		$RocketNavigation.process_mode = Node.PROCESS_MODE_INHERIT
@@ -86,7 +87,7 @@ func set_node_rotations() -> void:
 	$Rest/Image.rotation = linear_velocity.angle()
 
 func _physics_process(_delta: float) -> void:
-	linear_velocity = linear_velocity.normalized() * initial_velocity_speed
+	if linear_velocity.length() != 0.0: linear_velocity = linear_velocity.normalized() * initial_velocity_speed
 	configure_if_rocket()
 	set_node_rotations()
 
