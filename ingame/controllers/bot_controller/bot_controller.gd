@@ -21,3 +21,4 @@ var linear_input: int = 0
 var angular_input: int = 0
 
 var is_drifting: bool = false
+var is_shooting: bool = false

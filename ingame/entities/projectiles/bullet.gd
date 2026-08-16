@@ -23,7 +23,8 @@ const ROCKET_SCALE_MODIFIER_REST: float = 0.3
 const TRAP_TEXTURE_PATH: String = "res://ingame/entities/projectiles/bullet_trap.png"
 const TRAP_SCALE_MODIFIER_TEXTURE: float = 4.2
 const TRAP_SCALE_MODIFIER_REST: float = 0.4
-func modified_ready() -> void:
+func _ready() -> void:
+	if not multiplayer.is_server(): disable_process_mode()
 	apply_central_impulse(Vector2(initial_velocity_speed, 0).rotated(initial_velocity_direction))
 	if type == "rocket":
 		$RocketNavigation.process_mode = Node.PROCESS_MODE_INHERIT

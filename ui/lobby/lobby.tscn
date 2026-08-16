@@ -4,7 +4,7 @@
 [ext_resource type="Script" uid="uid://desjpxlp4d326" path="res://ui/lobby/lobby.gd" id="2_k0yk8"]
 [ext_resource type="AudioStream" uid="uid://g7a62bk645rj" path="res://soundtrack_menu.mp3" id="3_rk1hj"]
 [ext_resource type="Texture2D" uid="uid://cfp23f081i35a" path="res://ui/noise_texture_1.tres" id="4_5wkb4"]
-[ext_resource type="Texture2D" uid="uid://ufr4xvpydw1x" path="res://ingame/entities/player/player_regular.png" id="5_jvewa"]
+[ext_resource type="Texture2D" uid="uid://ufr4xvpydw1x" path="res://ingame/entities/tank_pawn/tank_regular.png" id="5_jvewa"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_xyqw4"]
 font_size = 75

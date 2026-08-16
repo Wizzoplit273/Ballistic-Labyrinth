@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://dt6pc3iwv8285"]
 
 [ext_resource type="Script" uid="uid://crfjuwlcy81x2" path="res://ingame/entities/bot/bot.gd" id="1_l1d7n"]
-[ext_resource type="Texture2D" uid="uid://ufr4xvpydw1x" path="res://ingame/entities/player/player_regular.png" id="2_ctn2v"]
+[ext_resource type="Texture2D" uid="uid://ufr4xvpydw1x" path="res://ingame/entities/tank_pawn/tank_regular.png" id="2_ctn2v"]
 [ext_resource type="Texture2D" uid="uid://xa5vxaptiwsv" path="res://ingame/entities/projectiles/bullet_normal.png" id="3_srmle"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_1etb5"]

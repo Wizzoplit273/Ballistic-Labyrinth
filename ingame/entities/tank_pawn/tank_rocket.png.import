@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c204rae6syx0k"
-path="res://.godot/imported/player_rocket.png-817d634e1df4fc28a623e56b81fe7853.ctex"
+path="res://.godot/imported/tank_rocket.png-60442c3096d1940f7088faec240e0e6c.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://ingame/entities/player/player_rocket.png"
-dest_files=["res://.godot/imported/player_rocket.png-817d634e1df4fc28a623e56b81fe7853.ctex"]
+source_file="res://ingame/entities/tank_pawn/tank_rocket.png"
+dest_files=["res://.godot/imported/tank_rocket.png-60442c3096d1940f7088faec240e0e6c.ctex"]
 
 [params]
 

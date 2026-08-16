@@ -2,10 +2,32 @@ extends RigidBody2D
 
 var controller: Node = null
 
-var linear_speed: float = 200.0
 var max_linear_speed: float = 200.0
+var linear_speed: float = 200.0
 var drift_speed: float = 600.0
 var angular_speed: float = 6.0
+
+var max_bullet_count: int = 5
+var fired_bullet_count: int = 0
+
+const REGULAR_SPAWN_OFFSET: float = 26.0
+const ROCKET_SPAWN_OFFSET: float = 30.0
+const LASER_SPAWN_OFFSET: float = 26.0
+const TRAP_SPAWN_OFFSET: float = 60.0
+
+var regular_speed: float = 300.0
+var regular_lifespan: float = 0.0
+var laser_speed: float = 3000.0
+var laser_lifespan: float = 1.0
+var rocket_speed: float = 300.0
+var rocket_lifespan: float = 15.0
+
+var weapon_type: String = "regular"
+
+@export var texture_path: String:
+	set(path):
+		if path.is_empty(): return
+		$Rest/Image.texture = load(path)
 
 func toggle(value: bool) -> void:
 	if value:
@@ -18,6 +40,23 @@ func toggle(value: bool) -> void:
 func _ready() -> void:
 	$Sync.set_multiplayer_authority(1)
 	#if not multiplayer.is_server(): set_physics_process(false) ## disabled for client-side prediction
+
+signal shoot_bullet
+func shoot() -> void:
+	if not $ShootCooldown.is_stopped(): return
+	if fired_bullet_count >= max_bullet_count:
+		MasterManager.play_server_sound($NoAmmoNoise)
+		return
+	for body: Node2D in $TunnelHitbox.get_overlapping_bodies():
+		if body is StaticBody2D: return
+	shoot_bullet.emit(weapon_type, self)
+	$ShootCooldown.start()
+
+const SKIN_PATH_PREFIX: String = "res://ingame/entities/tank_pawn/tank_"
+const SKIN_EXTENSION: String = ".png"
+func equip_weapon(type: String) -> void:
+	weapon_type = type
+	texture_path = SKIN_PATH_PREFIX + type + SKIN_EXTENSION
 
 func _physics_process(_delta: float) -> void:
 	if not controller:
@@ -32,3 +71,5 @@ func _physics_process(_delta: float) -> void:
 	if controller.is_drifting: apply_central_force(forward_direction * sign(controller.linear_input) * drift_speed)
 	else: apply_central_impulse(forward_direction * sign(controller.linear_input) * linear_speed)
 	if linear_velocity.length() > max_linear_speed: linear_velocity = linear_velocity.normalized() * max_linear_speed
+	if not multiplayer.is_server(): return
+	if controller.is_shooting: shoot()

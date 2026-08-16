@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://dap0ih14qy4pi"]
 
 [ext_resource type="Script" uid="uid://bjt002ahl8r3j" path="res://ingame/entities/player/player.gd" id="1_2w6dw"]
-[ext_resource type="Texture2D" uid="uid://ufr4xvpydw1x" path="res://ingame/entities/player/player_regular.png" id="2_1etb5"]
+[ext_resource type="Texture2D" uid="uid://ufr4xvpydw1x" path="res://ingame/entities/tank_pawn/tank_regular.png" id="2_1etb5"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_1etb5"]
 friction = 0.0

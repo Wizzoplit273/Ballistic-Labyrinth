@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://ddfqegio7biil"
-path="res://.godot/imported/player_trap.png-0c548cf338c4a3c4a0a9b36190c0a912.ctex"
+path="res://.godot/imported/tank_trap.png-0b5ea03ff96c209d8e36ee2986e651c3.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://ingame/entities/player/player_trap.png"
-dest_files=["res://.godot/imported/player_trap.png-0c548cf338c4a3c4a0a9b36190c0a912.ctex"]
+source_file="res://ingame/entities/tank_pawn/tank_trap.png"
+dest_files=["res://.godot/imported/tank_trap.png-0b5ea03ff96c209d8e36ee2986e651c3.ctex"]
 
 [params]
 

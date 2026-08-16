@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dx2u4guddwkr2"
-path="res://.godot/imported/player_laser.png-ae2c5092aab919891f9ca4c3959ceefe.ctex"
+path="res://.godot/imported/tank_laser.png-b4c0c507c511c4add4a56a4dd6ae6d65.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://ingame/entities/player/player_laser.png"
-dest_files=["res://.godot/imported/player_laser.png-ae2c5092aab919891f9ca4c3959ceefe.ctex"]
+source_file="res://ingame/entities/tank_pawn/tank_laser.png"
+dest_files=["res://.godot/imported/tank_laser.png-b4c0c507c511c4add4a56a4dd6ae6d65.ctex"]
 
 [params]
 

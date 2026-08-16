@@ -1,7 +1,8 @@
 [gd_scene format=3 uid="uid://cjity5nny1uxh"]
 
 [ext_resource type="Script" uid="uid://ch06pqypfkh4e" path="res://ingame/entities/tank_pawn/tank_pawn.gd" id="1_86qf6"]
-[ext_resource type="Texture2D" uid="uid://ufr4xvpydw1x" path="res://ingame/entities/player/player_regular.png" id="2_q4xwi"]
+[ext_resource type="AudioStream" uid="uid://dhoxj0irluo7u" path="res://ingame/tiles/MAZE_GENERATION_glitch-fx-transitions-10-311812.mp3" id="2_22na7"]
+[ext_resource type="Texture2D" uid="uid://ufr4xvpydw1x" path="res://ingame/entities/tank_pawn/tank_regular.png" id="2_q4xwi"]
 
 [sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_q4xwi"]
 properties/0/path = NodePath(".:linear_velocity")
@@ -22,6 +23,9 @@ properties/4/replication_mode = 2
 properties/5/path = NodePath("NameLabel:text")
 properties/5/spawn = true
 properties/5/replication_mode = 2
+properties/6/path = NodePath(".:texture_path")
+properties/6/spawn = true
+properties/6/replication_mode = 2
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_22na7"]
 size = Vector2(10, 6)
@@ -79,6 +83,11 @@ script = ExtResource("1_86qf6")
 
 [node name="Sync" type="MultiplayerSynchronizer" parent="." unique_id=383817068]
 replication_config = SubResource("SceneReplicationConfig_q4xwi")
+
+[node name="NoAmmoNoise" type="AudioStreamPlayer" parent="." unique_id=1444013312]
+stream = ExtResource("2_22na7")
+volume_db = -14.0
+pitch_scale = 7.0
 
 [node name="ShootCooldown" type="Timer" parent="." unique_id=1120006351]
 wait_time = 0.05

@@ -2,7 +2,7 @@
 
 [ext_resource type="Texture2D" uid="uid://cfp23f081i35a" path="res://ui/noise_texture_1.tres" id="1_dhjtt"]
 [ext_resource type="Script" uid="uid://0h8uvt6dd50p" path="res://ui/lobby/lobby_widget.gd" id="2_7v4du"]
-[ext_resource type="Texture2D" uid="uid://ufr4xvpydw1x" path="res://ingame/entities/player/player_regular.png" id="2_ty1rq"]
+[ext_resource type="Texture2D" uid="uid://ufr4xvpydw1x" path="res://ingame/entities/tank_pawn/tank_regular.png" id="2_ty1rq"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_dhjtt"]
 font_size = 30

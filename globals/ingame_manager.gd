@@ -130,8 +130,6 @@ const NEW_TANK_PAWN_PATH: String = "res://ingame/entities/tank_pawn/tank_pawn.ts
 func place_pawns() -> void:
 	if not NetworkManager.is_online: return
 	if not multiplayer.is_server(): return
-	#bot_count = SEEDED_RNG.randi_range(bot_count_interval.x, bot_count_interval.y)
-	#alive_tanks_count += bot_count
 	var tank_pawn: RigidBody2D = null
 	for sid: int in SessionManager.data.keys():
 		if sid == 0: continue
@@ -149,16 +147,47 @@ func place_pawns() -> void:
 		var selected_cell: Vector2i = ingame.maze_cells.get(ingame.SEEDED_RNG.randi_range(0, ingame.maze_cells.size() - 1))
 		tank_pawn.global_position = ingame.maze_cell_to_world(selected_cell)
 		tank_pawn.rotation = ingame.SEEDED_RNG.randf_range(0, PI * 2)
+		tank_pawn.connect("shoot_bullet", _on_shoot_bullet)
 		ingame.get_node("TankPawns").add_child(tank_pawn, true)
-		#set_bot_personality(tank_pawn)
-		#tank_pawn.bot_friendly_fire = bot_friendly_fire
-		#while ($Players/Player.global_position - tank_pawn.global_position).length() <= MIN_SPAWNPOINT_DISTANCING:
-		#tank_pawn.process_mode = Node.PROCESS_MODE_DISABLED
-		#tank_pawn.visible = false
-		#var ground_tile_size: Vector2i = load(GROUND_TILE_SET).tile_size
-		#tank_pawn.visible = true
-		#if not tank_pawn.is_connected("shoot", _on_bot_shoot):
-			#tank_pawn.connect("shoot", _on_bot_shoot)
-		#if not tank_pawn.is_connected("level_die", _on_bot_level_die):
-			#tank_pawn.connect("level_die", _on_bot_level_die)
-		#tank_pawn.process_mode = Node.PROCESS_MODE_INHERIT
+
+const NEW_BULLET_FILE := "res://ingame/entities/projectiles/bullet.tscn"
+func _on_shoot_bullet(weapon_type: String, tank: RigidBody2D) -> void:
+	if tank == null: return
+	var bullet: RigidBody2D = load(NEW_BULLET_FILE).instantiate()
+	if weapon_type != "regular":
+		tank.equip_weapon("regular")
+	var bullet_offset: float
+	if weapon_type == "regular":
+		bullet_offset = tank.REGULAR_SPAWN_OFFSET
+		bullet.initial_velocity_speed = tank.regular_speed
+		bullet.type = "regular"
+		MasterManager.play_server_sound(ingame.get_node("Sounds/NormalShootNoise"))
+	if weapon_type == "laser":
+		bullet_offset = tank.LASER_SPAWN_OFFSET
+		bullet.initial_velocity_speed = tank.laser_speed
+		bullet.get_node("LifespanTimer").wait_time = tank.laser_lifespan
+		bullet.get_node("Rest/LaserTrail").emitting = true
+		bullet.type = "laser"
+		MasterManager.play_server_sound(ingame.get_node("Sounds/LaserShootNoise"))
+	if weapon_type == "rocket":
+		bullet_offset = tank.ROCKET_SPAWN_OFFSET
+		bullet.initial_velocity_speed = tank.rocket_speed
+		bullet.get_node("LifespanTimer").wait_time = tank.rocket_lifespan
+		bullet.type = "rocket"
+		bullet.room_node = self
+		MasterManager.play_server_sound(ingame.get_node("Sounds/RocketShootNoise"))
+	if weapon_type == "trap":
+		bullet_offset = tank.TRAP_SPAWN_OFFSET
+		bullet.initial_velocity_speed = 0.0
+		bullet.type = "trap"
+		MasterManager.play_server_sound(ingame.get_node("Sounds/TrapPlaceNoise"))
+	bullet.owner_node = tank
+	bullet.initial_velocity_direction = tank.rotation
+	bullet.position = tank.position + Vector2(bullet_offset, 0).rotated(tank.rotation)
+	if weapon_type != "trap": bullet.connect("despawn", on_bullet_despawn)
+	if weapon_type == "regular": tank.fired_bullet_count += 1
+	ingame.get_node("Bullets").add_child(bullet, true)
+
+## connected to each bullet's despawn signal
+func on_bullet_despawn(bullet: RigidBody2D) -> void:
+	if bullet.type == "regular": bullet.owner_node.fired_bullet_count -= 1
