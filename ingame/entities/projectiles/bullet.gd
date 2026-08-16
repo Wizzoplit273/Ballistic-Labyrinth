@@ -98,8 +98,8 @@ func _on_lifespan_timer_timeout() -> void:
 func _on_body_entered(body: Node) -> void:
 	if not $Rest.visible: return
 	if body.get_meta("type", "NULL") == "wall":
-		if type != "laser": $BounceRegular.play()
-		else: $BounceLaser.play()
+		if type != "laser": MasterManager.play_server_sound($BounceRegular)
+		else: MasterManager.play_server_sound($BounceLaser)
 	if body.get_meta("type", "NULL") == "player":
 		body.die()
 		die("tank")
@@ -129,7 +129,7 @@ func die(cause: String) -> void:
 	if cause == "bullet":
 		despawn.emit(self)
 		$DespawnParticles.restart()
-		$BulletHit.play()
+		MasterManager.play_server_sound($BulletHit)
 		return
 
 func _on_despawn_particles_finished() -> void:
