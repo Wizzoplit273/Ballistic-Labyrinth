@@ -22,7 +22,6 @@ func set_pawn() -> void:
 @export var angular_input: int = 0
 
 @export var is_drifting: bool = false
-@export var is_shooting: bool = false
 
 func _ready() -> void:
 	set_process(is_multiplayer_authority())
@@ -31,4 +30,17 @@ func _process(_delta: float) -> void:
 	linear_input = int(Input.get_axis(&"MoveBackward", &"MoveForward"))
 	angular_input = int(Input.get_axis(&"RotateCounterclockwise", &"RotateClockwise"))
 	is_drifting = Input.is_action_pressed(&"Drift")
-	is_shooting = Input.is_action_just_pressed(&"Shoot")
+	if Input.is_action_just_pressed(&"Shoot"): request_shoot()
+
+func request_shoot() -> void:
+	if not NetworkManager.is_online: return
+	if multiplayer.is_server():
+		if pawn == null: return
+		pawn.shoot()
+		return
+	rpc_shoot.rpc_id(1)
+
+@rpc("any_peer", "reliable")
+func rpc_shoot() -> void:
+	if pawn == null: return
+	pawn.shoot()

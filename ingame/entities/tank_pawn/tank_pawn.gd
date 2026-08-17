@@ -43,6 +43,7 @@ func _ready() -> void:
 
 signal shoot_bullet
 func shoot() -> void:
+	if not multiplayer.is_server(): return
 	if not $ShootCooldown.is_stopped(): return
 	if fired_bullet_count >= max_bullet_count:
 		MasterManager.play_server_sound($NoAmmoNoise)
@@ -72,4 +73,3 @@ func _physics_process(_delta: float) -> void:
 	else: apply_central_impulse(forward_direction * sign(controller.linear_input) * linear_speed)
 	if linear_velocity.length() > max_linear_speed: linear_velocity = linear_velocity.normalized() * max_linear_speed
 	if not multiplayer.is_server(): return
-	if controller.is_shooting: shoot()

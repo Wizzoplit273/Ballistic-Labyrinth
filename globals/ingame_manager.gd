@@ -184,10 +184,9 @@ func _on_shoot_bullet(weapon_type: String, tank: RigidBody2D) -> void:
 	bullet.owner_node = tank
 	bullet.initial_velocity_direction = tank.rotation
 	bullet.position = tank.position + Vector2(bullet_offset, 0).rotated(tank.rotation)
-	if weapon_type != "trap": bullet.connect("despawn", on_bullet_despawn)
 	if weapon_type == "regular": tank.fired_bullet_count += 1
 	ingame.get_node("Bullets").add_child(bullet, true)
 
-## connected to each bullet's despawn signal
-func on_bullet_despawn(bullet: RigidBody2D) -> void:
-	if bullet.type == "regular": bullet.owner_node.fired_bullet_count -= 1
+### connected to each bullet's despawn signal
+#func on_bullet_despawn(bullet: RigidBody2D) -> void:
+	#if bullet.type == "regular": bullet.owner_node.fired_bullet_count -= 1

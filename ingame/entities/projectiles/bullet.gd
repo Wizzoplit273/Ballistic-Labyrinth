@@ -1,7 +1,5 @@
 extends RigidBody2D
 
-signal despawn(RigidBody2D)
-
 var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 
 ## initialised by parent level node right after instantiation:
@@ -93,7 +91,6 @@ func _physics_process(_delta: float) -> void:
 
 func _on_lifespan_timer_timeout() -> void:
 	die("lifespan")
-	despawn.emit(self)
 
 func _on_body_entered(body: Node) -> void:
 	if not $Rest.visible: return
@@ -118,16 +115,14 @@ func disable_process_mode() -> void:
 func die(cause: String) -> void:
 	$Rest.visible = false
 	call_deferred("disable_process_mode")
+	if type != "trap": owner_node.fired_bullet_count -= 1
 	if cause == "lifespan":
-		despawn.emit(self)
 		queue_free()
 		return
 	if cause == "tank":
-		despawn.emit(self)
 		$DespawnParticles.restart()
 		return
 	if cause == "bullet":
-		despawn.emit(self)
 		$DespawnParticles.restart()
 		MasterManager.play_server_sound($BulletHit)
 		return
