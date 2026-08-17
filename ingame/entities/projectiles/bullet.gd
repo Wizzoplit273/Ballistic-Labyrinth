@@ -117,7 +117,7 @@ func die(cause: String) -> void:
 	call_deferred("disable_process_mode")
 	if type != "trap": owner_node.fired_bullet_count -= 1
 	if cause == "lifespan":
-		queue_free()
+		if multiplayer.is_server(): queue_free()
 		return
 	if cause == "tank":
 		$DespawnParticles.restart()
@@ -128,4 +128,4 @@ func die(cause: String) -> void:
 		return
 
 func _on_despawn_particles_finished() -> void:
-	queue_free()
+	if multiplayer.is_server(): queue_free()
