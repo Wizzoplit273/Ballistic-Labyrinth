@@ -30,11 +30,9 @@ func network_ready() -> void:
 	type = TYPE_DICTIONARY[rng.randi_range(1, TYPE_DICTIONARY.size())]
 	$Image.texture = load(TEXTURE_PATH_PREFIX + type + TEXTURE_EXTENSION)
 	rotation = rng.randf_range(-PI, PI)
-	process_mode = Node.PROCESS_MODE_INHERIT
 
 signal equip_weapon(tank: RigidBody2D, type: String)
 func _on_body_entered(body: Node2D) -> void:
-	if body.get_meta("type", "NULL") != "player" and body.get_meta("type", "NULL") != "bot": return
-	if type == "trap" and body.get_meta("type", "NULL") == "bot": return
+	if body.get_meta("entity_type", "NULL") != "tank": return
 	equip_weapon.emit(body, type)
-	queue_free()
+	if multiplayer.is_server(): queue_free()
