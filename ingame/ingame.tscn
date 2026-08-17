@@ -239,8 +239,9 @@ scale = Vector2(8, 8)
 tile_set = ExtResource("7_vsf7s")
 metadata/_edit_lock_ = true
 
-[node name="Crates" type="Node2D" parent="." unique_id=294075892]
-metadata/_edit_lock_ = true
+[node name="Crates" type="MultiplayerSpawner" parent="." unique_id=545481319]
+_spawnable_scenes = PackedStringArray("uid://djwj6win8n37e")
+spawn_path = NodePath(".")
 
 [node name="TankPawns" type="MultiplayerSpawner" parent="." unique_id=843171927]
 _spawnable_scenes = PackedStringArray("uid://cjity5nny1uxh")

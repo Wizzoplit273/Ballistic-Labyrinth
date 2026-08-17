@@ -13,6 +13,8 @@ var is_ingame_configured: bool = false
 
 var finished_clients: Array = []
 
+var alive_tanks_count: int = 0
+
 ## this node will have every controller node as a child node so they're easier to access
 
 func _enter_tree() -> void:
@@ -111,6 +113,7 @@ func finish_network_maze_generation() -> void:
 		restart_ingame.rpc_id(pid, current_seed, current_maze_dimensions, false)
 	place_pawns()
 	ingame.toggle_pawns.rpc(true)
+	ingame.activate_crate_spawn_timer()
 
 @rpc("any_peer", "reliable")
 func add_finished_generation() -> void:
@@ -149,6 +152,7 @@ func place_pawns() -> void:
 		tank_pawn.rotation = ingame.SEEDED_RNG.randf_range(0, PI * 2)
 		tank_pawn.connect("shoot_bullet", _on_shoot_bullet)
 		ingame.get_node("TankPawns").add_child(tank_pawn, true)
+		alive_tanks_count += 1
 
 const NEW_BULLET_FILE := "res://ingame/entities/projectiles/bullet.tscn"
 func _on_shoot_bullet(weapon_type: String, tank: RigidBody2D) -> void:

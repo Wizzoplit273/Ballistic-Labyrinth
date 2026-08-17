@@ -22,14 +22,15 @@ var type: String = "NULL"
 const TEXTURE_PATH_PREFIX: String = "res://ingame/entities/crates/crate_"
 const TEXTURE_EXTENSION: String = ".png"
 
-## called by the level scene it's instantiated in
-func modified_ready() -> void:
+var rng_seed: int = 0
+
+func network_ready() -> void:
 	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
+	rng.seed = rng_seed
 	type = TYPE_DICTIONARY[rng.randi_range(1, TYPE_DICTIONARY.size())]
 	$Image.texture = load(TEXTURE_PATH_PREFIX + type + TEXTURE_EXTENSION)
 	rotation = rng.randf_range(-PI, PI)
 	process_mode = Node.PROCESS_MODE_INHERIT
-	visible = true
 
 signal equip_weapon(tank: RigidBody2D, type: String)
 func _on_body_entered(body: Node2D) -> void:

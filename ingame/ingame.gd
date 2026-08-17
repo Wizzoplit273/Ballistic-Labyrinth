@@ -31,12 +31,16 @@ func setup_camera_and_background_noise() -> void:
 
 var is_generation_animated: bool = false
 
+func configure_spawners() -> void:
+	$Crates.spawn_function = spawn_crate
+
 #const TILE_SIZE: int = 16
 ## called by ingame_manager.gd
 func modified_ready(is_animated: bool = false) -> void:
 	is_generation_animated = is_animated
 	process_mode = Node.PROCESS_MODE_INHERIT
 	SEEDED_RNG.seed = IngameManager.current_seed
+	configure_spawners()
 	setup_camera_and_background_noise()
 	create_maze_rectangle()
 	if is_generation_animated: await dimensions_finished
@@ -48,16 +52,12 @@ func modified_ready(is_animated: bool = false) -> void:
 	implement_maze_edges_physics()
 	implement_maze_walls_physics()
 	implement_navigation()
-	#place_player_on_map()
-	#place_bots_on_map()
-	#$Players/Player/Camera.zoom = Vector2.ONE * INGAME_CAMERA_ZOOM
-	#$Players/Player.bullet_count = 0
-	#$Players/Player.process_mode = Node.PROCESS_MODE_INHERIT
-	#$Players/Player.visible = true
-	#$Players/Player/Rest.visible = true
-	#$Timers/CrateSpawnDelay.start()
 	is_finished_loading = true
 	IngameManager.broadcast_generation_finish()
+
+func activate_crate_spawn_timer() -> void:
+	$Timers/CrateSpawnDelay.process_mode = Node.PROCESS_MODE_INHERIT
+	$Timers/CrateSpawnDelay.start()
 
 const SCROLL_VALUE: float = 1.1
 #func _process(_delta: float) -> void:
@@ -720,23 +720,33 @@ func on_bullet_despawn(bullet: RigidBody2D) -> void:
 	if bullet.type == "regular": bullet.owner_node.bullet_count -= 1
 
 var crate_count: int = 0
-const NEW_CRATE_PATH: String = "res://ingame/entities/crates/crate.tscn"
 func _on_crate_spawn_delay_timeout() -> void:
-	if crate_count >= alive_tanks_count: return
-	crate_count += 1
-	$Sounds/CrateSpawnNoise.play()
-	var crate_instance: Area2D = null
-	crate_instance = load(NEW_CRATE_PATH).instantiate()
+	if not multiplayer.is_server(): return
 	var selected_maze_cell: Vector2i = maze_cells[SEEDED_RNG.randi_range(0, maze_cells.size() - 1)]
-	crate_instance.position = maze_cell_to_world(selected_maze_cell)
-	$Crates.add_child(crate_instance)
-	crate_instance.connect("equip_weapon", equip_weapon)
-	crate_instance.modified_ready()
+	var pos: Vector2 = maze_cell_to_world(selected_maze_cell)
+	var spawn_data := {
+		"pos": pos,
+		"seed": SEEDED_RNG.randi()
+	}
+	if crate_count >= IngameManager.alive_tanks_count: return
+	crate_count += 1
+	$Crates.spawn(spawn_data)
+
+const NEW_CRATE_PATH: String = "res://ingame/entities/crates/crate.tscn"
+func spawn_crate(spawn_data: Dictionary) -> Node:
+	$Sounds/CrateSpawnNoise.play()
+	var crate: Area2D = null
+	crate = load(NEW_CRATE_PATH).instantiate()
+	crate.connect("equip_weapon", equip_weapon)
+	crate.position = spawn_data["pos"]
+	crate.rng_seed = spawn_data["seed"]
+	crate.network_ready()
+	return crate
 
 ## connected to crates when one of them gets picked up by a tank
 func equip_weapon(tank: RigidBody2D, type: String) -> void:
 	crate_count -= 1
-	$Sounds/EquipWeaponNoise.play()
+	MasterManager.play_server_sound($Sounds/EquipWeaponNoise)
 	tank.equip_weapon(type)
 
 var alive_tanks_count: int = 0
