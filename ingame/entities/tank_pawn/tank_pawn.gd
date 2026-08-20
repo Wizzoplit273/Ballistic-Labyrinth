@@ -24,6 +24,12 @@ var rocket_lifespan: float = 15.0
 
 var weapon_type: String = "regular"
 
+var label_node: Label
+
+func _notification(what: int) -> void:
+	if what != NOTIFICATION_SCENE_INSTANTIATED: return
+	label_node = %NameLabel
+
 func toggle(value: bool) -> void:
 	if value:
 		visible = true

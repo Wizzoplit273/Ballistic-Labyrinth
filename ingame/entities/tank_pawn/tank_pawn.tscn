@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://ch06pqypfkh4e" path="res://ingame/entities/tank_pawn/tank_pawn.gd" id="1_86qf6"]
 [ext_resource type="AudioStream" uid="uid://dhoxj0irluo7u" path="res://ingame/tiles/MAZE_GENERATION_glitch-fx-transitions-10-311812.mp3" id="2_22na7"]
 [ext_resource type="Texture2D" uid="uid://ufr4xvpydw1x" path="res://ingame/entities/tank_pawn/tank_regular.png" id="2_q4xwi"]
+[ext_resource type="Script" uid="uid://bipqstxff8tf3" path="res://ingame/entities/tank_pawn/name_label_fixed_rotation.gd" id="4_th6qd"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_uusoo"]
 
@@ -70,13 +71,12 @@ scale_min = 0.5
 color_ramp = SubResource("GradientTexture1D_cy2ya")
 
 [sub_resource type="LabelSettings" id="LabelSettings_03ljy"]
-font_size = 10
+font_size = 30
 outline_size = 7
 outline_color = Color(0, 0, 0, 1)
 
 [node name="TankPawn" type="RigidBody2D" unique_id=2062779136]
 process_mode = 4
-visible = false
 collision_layer = 2
 collision_mask = 7
 physics_material_override = SubResource("PhysicsMaterial_uusoo")
@@ -134,12 +134,15 @@ texture = ExtResource("2_q4xwi")
 metadata/_edit_lock_ = true
 
 [node name="NameLabel" type="Label" parent="." unique_id=238060681]
+unique_name_in_owner = true
+process_mode = 1
 offset_right = 40.0
-offset_bottom = 23.0
+offset_bottom = 42.0
 offset_transform_enabled = true
-offset_transform_position_ratio = Vector2(-0.5, -1.6)
+offset_transform_position_ratio = Vector2(-0.5, -0.5)
 offset_transform_visual_only = false
 label_settings = SubResource("LabelSettings_03ljy")
 horizontal_alignment = 1
 vertical_alignment = 1
+script = ExtResource("4_th6qd")
 metadata/_edit_lock_ = true
