@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://ch06pqypfkh4e" path="res://ingame/entities/tank_pawn/tank_pawn.gd" id="1_86qf6"]
 [ext_resource type="AudioStream" uid="uid://dhoxj0irluo7u" path="res://ingame/tiles/MAZE_GENERATION_glitch-fx-transitions-10-311812.mp3" id="2_22na7"]
 [ext_resource type="Texture2D" uid="uid://ufr4xvpydw1x" path="res://ingame/entities/tank_pawn/tank_regular.png" id="2_q4xwi"]
-[ext_resource type="Script" uid="uid://bipqstxff8tf3" path="res://ingame/entities/tank_pawn/name_label_fixed_rotation.gd" id="4_th6qd"]
+[ext_resource type="Script" uid="uid://bipqstxff8tf3" path="res://ingame/entities/tank_pawn/tank_pawn_name_label.gd" id="4_th6qd"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_uusoo"]
 
@@ -71,8 +71,8 @@ scale_min = 0.5
 color_ramp = SubResource("GradientTexture1D_cy2ya")
 
 [sub_resource type="LabelSettings" id="LabelSettings_03ljy"]
-font_size = 30
-outline_size = 7
+font_size = 40
+outline_size = 20
 outline_color = Color(0, 0, 0, 1)
 
 [node name="TankPawn" type="RigidBody2D" unique_id=2062779136]
