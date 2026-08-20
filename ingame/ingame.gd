@@ -61,14 +61,6 @@ func activate_crate_spawn_timer() -> void:
 	$Timers/CrateSpawnDelay.start()
 
 const SCROLL_VALUE: float = 1.1
-#func _process(_delta: float) -> void:
-	#if is_queued_for_deletion(): return
-	#for instance: RigidBody2D in $Bots.get_children():
-		#instance.DEBUG_is_showing_dodging = DEBUG_is_showing_dodging
-		#if instance.target == null: continue
-		#var target_cell: Vector2i = $Map/Ground.local_to_map($Map/Ground.to_local(instance.target.position))
-		#var bot_cell: Vector2i = $Map/Ground.local_to_map($Map/Ground.to_local(instance.position))
-		#instance.is_adjacent_wall_to_target = is_wall_between_cells(target_cell, bot_cell, 2, true)
 
 signal finish_await
 func _on_await_timeout() -> void:
