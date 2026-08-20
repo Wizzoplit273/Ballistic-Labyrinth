@@ -1,5 +1,7 @@
 extends MultiplayerSpawner
 
+## this node will have every controller node as a child node so they're easier to access
+
 ## updated once by origin node, remains constant
 var scene_root: Node = null
 
@@ -14,8 +16,6 @@ var is_ingame_configured: bool = false
 var finished_clients: Array = []
 
 var alive_tanks_count: int = 0
-
-## this node will have every controller node as a child node so they're easier to access
 
 func _enter_tree() -> void:
 	spawn_path = get_path()
@@ -156,38 +156,25 @@ func place_pawns() -> void:
 
 func _on_shoot_bullet(weapon_type: String, tank: RigidBody2D) -> void:
 	if tank == null: return
-	if weapon_type != "regular": tank.equip_weapon.rpc("regular")
+	if weapon_type != "regular":
+		if multiplayer.is_server(): tank.equip_weapon.rpc("regular")
+		else: tank.equip_weapon("regular")
 	var payload: Dictionary = {}
 	var bullet_offset: float
 	if weapon_type == "regular":
 		bullet_offset = tank.REGULAR_SPAWN_OFFSET
 		payload["initial_velocity_speed"] = tank.regular_speed
 		payload["type"] = "regular"
-		#bullet_offset = tank.REGULAR_SPAWN_OFFSET
-		#bullet.initial_velocity_speed = tank.regular_speed
-		#bullet.type = "regular"
-		#MasterManager.play_server_sound(ingame.get_node("Sounds/NormalShootNoise"))
 	if weapon_type == "laser":
 		bullet_offset = tank.LASER_SPAWN_OFFSET
 		payload["initial_velocity_speed"] = tank.laser_speed
 		payload["lifespan"] = tank.laser_lifespan
 		payload["type"] = "laser"
-		#bullet_offset = tank.LASER_SPAWN_OFFSET
-		#bullet.initial_velocity_speed = tank.laser_speed
-		#bullet.get_node("LifespanTimer").wait_time = tank.laser_lifespan
-		#bullet.get_node("Rest/LaserTrail").emitting = true
-		#bullet.type = "laser"
-		#MasterManager.play_server_sound(ingame.get_node("Sounds/LaserShootNoise"))
 	if weapon_type == "rocket":
 		bullet_offset = tank.ROCKET_SPAWN_OFFSET
 		payload["initial_velocity_speed"] = tank.rocket_speed
 		payload["lifespan"] = tank.rocket_lifespan
 		payload["type"] = "rocket"
-		#bullet_offset = tank.ROCKET_SPAWN_OFFSET
-		#bullet.initial_velocity_speed = tank.rocket_speed
-		#bullet.get_node("LifespanTimer").wait_time = tank.rocket_lifespan
-		#bullet.type = "rocket"
-		#MasterManager.play_server_sound(ingame.get_node("Sounds/RocketShootNoise"))
 	if weapon_type == "trap":
 		bullet_offset = tank.TRAP_SPAWN_OFFSET
 		payload["initial_velocity_speed"] = 0.0
@@ -195,13 +182,6 @@ func _on_shoot_bullet(weapon_type: String, tank: RigidBody2D) -> void:
 	payload["owner"] = tank.get_path()
 	payload["initial_velocity_direction"] = tank.rotation
 	payload["position"] = tank.position + Vector2(bullet_offset, 0).rotated(tank.rotation)
-		#bullet_offset = tank.TRAP_SPAWN_OFFSET
-		#bullet.initial_velocity_speed = 0.0
-		#bullet.type = "trap"
-		#MasterManager.play_server_sound(ingame.get_node("Sounds/TrapPlaceNoise"))
-	#bullet.owner_node = tank
-	#bullet.initial_velocity_direction = tank.rotation
-	#bullet.position = tank.position + Vector2(bullet_offset, 0).rotated(tank.rotation)
 	if weapon_type == "regular": tank.fired_bullet_count += 1
 	ingame.get_node("Bullets").spawn(payload)
 

@@ -11,7 +11,7 @@ var owner_node: RigidBody2D = null
 
 var target: Node2D = null
 
-var type: String
+var type: String = "null"
 
 const ROCKET_TEXTURE_PATH: String = "res://ingame/entities/projectiles/bullet_rocket.png"
 const ROCKET_SCALE_MODIFIER_TEXTURE: float = 4.2
@@ -36,8 +36,8 @@ func _ready() -> void:
 		$Rest/Image.scale = Vector2.ONE * TRAP_SCALE_MODIFIER_TEXTURE
 		$Hitbox.scale = Vector2.ONE * TRAP_SCALE_MODIFIER_REST
 		$Rest.scale = Vector2.ONE * TRAP_SCALE_MODIFIER_REST
-		$AnimationPlayer.play("hide_trap")
-	$LifespanTimer.start()
+		$AnimationPlayer.play(&"hide_trap")
+	if type != "trap": $LifespanTimer.start()
 
 func determine_closest_target() -> void:
 	var result: Node2D = owner_node
