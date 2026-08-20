@@ -24,11 +24,6 @@ var rocket_lifespan: float = 15.0
 
 var weapon_type: String = "regular"
 
-@export var texture_path: String:
-	set(path):
-		if path.is_empty(): return
-		$Rest/Image.texture = load(path)
-
 func toggle(value: bool) -> void:
 	if value:
 		visible = true
@@ -55,9 +50,10 @@ func shoot() -> void:
 
 const SKIN_PATH_PREFIX: String = "res://ingame/entities/tank_pawn/tank_"
 const SKIN_EXTENSION: String = ".png"
+@rpc("authority", "reliable", "call_local")
 func equip_weapon(type: String) -> void:
 	weapon_type = type
-	texture_path = SKIN_PATH_PREFIX + type + SKIN_EXTENSION
+	$Rest/Image.texture = load(SKIN_PATH_PREFIX + type + SKIN_EXTENSION)
 
 func _physics_process(_delta: float) -> void:
 	if not controller:

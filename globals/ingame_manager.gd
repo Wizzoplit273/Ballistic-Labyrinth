@@ -159,7 +159,7 @@ func _on_shoot_bullet(weapon_type: String, tank: RigidBody2D) -> void:
 	if tank == null: return
 	var bullet: RigidBody2D = load(NEW_BULLET_FILE).instantiate()
 	if weapon_type != "regular":
-		tank.equip_weapon("regular")
+		tank.equip_weapon.rpc("regular")
 	var bullet_offset: float
 	if weapon_type == "regular":
 		bullet_offset = tank.REGULAR_SPAWN_OFFSET

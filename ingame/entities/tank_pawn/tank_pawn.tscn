@@ -25,9 +25,6 @@ properties/4/replication_mode = 2
 properties/5/path = NodePath("NameLabel:text")
 properties/5/spawn = true
 properties/5/replication_mode = 2
-properties/6/path = NodePath(".:texture_path")
-properties/6/spawn = true
-properties/6/replication_mode = 2
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_22na7"]
 size = Vector2(10, 6)

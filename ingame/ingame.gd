@@ -747,7 +747,7 @@ func spawn_crate(spawn_data: Dictionary) -> Node:
 func equip_weapon(tank: RigidBody2D, type: String) -> void:
 	crate_count -= 1
 	MasterManager.play_server_sound($Sounds/EquipWeaponNoise)
-	tank.equip_weapon(type)
+	tank.equip_weapon.rpc(type)
 
 var alive_tanks_count: int = 0
 
