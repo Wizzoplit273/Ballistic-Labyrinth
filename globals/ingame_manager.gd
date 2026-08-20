@@ -154,42 +154,71 @@ func place_pawns() -> void:
 		ingame.get_node("TankPawns").add_child(tank_pawn, true)
 		alive_tanks_count += 1
 
-const NEW_BULLET_FILE := "res://ingame/entities/projectiles/bullet.tscn"
 func _on_shoot_bullet(weapon_type: String, tank: RigidBody2D) -> void:
 	if tank == null: return
-	var bullet: RigidBody2D = load(NEW_BULLET_FILE).instantiate()
-	if weapon_type != "regular":
-		tank.equip_weapon.rpc("regular")
+	if weapon_type != "regular": tank.equip_weapon.rpc("regular")
+	var payload: Dictionary = {}
 	var bullet_offset: float
 	if weapon_type == "regular":
 		bullet_offset = tank.REGULAR_SPAWN_OFFSET
-		bullet.initial_velocity_speed = tank.regular_speed
-		bullet.type = "regular"
-		MasterManager.play_server_sound(ingame.get_node("Sounds/NormalShootNoise"))
+		payload["initial_velocity_speed"] = tank.regular_speed
+		payload["type"] = "regular"
+		#bullet_offset = tank.REGULAR_SPAWN_OFFSET
+		#bullet.initial_velocity_speed = tank.regular_speed
+		#bullet.type = "regular"
+		#MasterManager.play_server_sound(ingame.get_node("Sounds/NormalShootNoise"))
 	if weapon_type == "laser":
 		bullet_offset = tank.LASER_SPAWN_OFFSET
-		bullet.initial_velocity_speed = tank.laser_speed
-		bullet.get_node("LifespanTimer").wait_time = tank.laser_lifespan
-		bullet.get_node("Rest/LaserTrail").emitting = true
-		bullet.type = "laser"
-		MasterManager.play_server_sound(ingame.get_node("Sounds/LaserShootNoise"))
+		payload["initial_velocity_speed"] = tank.laser_speed
+		payload["lifespan"] = tank.laser_lifespan
+		payload["type"] = "laser"
+		#bullet_offset = tank.LASER_SPAWN_OFFSET
+		#bullet.initial_velocity_speed = tank.laser_speed
+		#bullet.get_node("LifespanTimer").wait_time = tank.laser_lifespan
+		#bullet.get_node("Rest/LaserTrail").emitting = true
+		#bullet.type = "laser"
+		#MasterManager.play_server_sound(ingame.get_node("Sounds/LaserShootNoise"))
 	if weapon_type == "rocket":
 		bullet_offset = tank.ROCKET_SPAWN_OFFSET
-		bullet.initial_velocity_speed = tank.rocket_speed
-		bullet.get_node("LifespanTimer").wait_time = tank.rocket_lifespan
-		bullet.type = "rocket"
-		bullet.room_node = self
-		MasterManager.play_server_sound(ingame.get_node("Sounds/RocketShootNoise"))
+		payload["initial_velocity_speed"] = tank.rocket_speed
+		payload["lifespan"] = tank.rocket_lifespan
+		payload["type"] = "rocket"
+		#bullet_offset = tank.ROCKET_SPAWN_OFFSET
+		#bullet.initial_velocity_speed = tank.rocket_speed
+		#bullet.get_node("LifespanTimer").wait_time = tank.rocket_lifespan
+		#bullet.type = "rocket"
+		#MasterManager.play_server_sound(ingame.get_node("Sounds/RocketShootNoise"))
 	if weapon_type == "trap":
 		bullet_offset = tank.TRAP_SPAWN_OFFSET
-		bullet.initial_velocity_speed = 0.0
-		bullet.type = "trap"
-		MasterManager.play_server_sound(ingame.get_node("Sounds/TrapPlaceNoise"))
-	bullet.owner_node = tank
-	bullet.initial_velocity_direction = tank.rotation
-	bullet.position = tank.position + Vector2(bullet_offset, 0).rotated(tank.rotation)
+		payload["initial_velocity_speed"] = 0.0
+		payload["type"] = "trap"
+	payload["owner"] = tank.get_path()
+	payload["initial_velocity_direction"] = tank.rotation
+	payload["position"] = tank.position + Vector2(bullet_offset, 0).rotated(tank.rotation)
+		#bullet_offset = tank.TRAP_SPAWN_OFFSET
+		#bullet.initial_velocity_speed = 0.0
+		#bullet.type = "trap"
+		#MasterManager.play_server_sound(ingame.get_node("Sounds/TrapPlaceNoise"))
+	#bullet.owner_node = tank
+	#bullet.initial_velocity_direction = tank.rotation
+	#bullet.position = tank.position + Vector2(bullet_offset, 0).rotated(tank.rotation)
 	if weapon_type == "regular": tank.fired_bullet_count += 1
-	ingame.get_node("Bullets").add_child(bullet, true)
+	ingame.get_node("Bullets").spawn(payload)
+
+const NEW_BULLET_FILE := "res://ingame/entities/projectiles/bullet.tscn"
+func spawn_bullet(payload: Dictionary) -> Node:
+	var bullet: RigidBody2D = load(NEW_BULLET_FILE).instantiate()
+	bullet.position = payload["position"]
+	bullet.initial_velocity_speed = payload["initial_velocity_speed"]
+	if payload.has("lifespan"): bullet.get_node("LifespanTimer").wait_time = payload["lifespan"]
+	bullet.type = payload["type"]
+	bullet.initial_velocity_direction = payload["initial_velocity_direction"]
+	bullet.owner_node = get_node(payload["owner"])
+	if bullet.type == "regular": ingame.get_node("Sounds/NormalShootNoise").play()
+	if bullet.type == "laser": ingame.get_node("Sounds/LaserShootNoise").play()
+	if bullet.type == "rocket": ingame.get_node("Sounds/RocketShootNoise").play()
+	if bullet.type == "trap": ingame.get_node("Sounds/TrapPlaceNoise").play()
+	return bullet
 
 ### connected to each bullet's despawn signal
 #func on_bullet_despawn(bullet: RigidBody2D) -> void:

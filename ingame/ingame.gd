@@ -33,6 +33,7 @@ var is_generation_animated: bool = false
 
 func configure_spawners() -> void:
 	$Crates.spawn_function = spawn_crate
+	$Bullets.spawn_function = IngameManager.spawn_bullet
 
 #const TILE_SIZE: int = 16
 ## called by ingame_manager.gd

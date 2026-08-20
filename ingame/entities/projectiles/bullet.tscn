@@ -20,6 +20,12 @@ properties/2/replication_mode = 2
 properties/3/path = NodePath("DespawnParticles:emitting")
 properties/3/spawn = true
 properties/3/replication_mode = 2
+properties/4/path = NodePath("Rest/LaserTrail:emitting")
+properties/4/spawn = true
+properties/4/replication_mode = 2
+properties/5/path = NodePath("Rest/RocketTrail:emitting")
+properties/5/spawn = true
+properties/5/replication_mode = 2
 
 [sub_resource type="Animation" id="Animation_qnes1"]
 length = 0.001
@@ -170,6 +176,7 @@ wait_time = 10.0
 one_shot = true
 
 [node name="Rest" type="Node2D" parent="." unique_id=751397502]
+process_mode = 1
 scale = Vector2(0.1, 0.1)
 metadata/_edit_lock_ = true
 

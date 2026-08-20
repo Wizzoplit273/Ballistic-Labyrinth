@@ -9,8 +9,6 @@ var initial_velocity_direction: float
 var initial_velocity_speed: float
 var owner_node: RigidBody2D = null
 
-var room_node: Node2D = null
-
 var target: Node2D = null
 
 var type: String
@@ -24,6 +22,7 @@ const TRAP_SCALE_MODIFIER_REST: float = 0.4
 func _ready() -> void:
 	if multiplayer.is_server(): process_mode = Node.PROCESS_MODE_INHERIT
 	else: process_mode = Node.PROCESS_MODE_DISABLED
+	if type == "laser": $Rest/LaserTrail.emitting = true
 	apply_central_impulse(Vector2(initial_velocity_speed, 0).rotated(initial_velocity_direction))
 	if type == "rocket":
 		$RocketNavigation.process_mode = Node.PROCESS_MODE_INHERIT
@@ -42,25 +41,18 @@ func _ready() -> void:
 
 func determine_closest_target() -> void:
 	var result: Node2D = owner_node
-	for player: RigidBody2D in room_node.get_node("Players").get_children():
-		if player.get_node("Rest").visible == false: continue
+	for tank: RigidBody2D in IngameManager.ingame.get_node("TankPawns").get_children():
+		if tank.get_node("Rest").visible == false: continue
 		if result.get_node("Rest").visible == false:
-			result = player
+			result = tank
 			continue
-		if position.distance_to(player.position) <= position.distance_to(result.position):
-			result = player
-	for bot: RigidBody2D in room_node.get_node("Bots").get_children():
-		if bot.get_node("Rest").visible == false: continue
-		if result.get_node("Rest").visible == false:
-			result = bot
-			continue
-		if position.distance_to(bot.position) <= position.distance_to(result.position):
-			result = bot
+		if position.distance_to(tank.position) <= position.distance_to(result.position):
+			result = tank
 	$RocketNavigation.target_position = result.position
 	target = result
 
 func _on_rocket_delay_timeout() -> void:
-	$RocketActivate.play()
+	MasterManager.play_server_sound($RocketActivate)
 
 const ROCKET_MAX_TURN_SPEED: float = 0.04
 func configure_if_rocket() -> void:
