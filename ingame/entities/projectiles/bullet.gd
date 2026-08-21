@@ -92,7 +92,7 @@ func _on_body_entered(body: Node) -> void:
 	if body.get_meta("entity_type", "NULL") == "tank":
 		if body.controller != null and owner_node.controller != null:
 			if body.controller.sid != owner_node.controller.sid:
-				SessionManager.increment_kill(body.controller.sid)
+				SessionManager.increment_kill(owner_node.controller.sid)
 		body.die()
 		die("tank")
 	if body.get_meta("entity_type", "NULL") == "bullet":

@@ -745,6 +745,13 @@ func equip_weapon(tank: RigidBody2D, type: String) -> void:
 func _on_death_delay_timeout() -> void:
 	if IngameManager.alive_tanks_count > 1: return
 	$Timers/NextRoundDelay.start()
+	if IngameManager.alive_tanks_count == 1:
+		var winner_controller: Node = null
+		for tank: Node in $TankPawns.get_children():
+			if not tank.get_node("Rest").visible: continue
+			winner_controller = tank.controller
+			break
+		if winner_controller != null: SessionManager.increment_score(winner_controller.sid)
 	MasterManager.play_server_sound($Sounds/NextRoundNoise)
 	process_mode = Node.PROCESS_MODE_DISABLED
 

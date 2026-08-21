@@ -95,7 +95,7 @@ func set_admin(pid: int, is_admin: bool) -> void:
 
 func increment_kill(sid: int) -> void:
 	if sid == 0: return
-	assign_from_str(sid, "kill", str(data[sid].get("kills") + 1))
+	assign_from_str(sid, "kills", str(data[sid].get("kills") + 1))
 
 func increment_score(sid: int) -> void:
 	if sid == 0: return
