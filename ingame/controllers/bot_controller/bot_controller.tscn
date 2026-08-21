@@ -2,5 +2,130 @@
 
 [ext_resource type="Script" uid="uid://hebypaaefciq" path="res://ingame/controllers/bot_controller/bot_controller.gd" id="1_0x8vh"]
 
-[node name="BotController" type="Node" unique_id=442885069]
+[sub_resource type="CircleShape2D" id="CircleShape2D_0x8vh"]
+radius = 225.0
+
+[node name="BotController" type="Node2D" unique_id=1872713169]
+visible = false
 script = ExtResource("1_0x8vh")
+
+[node name="NavAgent" type="NavigationAgent2D" parent="." unique_id=858604142]
+path_desired_distance = 70.0
+target_desired_distance = 260.0
+path_max_distance = 80.0
+path_search_max_polygons = 0
+avoidance_enabled = true
+radius = 100.0
+neighbor_distance = 200.0
+max_neighbors = 1
+time_horizon_agents = 10.0
+debug_use_custom = true
+debug_path_custom_color = Color(0.941074, 7.70092e-07, 0.514228, 1)
+debug_path_custom_point_size = 10.0
+debug_path_custom_line_width = 2.0
+
+[node name="WallStuckCooldown" type="Timer" parent="." unique_id=12529572]
+wait_time = 0.25
+one_shot = true
+
+[node name="TankDetectors" type="Node" parent="." unique_id=1162648115]
+
+[node name="Ray1" type="RayCast2D" parent="TankDetectors" unique_id=1027786019]
+visible = false
+rotation = -1.5707964
+scale = Vector2(3, 3)
+target_position = Vector2(0, 1000)
+collision_mask = 3
+metadata/_edit_lock_ = true
+
+[node name="Ray2" type="RayCast2D" parent="TankDetectors" unique_id=1754856839]
+visible = false
+rotation = -1.7453293
+scale = Vector2(3, 3)
+target_position = Vector2(0, 1000)
+collision_mask = 3
+metadata/_edit_lock_ = true
+
+[node name="Ray3" type="RayCast2D" parent="TankDetectors" unique_id=399580457]
+visible = false
+rotation = -1.3962634
+scale = Vector2(3, 3)
+target_position = Vector2(0, 1000)
+collision_mask = 3
+metadata/_edit_lock_ = true
+
+[node name="Ray4" type="RayCast2D" parent="TankDetectors" unique_id=363676776]
+visible = false
+rotation = -2.0943952
+scale = Vector2(3, 3)
+target_position = Vector2(0, 1000)
+collision_mask = 3
+metadata/_edit_lock_ = true
+
+[node name="Ray5" type="RayCast2D" parent="TankDetectors" unique_id=1388210267]
+visible = false
+rotation = -1.0471976
+scale = Vector2(3, 3)
+target_position = Vector2(0, 1000)
+collision_mask = 3
+metadata/_edit_lock_ = true
+
+[node name="Ray6" type="RayCast2D" parent="TankDetectors" unique_id=1777690179]
+visible = false
+rotation = -3.1415925
+scale = Vector2(3, 3)
+target_position = Vector2(0, 1000)
+collision_mask = 3
+metadata/_edit_lock_ = true
+
+[node name="Ray7" type="RayCast2D" parent="TankDetectors" unique_id=2029145495]
+visible = false
+scale = Vector2(3, 3)
+target_position = Vector2(0, 1000)
+collision_mask = 3
+metadata/_edit_lock_ = true
+
+[node name="Ray8" type="RayCast2D" parent="TankDetectors" unique_id=422198103]
+visible = false
+rotation = -0.87266463
+scale = Vector2(3, 3)
+target_position = Vector2(0, 1000)
+collision_mask = 3
+metadata/_edit_lock_ = true
+
+[node name="Ray9" type="RayCast2D" parent="TankDetectors" unique_id=2027730088]
+visible = false
+rotation = -2.268928
+scale = Vector2(3, 3)
+target_position = Vector2(0, 1000)
+collision_mask = 3
+metadata/_edit_lock_ = true
+
+[node name="Ray10" type="RayCast2D" parent="TankDetectors" unique_id=2053457596]
+visible = false
+rotation = -1.2217305
+scale = Vector2(3.0000002, 3.0000002)
+target_position = Vector2(0, 1000)
+collision_mask = 3
+metadata/_edit_lock_ = true
+
+[node name="Ray11" type="RayCast2D" parent="TankDetectors" unique_id=1304631024]
+visible = false
+rotation = -1.9198622
+scale = Vector2(3.0000002, 3.0000002)
+target_position = Vector2(0, 1000)
+collision_mask = 3
+metadata/_edit_lock_ = true
+
+[node name="BulletDetectionArea" type="Area2D" parent="." unique_id=745746734]
+visible = false
+scale = Vector2(0.2, 0.2)
+collision_layer = 8
+collision_mask = 4
+metadata/_edit_lock_ = true
+
+[node name="HitboxCircle" type="CollisionShape2D" parent="BulletDetectionArea" unique_id=2033158271]
+visible = false
+shape = SubResource("CircleShape2D_0x8vh")
+debug_color = Color(0.807088, 0.071692, 1, 0.42)
+metadata/_edit_lock_ = true

@@ -148,7 +148,6 @@ texture = ExtResource("3_srmle")
 metadata/_edit_lock_ = true
 
 [node name="PlayerDetectors" type="Node2D" parent="Rest" unique_id=1321538283]
-visible = false
 
 [node name="Ray1" type="RayCast2D" parent="Rest/PlayerDetectors" unique_id=935750928]
 rotation = -1.5707964

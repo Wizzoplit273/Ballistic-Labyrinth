@@ -56,6 +56,17 @@ func modified_ready(is_animated: bool = false) -> void:
 	is_finished_loading = true
 	IngameManager.broadcast_generation_finish()
 
+func _process(_delta: float) -> void:
+	if not multiplayer.is_server(): return
+	if is_queued_for_deletion(): return
+	for bot: RigidBody2D in $TankPawns.get_children():
+		if bot.controller == null: continue
+		if bot.controller.sid >= 0: continue
+		if bot.target == null: continue
+		var target_cell: Vector2i = $Map/Ground.local_to_map($Map/Ground.to_local(bot.controller.target.position))
+		var bot_cell: Vector2i = $Map/Ground.local_to_map($Map/Ground.to_local(bot.position))
+		bot.controller.is_adjacent_wall_to_target = is_wall_between_cells(target_cell, bot_cell, 2, true)
+
 func activate_crate_spawn_timer() -> void:
 	$Timers/CrateSpawnDelay.process_mode = Node.PROCESS_MODE_INHERIT
 	$Timers/CrateSpawnDelay.start()

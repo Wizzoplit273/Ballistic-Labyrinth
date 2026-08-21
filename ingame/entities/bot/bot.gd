@@ -23,7 +23,6 @@ var bot_parent_node: Node = null
 var crate_parent_node: Node = null
 var target: Node2D = self
 
-
 var is_adjacent_wall_to_target: bool = false
 var is_dodging_bullets: bool = false
 var DEBUG_is_showing_dodging: bool = false
@@ -114,7 +113,7 @@ func configure_patrol() -> void:
 		$NavigationAgent.target_position = target.global_position
 		is_patrol_set = false
 	if is_patrol_set: $NavigationAgent.target_desired_distance = TARGET_PATROL_DISTANCE
-	else: $NavigationAgent.target_desired_distance = TARGET_DESIRED_DISTANCE 
+	else: $NavigationAgent.target_desired_distance = TARGET_DESIRED_DISTANCE
 
 func configure_reversing() -> void:
 	var is_velocity_stuck: bool = (previous_position - position).length() <= MAX_STUCK_POSITION_CHANGE
