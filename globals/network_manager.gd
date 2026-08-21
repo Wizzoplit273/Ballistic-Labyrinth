@@ -14,6 +14,7 @@ func set_local_online_status(value_online: bool, value_server: bool) -> void:
 	is_online = value_online
 	is_server = value_server
 	if is_online and is_server: SessionManager.turn_local_to_online_profile()
+	UIManager.toggle_admin_options(value_server)
 	UIManager.update_online_status()
 
 func print_console(text: String) -> void:

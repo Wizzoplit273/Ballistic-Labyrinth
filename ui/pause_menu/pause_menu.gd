@@ -3,16 +3,15 @@ extends CanvasLayer
 func _input(_event: InputEvent) -> void:
 	if not Input.is_action_just_pressed("Pause"): return
 	if UIManager.lobby_node.visible and not IngameManager.is_ingame_configured: return
-	visible = not visible
-	get_tree().paused = not get_tree().paused
+	if SessionManager.data[multiplayer.get_unique_id()].get("admin") != true: return
+	MasterManager.set_pause.rpc_id(1, not visible)
 
 func _on_resume_button_pressed() -> void:
-	UIManager.lobby_node.unfocus()
-	visible = false
-	get_tree().paused = false
+	MasterManager.set_pause.rpc_id(1, false)
 
 func _on_end_game_button_pressed() -> void:
-	UIManager.lobby_node.unfocus()
-	visible = false
-	get_tree().paused = false
-	IngameManager.end_ingame()
+	IngameManager.request_end_ingame.rpc_id(1)
+
+func toggle_admin_options(is_admin: bool) -> void:
+	%ResumeButton.visible = is_admin
+	%EndGameButton.visible = is_admin

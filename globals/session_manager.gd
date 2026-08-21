@@ -89,6 +89,10 @@ func set_profile_color(color: Color) -> void:
 	profile_data["color"] = color
 	wrap_request_profile_update()
 
+func set_admin(pid: int, is_admin: bool) -> void:
+	data[pid]["admin"] = is_admin
+	UIManager.toggle_admin_options(is_admin)
+
 @rpc("authority", "reliable")
 func assign_from_str(sid: int, attribute: String, value: String) -> void:
 	if sid == 0 and NetworkManager.is_online: sid = multiplayer.get_unique_id()
@@ -96,8 +100,8 @@ func assign_from_str(sid: int, attribute: String, value: String) -> void:
 	if not data[sid].has(attribute): return
 	if typeof(data[sid][attribute]) == TYPE_BOOL:
 		if attribute == "admin": # stricter console set for admin permission
-			if value == "true": data[sid][attribute] = true
-			else: data[sid][attribute] = false
+			if value == "true": set_admin(sid, true)
+			else: set_admin(sid, false)
 		else:
 			if value == "false" or value == "0": data[sid][attribute] = false
 			else: data[sid][attribute] = true

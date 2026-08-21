@@ -60,3 +60,7 @@ func create_chat_menu() -> void:
 func delete_lobby() -> void:
 	if lobby_node == null: return
 	lobby_node.queue_free()
+
+func toggle_admin_options(is_admin: bool) -> void:
+	if not is_ui_configured: return
+	pause_menu_node.toggle_admin_options(is_admin)

@@ -87,9 +87,17 @@ func restart_ingame(maze_seed: int, maze_dimensions: Vector2i, is_animated: bool
 	await get_tree().process_frame
 	start_ingame(maze_seed, maze_dimensions, is_animated)
 
-@rpc("authority", "reliable")
 func delete_ingame() -> void:
+	if not multiplayer.is_server(): return
 	if ingame == null: return
+	for spawner: Node in ingame.get_children():
+		if not spawner is MultiplayerSpawner: continue
+		for instance: Node in spawner.get_children():
+			instance.free()
+	client_delete_ingame.rpc()
+
+@rpc("authority", "reliable", "call_local")
+func client_delete_ingame() -> void:
 	ingame.queue_free()
 	is_ingame_configured = false
 
@@ -98,7 +106,16 @@ func end_ingame() -> void:
 	delete_ingame()
 	if UIManager.is_ui_configured: UIManager.lobby_node.activate(true)
 	if not NetworkManager.is_online: return
-	if multiplayer.is_server: end_ingame.rpc()
+	if multiplayer.is_server(): end_ingame.rpc()
+
+@rpc("any_peer", "reliable", "call_local")
+func request_end_ingame() -> void:
+	var pid: int = multiplayer.get_remote_sender_id()
+	if not multiplayer.is_server(): return
+	if pid == 0: return
+	if SessionManager.data[pid].get("admin") != true: return
+	MasterManager.set_pause(false)
+	end_ingame()
 
 func _on_ingame_next_round() -> void:
 	delete_ingame()
