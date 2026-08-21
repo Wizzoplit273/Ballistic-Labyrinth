@@ -75,3 +75,10 @@ func _physics_process(_delta: float) -> void:
 	else: apply_central_impulse(forward_direction * sign(controller.linear_input) * linear_speed)
 	if linear_velocity.length() > max_linear_speed: linear_velocity = linear_velocity.normalized() * max_linear_speed
 	if not multiplayer.is_server(): return
+
+## called by bullet scenes that hit the player
+func die() -> void:
+	$Rest.visible = false
+	process_mode = Node.PROCESS_MODE_DISABLED
+	$DeathParticles.restart()
+	IngameManager._on_tank_die()

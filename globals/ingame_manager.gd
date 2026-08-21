@@ -77,7 +77,6 @@ func create_ingame(is_animated: bool = false) -> void:
 	if ingame != null: return
 	ingame = load(INGAME_FILE).instantiate()
 	scene_root.add_child(ingame)
-	ingame.connect("_on_next_round", _on_ingame_next_round)
 	is_ingame_configured = true
 	ingame.modified_ready(is_animated)
 
@@ -120,7 +119,7 @@ func request_end_ingame() -> void:
 func _on_ingame_next_round() -> void:
 	delete_ingame()
 	await get_tree().process_frame
-	create_ingame(true)
+	start_game()
 
 func finish_network_maze_generation() -> void:
 	if not NetworkManager.is_online: return
@@ -150,6 +149,7 @@ const NEW_TANK_PAWN_PATH: String = "res://ingame/entities/tank_pawn/tank_pawn.ts
 func place_pawns() -> void:
 	if not NetworkManager.is_online: return
 	if not multiplayer.is_server(): return
+	alive_tanks_count = 0
 	var tank_pawn: RigidBody2D = null
 	for sid: int in SessionManager.data.keys():
 		if sid == 0: continue
@@ -170,6 +170,12 @@ func place_pawns() -> void:
 		tank_pawn.connect("shoot_bullet", _on_shoot_bullet)
 		ingame.get_node("TankPawns").add_child(tank_pawn, true)
 		alive_tanks_count += 1
+
+## directly called by destroyed tanks
+func _on_tank_die() -> void:
+	alive_tanks_count -= 1
+	MasterManager.play_server_sound(ingame.get_node(^"Sounds/DeathNoise"))
+	if alive_tanks_count <= 1: ingame.get_node(^"Timers/DeathDelay").start()
 
 func _on_shoot_bullet(weapon_type: String, tank: RigidBody2D) -> void:
 	if tank == null: return

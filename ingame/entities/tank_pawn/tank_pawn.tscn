@@ -26,6 +26,12 @@ properties/4/replication_mode = 2
 properties/5/path = NodePath("NameLabel:text")
 properties/5/spawn = true
 properties/5/replication_mode = 2
+properties/6/path = NodePath("DeathParticles:emitting")
+properties/6/spawn = true
+properties/6/replication_mode = 2
+properties/7/path = NodePath("Rest:visible")
+properties/7/spawn = true
+properties/7/replication_mode = 2
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_22na7"]
 size = Vector2(10, 6)
@@ -129,7 +135,6 @@ scale = Vector2(2.5, 2.5)
 metadata/_edit_lock_ = true
 
 [node name="Image" type="Sprite2D" parent="Rest" unique_id=2040168764]
-modulate = Color(0.9293644, 0.7059703, 0.20295957, 1)
 texture = ExtResource("2_q4xwi")
 metadata/_edit_lock_ = true
 

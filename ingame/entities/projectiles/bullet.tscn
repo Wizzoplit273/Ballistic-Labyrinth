@@ -127,7 +127,7 @@ contact_monitor = true
 max_contacts_reported = 2
 script = ExtResource("2_wrvnv")
 metadata/_edit_lock_ = true
-metadata/type = "bullet"
+metadata/entity_type = "bullet"
 
 [node name="Sync" type="MultiplayerSynchronizer" parent="." unique_id=1712751378]
 replication_config = SubResource("SceneReplicationConfig_qnes1")

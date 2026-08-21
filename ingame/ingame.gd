@@ -409,7 +409,7 @@ func implement_maze_edges_physics() -> void:
 	%UpEdgeWall.position.y = 0
 	%UpEdgeWall.scale.x = IngameManager.current_maze_dimensions.x * $Map/Ground.scale.x * $Map/Ground.scale.x / $Map/Walls.scale.x
 	for body: StaticBody2D in $Map/Edges.get_children():
-		body.set_meta("type", "wall")
+		body.set_meta("entity_type", "wall")
 
 const TILE_MAZE_WALL_PATH: String = "res://ingame/tiles/tile_maze_wall.png"
 var EFFECTIVE_TILE_WIDTH: int = load(TILE_MAZE_WALL_PATH).get_width() - 1
@@ -417,7 +417,7 @@ func implement_maze_walls_physics() -> void:
 	implement_maze_horizontal_walls_physics()
 	implement_maze_vertical_walls_physics()
 	for body: StaticBody2D in $Map/PhysicsWalls.get_children():
-		body.set_meta("type", "wall")
+		body.set_meta("entity_type", "wall")
 
 func new_collision_shape() -> CollisionShape2D:
 	var physics_shape_ref: CollisionShape2D = CollisionShape2D.new()
@@ -535,22 +535,22 @@ func maze_cell_to_world(selected_cell: Vector2i) -> Vector2:
 
 const GROUND_TILE_SET: String = "res://ingame/tiles/base_tileset.tres"
 const OFFSET_SUBTRACT: float = 20.0
-func place_player_on_map() -> void:
-	var selected_cell: Vector2i
-	#var ground_tile_size: Vector2i = load(GROUND_TILE_SET).tile_size
-	selected_cell = maze_cells.get(SEEDED_RNG.randi_range(0, maze_cells.size() - 1))
-	var selected_position: Vector2 = maze_cell_to_world(selected_cell)
-	$Players/Player.position = selected_position
-	var offset_vector: Vector2
-	var max_offset_scalar: Vector2 = $Map/Ground.scale / 2 - Vector2.ONE * OFFSET_SUBTRACT
-	offset_vector.x = SEEDED_RNG.randf_range(-max_offset_scalar.x, max_offset_scalar.x)
-	offset_vector.y = SEEDED_RNG.randf_range(-max_offset_scalar.y, max_offset_scalar.y)
-	$Players/Player.position += offset_vector
-	$Players/Player.rotation = SEEDED_RNG.randf_range(0, PI * 2)
-	$Players/Player.visible = true
-	$Players/Player.process_mode = Node.PROCESS_MODE_INHERIT
-	#$Players/Player.modulate = player_color
-	alive_tanks_count += 1
+#func place_player_on_map() -> void:
+	#var selected_cell: Vector2i
+	##var ground_tile_size: Vector2i = load(GROUND_TILE_SET).tile_size
+	#selected_cell = maze_cells.get(SEEDED_RNG.randi_range(0, maze_cells.size() - 1))
+	#var selected_position: Vector2 = maze_cell_to_world(selected_cell)
+	#$Players/Player.position = selected_position
+	#var offset_vector: Vector2
+	#var max_offset_scalar: Vector2 = $Map/Ground.scale / 2 - Vector2.ONE * OFFSET_SUBTRACT
+	#offset_vector.x = SEEDED_RNG.randf_range(-max_offset_scalar.x, max_offset_scalar.x)
+	#offset_vector.y = SEEDED_RNG.randf_range(-max_offset_scalar.y, max_offset_scalar.y)
+	#$Players/Player.position += offset_vector
+	#$Players/Player.rotation = SEEDED_RNG.randf_range(0, PI * 2)
+	#$Players/Player.visible = true
+	#$Players/Player.process_mode = Node.PROCESS_MODE_INHERIT
+	##$Players/Player.modulate = player_color
+	#alive_tanks_count += 1
 
 const ENEMY_LINEAR_SPEED_DEVIATION: float = 30.0
 const ENEMY_ANGULAR_SPEED_DEVIATION: float = 100.0
@@ -573,44 +573,44 @@ func set_bot_personality(bot: RigidBody2D) -> void:
 	bot.FLANK_MAX_INTERVAL += randf_range(-ENEMY_FLANK_MAX_INTERVAL_DEVIATION, ENEMY_FLANK_MAX_INTERVAL_DEVIATION)
 	bot.FLANK_FRONT_DISTANCE += randf_range(-ENEMY_FRONT_DISTANCE_DEVIATION, ENEMY_FRONT_DISTANCE_DEVIATION)
 
-@export var MIN_SPAWNPOINT_DISTANCING: float = 800.0
-var bot_count: int
-const NEW_ENEMY_INSTANCE_PATH: String = "res://ingame/entities/bot/bot.tscn"
-var bot_count_interval: Vector2i = Vector2i(3, 10)
-func place_bots_on_map() -> void:
-	bot_count = SEEDED_RNG.randi_range(bot_count_interval.x, bot_count_interval.y)
-	alive_tanks_count += bot_count
-	var tank_pawn: RigidBody2D = null
-	for index: int in range(0, bot_count):
-		tank_pawn = load(NEW_ENEMY_INSTANCE_PATH).instantiate()
-		set_bot_personality(tank_pawn)
-		$Bots.add_child(tank_pawn)
-		tank_pawn.global_position = $Players/Player.global_position
-		tank_pawn.player_parent_node = $Players
-		tank_pawn.bot_parent_node = $Bots
-		tank_pawn.crate_parent_node = $Crates
-		tank_pawn.bot_friendly_fire = bot_friendly_fire
-		while ($Players/Player.global_position - tank_pawn.global_position).length() <= MIN_SPAWNPOINT_DISTANCING:
-			tank_pawn.process_mode = Node.PROCESS_MODE_DISABLED
-			tank_pawn.visible = false
-			var selected_cell: Vector2i
-			#var ground_tile_size: Vector2i = load(GROUND_TILE_SET).tile_size
-			selected_cell = maze_cells.get(SEEDED_RNG.randi_range(0, maze_cells.size() - 1))
-			var selected_position: Vector2 = maze_cell_to_world(selected_cell)
-			tank_pawn.position = selected_position
-			var offset_vector: Vector2
-			var max_offset_scalar: Vector2 = $Map/Ground.scale / 2 - Vector2.ONE * OFFSET_SUBTRACT
-			offset_vector.x = SEEDED_RNG.randf_range(-max_offset_scalar.x, max_offset_scalar.x)
-			offset_vector.y = SEEDED_RNG.randf_range(-max_offset_scalar.y, max_offset_scalar.y)
-			tank_pawn.position += offset_vector
-			tank_pawn.rotation = SEEDED_RNG.randf_range(0, PI * 2)
-			tank_pawn.visible = true
-			if not tank_pawn.is_connected("shoot", _on_bot_shoot):
-				tank_pawn.connect("shoot", _on_bot_shoot)
-			if not tank_pawn.is_connected("level_die", _on_bot_level_die):
-				tank_pawn.connect("level_die", _on_bot_level_die)
-			tank_pawn.process_mode = Node.PROCESS_MODE_INHERIT
-			#tank_pawn.get_node("Rest/Image").scale += Vector2.ONE * SEEDED_RNG.randf_range(-0.1, 0.1)
+#@export var MIN_SPAWNPOINT_DISTANCING: float = 800.0
+#var bot_count: int
+#const NEW_ENEMY_INSTANCE_PATH: String = "res://ingame/entities/bot/bot.tscn"
+#var bot_count_interval: Vector2i = Vector2i(3, 10)
+#func place_bots_on_map() -> void:
+	#bot_count = SEEDED_RNG.randi_range(bot_count_interval.x, bot_count_interval.y)
+	#alive_tanks_count += bot_count
+	#var tank_pawn: RigidBody2D = null
+	#for index: int in range(0, bot_count):
+		#tank_pawn = load(NEW_ENEMY_INSTANCE_PATH).instantiate()
+		#set_bot_personality(tank_pawn)
+		#$Bots.add_child(tank_pawn)
+		#tank_pawn.global_position = $Players/Player.global_position
+		#tank_pawn.player_parent_node = $Players
+		#tank_pawn.bot_parent_node = $Bots
+		#tank_pawn.crate_parent_node = $Crates
+		#tank_pawn.bot_friendly_fire = bot_friendly_fire
+		#while ($Players/Player.global_position - tank_pawn.global_position).length() <= MIN_SPAWNPOINT_DISTANCING:
+			#tank_pawn.process_mode = Node.PROCESS_MODE_DISABLED
+			#tank_pawn.visible = false
+			#var selected_cell: Vector2i
+			##var ground_tile_size: Vector2i = load(GROUND_TILE_SET).tile_size
+			#selected_cell = maze_cells.get(SEEDED_RNG.randi_range(0, maze_cells.size() - 1))
+			#var selected_position: Vector2 = maze_cell_to_world(selected_cell)
+			#tank_pawn.position = selected_position
+			#var offset_vector: Vector2
+			#var max_offset_scalar: Vector2 = $Map/Ground.scale / 2 - Vector2.ONE * OFFSET_SUBTRACT
+			#offset_vector.x = SEEDED_RNG.randf_range(-max_offset_scalar.x, max_offset_scalar.x)
+			#offset_vector.y = SEEDED_RNG.randf_range(-max_offset_scalar.y, max_offset_scalar.y)
+			#tank_pawn.position += offset_vector
+			#tank_pawn.rotation = SEEDED_RNG.randf_range(0, PI * 2)
+			#tank_pawn.visible = true
+			#if not tank_pawn.is_connected("shoot", _on_bot_shoot):
+				#tank_pawn.connect("shoot", _on_bot_shoot)
+			#if not tank_pawn.is_connected("level_die", _on_bot_level_die):
+				#tank_pawn.connect("level_die", _on_bot_level_die)
+			#tank_pawn.process_mode = Node.PROCESS_MODE_INHERIT
+			##tank_pawn.get_node("Rest/Image").scale += Vector2.ONE * SEEDED_RNG.randf_range(-0.1, 0.1)
 
 const NEW_BULLET_PATH: String = "res://ingame/entities/projectiles/bullet.tscn"
 const REGULAR_SPAWN_OFFSET: float = 26.0
@@ -742,27 +742,10 @@ func equip_weapon(tank: RigidBody2D, type: String) -> void:
 	MasterManager.play_server_sound($Sounds/EquipWeaponNoise)
 	tank.equip_weapon.rpc(type)
 
-var alive_tanks_count: int = 0
-
-var player_score: int = 0
-var bot_score: int = 0
-
-func _on_player_level_die() -> void:
-	alive_tanks_count -= 1
-	$Sounds/DeathNoise.play()
-	if alive_tanks_count <= 1:
-		$Timers/DeathDelay.start()
-
-func _on_bot_level_die() -> void:
-	alive_tanks_count -= 1
-	$Sounds/DeathNoise.play()
-	if alive_tanks_count <= 1:
-		$Timers/DeathDelay.start()
-
 func _on_death_delay_timeout() -> void:
-	if alive_tanks_count > 1: return
+	if IngameManager.alive_tanks_count > 1: return
 	$Timers/NextRoundDelay.start()
-	$Sounds/NextRoundNoise.play()
+	MasterManager.play_server_sound($Sounds/NextRoundNoise)
 	process_mode = Node.PROCESS_MODE_DISABLED
 
 func reset() -> void:
@@ -784,9 +767,8 @@ func reset() -> void:
 	for bot: Node in $Bots.get_children():
 		bot.queue_free()
 
-signal _on_next_round()
 func _on_next_round_delay_timeout() -> void:
-	_on_next_round.emit()
+	IngameManager._on_ingame_next_round()
 
 @rpc("authority", "reliable", "call_local")
 func toggle_pawns(value: bool) -> void:

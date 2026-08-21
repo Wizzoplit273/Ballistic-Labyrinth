@@ -93,6 +93,14 @@ func set_admin(pid: int, is_admin: bool) -> void:
 	data[pid]["admin"] = is_admin
 	UIManager.toggle_admin_options(is_admin)
 
+func increment_kill(sid: int) -> void:
+	if sid == 0: return
+	assign_from_str(sid, "kill", str(data[sid].get("kills") + 1))
+
+func increment_score(sid: int) -> void:
+	if sid == 0: return
+	assign_from_str(sid, "score", str(data[sid].get("score") + 1))
+
 @rpc("authority", "reliable")
 func assign_from_str(sid: int, attribute: String, value: String) -> void:
 	if sid == 0 and NetworkManager.is_online: sid = multiplayer.get_unique_id()
