@@ -62,7 +62,7 @@ func _process(_delta: float) -> void:
 	for bot: RigidBody2D in $TankPawns.get_children():
 		if bot.controller == null: continue
 		if bot.controller.sid >= 0: continue
-		if bot.target == null: continue
+		if bot.controller.target == null: continue
 		var target_cell: Vector2i = $Map/Ground.local_to_map($Map/Ground.to_local(bot.controller.target.position))
 		var bot_cell: Vector2i = $Map/Ground.local_to_map($Map/Ground.to_local(bot.position))
 		bot.controller.is_adjacent_wall_to_target = is_wall_between_cells(target_cell, bot_cell, 2, true)

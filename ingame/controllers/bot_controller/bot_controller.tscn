@@ -28,6 +28,14 @@ debug_path_custom_line_width = 2.0
 wait_time = 0.25
 one_shot = true
 
+[node name="ShootingCooldown" type="Timer" parent="." unique_id=777462352]
+wait_time = 0.5
+one_shot = true
+
+[node name="PathStuckDelay" type="Timer" parent="." unique_id=898507262]
+process_callback = 0
+one_shot = true
+
 [node name="TankDetectors" type="Node" parent="." unique_id=1162648115]
 
 [node name="Ray1" type="RayCast2D" parent="TankDetectors" unique_id=1027786019]
@@ -129,3 +137,5 @@ visible = false
 shape = SubResource("CircleShape2D_0x8vh")
 debug_color = Color(0.807088, 0.071692, 1, 0.42)
 metadata/_edit_lock_ = true
+
+[connection signal="timeout" from="PathStuckDelay" to="." method="_on_path_stuck_delay_timeout"]

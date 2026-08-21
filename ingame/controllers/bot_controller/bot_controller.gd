@@ -26,30 +26,40 @@ var target: Node2D = null
 var is_adjacent_wall_to_target: bool = false ## determined by IngameManager.ingame
 var is_dodging_bullets: bool = false
 
-func _physics_process(_delta: float) -> void:
+func apply_angular_input(rot: float, delta: float) -> void:
+	if pawn == null: return
+	var diff: float = angle_difference(rotation, rot)
+	var max_step: float = pawn.angular_speed * delta
+	if abs(diff) > max_step: angular_input = sign(diff)
+	#else: angular_input = 0
+
+func apply_linear_input() -> void:
+	if is_reversing: linear_input = -1
+	else: linear_input = 1
+
+func _physics_process(delta: float) -> void:
 	if not multiplayer.is_server(): return
 	if pawn == null: return
+	if pawn.get_node(^"Rest").visible == false: return
 	global_position = pawn.global_position
 	rotation = pawn.rotation
-	if not pawn.get_node(^"Rest").visible: return
 	determine_target()
 	check_nearby_bullets()
 	configure_patrol()
-	if target == self: return
+	if target == null: return
 	point_to_target_if_seen()
-	configure_process_mode()
-	configure_debug()
+	configure_nav_agent_process()
 	configure_reversing()
 	if ($NavAgent.is_target_reached() and is_adjacent_wall_to_target):
-		if not target is StaticBody2D: $NavAgent.target_desired_distance = 1000.0
-	elif target is StaticBody2D:
+		if target.get_meta("entity_type", "null") != "crate": $NavAgent.target_desired_distance = 1000.0
+	elif target.get_meta("entity_type", "null") == "crate":
 		$NavAgent.target_desired_distance = CRATE_DESIRED_DISTANCE
 	else: $NavAgent.target_desired_distance = TARGET_DESIRED_DISTANCE
 	if $NavAgent.is_navigation_finished() and not is_adjacent_wall_to_target and not is_dodging_bullets:
-		if not target is Area2D:
+		if target.get_meta("entity_type", "null") != "crate":
 			var was_patroling: bool = is_patrol_set
 			is_patrol_set = false
-			if not target.get_node("Rest").visible: return
+			if target == null: return
 			var auxiliary: float = rotation
 			var direction_to_player: float
 			look_at(target.position)
@@ -62,22 +72,30 @@ func _physics_process(_delta: float) -> void:
 					$ShootingCooldown.start()
 					direction_deviation = randf_range(-DIRECTION_DEVIATION, DIRECTION_DEVIATION)
 					rotation += direction_deviation
-					shoot.emit(self, weapon_type)
+					#shoot.emit(self, weapon_type)
 			return
 	var next_point: Vector2 = $NavAgent.get_next_path_position()
 	var direction: Vector2 = (next_point - global_position).normalized()
-	if target.get_node("Rest").visible:
+	if target != null:
 		rotation = lerp_angle(rotation, direction.angle(), ROTATION_INTERPOLATION_WEIGHT)
 	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
-	if target.get_node("Rest").visible or is_dodging_bullets:
+	if target != null or is_dodging_bullets:
 		rotation += rng.randf_range(-ANGLE_DILATION, ANGLE_DILATION)
-		linear_velocity = Vector2.RIGHT.rotated(rotation) * LINEAR_SPEED * (1 - int(is_reversing) * 2)
 	#if position.distance_to($NavAgent.get_next_path_position()) <= PATH_STUCK_DISTANCE:
 	if not $PathStuckDelay.is_stopped():
-		initial_path_stuck_distance = position.distance_to($NavAgent.get_next_path_position())
+		initial_path_stuck_distance = global_position.distance_to($NavAgent.get_next_path_position())
 		$PathStuckDelay.start()
+	apply_angular_input(rotation, delta)
+	apply_linear_input()
 	previous_position = position
 	previous_rotation = rotation
+
+var initial_path_stuck_distance: float = 0.0
+const PATH_STUCK_DISTANCE: float = 3000.0
+func _on_path_stuck_delay_timeout() -> void:
+	var current_polygon_distance: float = global_position.distance_to($NavAgent.get_next_path_position())
+	if current_polygon_distance > PATH_STUCK_DISTANCE: return
+	if abs(current_polygon_distance - initial_path_stuck_distance) <= 10.0: is_path_stuck = true
 
 #func _ready() -> void:
 	#$NavAgent.max_speed = LINEAR_SPEED
@@ -95,10 +113,10 @@ var previous_rotation: float = 0.0
 
 func point_to_target_if_seen() -> void:
 	if target == self: return
-	for ray: RayCast2D in $Rest/PlayerDetectors.get_children():
+	for ray: RayCast2D in $TankDetectors.get_children():
 		if ray.get_collider() != target: continue
 		$NavAgent.target_position = target.global_position
-		if position.distance_to(target.global_position) >= FLANK_RADIUS:
+		if global_position.distance_to(target.global_position) >= FLANK_RADIUS:
 			is_patrol_set = true
 		else: is_patrol_set = false
 		return
@@ -117,11 +135,17 @@ func determine_target() -> void:
 	for tank: RigidBody2D in IngameManager.ingame.get_node(^"TankPawns").get_children():
 		if tank == pawn: continue
 		if tank.get_node("Rest").visible == false: continue
-		if position.distance_to(tank.position) < position.distance_to(target.position):
+		if target == null:
+			target = tank
+			continue
+		if global_position.distance_to(tank.position) < global_position.distance_to(target.position):
 			target = tank
 	for crate: Area2D in IngameManager.ingame.get_node(^"Crates").get_children():
 		if crate.type == "trap": continue # temporary
-		if position.distance_to(crate.position) < position.distance_to(target.position):
+		if target == null:
+			target = crate
+			continue
+		if global_position.distance_to(crate.position) < global_position.distance_to(target.position):
 			target = crate
 	if target == null: return # may need some more code at this if statement
 	if is_patrol_set: return
@@ -132,7 +156,7 @@ func determine_target() -> void:
 var is_path_stuck: bool = false
 func configure_patrol() -> void:
 	if target == null:
-		$NavAgent.target_position = position
+		$NavAgent.target_position = global_position
 		is_patrol_set = false
 		return
 	if is_path_stuck:
@@ -140,10 +164,10 @@ func configure_patrol() -> void:
 		$NavAgent.target_position = target.position
 		is_patrol_set = true
 		return
-	if position.distance_to(target.global_position) >= FLANK_RESET:
+	if global_position.distance_to(target.global_position) >= FLANK_RESET:
 		$NavAgent.target_position = target.global_position
 		is_patrol_set = false
-	elif position.distance_to(target.global_position) >= FLANK_RADIUS:
+	elif global_position.distance_to(target.global_position) >= FLANK_RADIUS:
 		if is_patrol_set: return ## ensures that this block only executes once when it detects a change in radius
 		var random_sign: float
 		var random_x: float = randf_range(FLANK_MIN_INTERVAL, FLANK_MAX_INTERVAL)
@@ -165,7 +189,7 @@ func configure_patrol() -> void:
 	else: $NavAgent.target_desired_distance = TARGET_DESIRED_DISTANCE
 
 func configure_reversing() -> void:
-	var is_velocity_stuck: bool = (previous_position - position).length() <= MAX_STUCK_POSITION_CHANGE
+	var is_velocity_stuck: bool = (previous_position - global_position).length() <= MAX_STUCK_POSITION_CHANGE
 	var is_angle_stuck: bool = abs(previous_rotation - rotation) <= MAX_STUCK_ROTATION_CHANGE
 	var is_stuck: bool = is_velocity_stuck and is_angle_stuck
 	if not is_reversing and not $NavAgent.is_target_reached() and is_stuck:
@@ -197,7 +221,7 @@ func check_nearby_bullets() -> void:
 func is_bullet_dangerous(bullet: RigidBody2D) -> bool:
 	if bullet == null: return false
 	if bullet.get_meta("entity_type", "NULL") != "bullet": return false
-	if (previous_position - position).length() == 0.0:
+	if (previous_position - global_position).length() == 0.0:
 		#if not bullet.has_node("VelocityRaycast"): return false
 		var is_raycast_hitting_bot: bool = bullet.get_node(^"Rest/VelocityRaycast1").get_collider() == self
 		is_raycast_hitting_bot = is_raycast_hitting_bot or bullet.get_node(^"Rest/VelocityRaycast2").get_collider() == self
@@ -210,6 +234,8 @@ func is_bullet_dangerous(bullet: RigidBody2D) -> bool:
 
 ## whether it's a bullet is verified by the is_bullet_dangerous() function
 const PERPENDICULAR_VELOCITY_DOT_OFFSET: float = 75.0
+@export var ROTATION_INTERPOLATION_WEIGHT: float = 0.1
+@export var ANGLE_DILATION: float = 0.1
 #const MAX_BULLET_STOP_DISTANCE: float = 20.0
 func dodge_bullet(bullet: RigidBody2D) -> void:
 	var bullet_velocity_direction: Vector2 = bullet.linear_velocity.normalized()

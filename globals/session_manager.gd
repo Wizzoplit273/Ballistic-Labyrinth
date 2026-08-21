@@ -38,7 +38,7 @@ func add_session(session_id: int, profile: Dictionary) -> void:
 	if not multiplayer.is_server(): return
 	add_session.rpc(session_id, profile)
 
-@rpc("authority", "reliable")
+@rpc("authority", "reliable", "call_local")
 func add_bot(count: int = 1) -> void:
 	if count <= 0: return
 	var new_sid: int = -1
@@ -54,9 +54,6 @@ func add_bot(count: int = 1) -> void:
 		})
 		count -= 1
 	UIManager.update_lobby_register()
-	if not NetworkManager.is_online: return
-	if not multiplayer.is_server(): return
-	add_bot.rpc(count)
 
 @rpc("authority", "reliable")
 func remove_bot_sid(sid: int) -> void:

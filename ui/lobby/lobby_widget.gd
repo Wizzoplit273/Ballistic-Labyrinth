@@ -23,12 +23,12 @@ func get_score() -> int:
 @onready var kills_ui: Label = $Container/KillsScoreContainer/KillsLabel
 @onready var score_ui: Label = $Container/KillsScoreContainer/ScoreLabel
 
-func update(profile_key: int, profile: Dictionary) -> void:
+func update(profile_key: int) -> void:
 	set_session_id(profile_key)
-	set_username(profile["name"])
-	set_color(profile["color"])
-	set_kills(profile["kills"])
-	set_score(profile["score"])
+	set_username(SessionManager.data[profile_key].get("name"))
+	set_color(SessionManager.data[profile_key].get("color"))
+	set_kills(SessionManager.data[profile_key].get("kills"))
+	set_score(SessionManager.data[profile_key].get("score"))
 
 func set_session_id(sid: int) -> void:
 	$Container/SessionIDLabel.text = SID_LABEL_PREFIX + SessionManager.encode_session_id(sid)

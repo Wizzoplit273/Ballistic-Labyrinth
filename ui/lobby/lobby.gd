@@ -12,12 +12,7 @@ const CLOSE_SERVER_CONFIRM: String = "Are you sure you want to close this server
 func update_lobby_register() -> void:
 	if not NetworkManager.is_online:
 		for lobby_widget: Node in %SessionsList.get_children():
-			if lobby_widget.get_session_id() == 0: continue
-			lobby_widget.free()
-		if %SessionsList.get_child_count() == 0:
-			create_lobby_widget(0, SessionManager.profile_data)
-			return
-		%SessionsList.get_child(0).update(0, SessionManager.profile_data)
+			lobby_widget.queue_free()
 		return
 	var sid_ui: int
 	var temp_registry: Dictionary = SessionManager.data.duplicate(true)
@@ -27,16 +22,16 @@ func update_lobby_register() -> void:
 			lobby_widget.queue_free()
 			continue
 		if temp_registry.has(sid_ui):
-			lobby_widget.update(sid_ui, temp_registry[sid_ui])
+			lobby_widget.update(sid_ui)
 			temp_registry.erase(sid_ui)
 		else: lobby_widget.queue_free()
 	for profile_key: int in temp_registry.keys():
-		create_lobby_widget(profile_key, temp_registry[profile_key])
+		create_lobby_widget(profile_key)
 
-func create_lobby_widget(profile_key: int, profile: Dictionary) -> void:
+func create_lobby_widget(profile_key: int) -> void:
 	if profile_key == 0 and NetworkManager.is_online: return
 	var lobby_widget: Control = load(LOBBY_WIDGET_FILE).instantiate()
-	lobby_widget.update(profile_key, profile)
+	lobby_widget.update(profile_key)
 	%SessionsList.add_child(lobby_widget)
 
 func update_online_status() -> void:
@@ -55,9 +50,9 @@ func update_online_status() -> void:
 func oneshot_update_lobby_register() -> void:
 	if NetworkManager.is_online and multiplayer.is_server():
 		if %SessionsList.get_child_count() == 0:
-			create_lobby_widget(1, SessionManager.profile_data)
+			create_lobby_widget(1)
 			return
-		%SessionsList.get_child(0).update(1, SessionManager.profile_data)
+		%SessionsList.get_child(0).update(1)
 		return
 
 func _ready() -> void:
