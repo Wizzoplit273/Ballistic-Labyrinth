@@ -40,8 +40,8 @@ size = Vector2(10, 6)
 size = Vector2(16, 13)
 
 [sub_resource type="Gradient" id="Gradient_ll50v"]
-offsets = PackedFloat32Array(0.17307693, 0.53846157, 0.86538464)
-colors = PackedColorArray(0.5781947, 0.57819486, 0, 1, 0.6347943, 0.5059565, 0.20497683, 1, 0.81213886, 0.73213935, 0.33107692, 1)
+offsets = PackedFloat32Array(0.17307693, 0.5555556, 0.86538464)
+colors = PackedColorArray(0.48124474, 0.4726839, 0.46283215, 1, 0.6612084, 0.648815, 0.6283209, 1, 0.38674548, 0.37432277, 0.3784883, 1)
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_1vkw8"]
 seed = 2
