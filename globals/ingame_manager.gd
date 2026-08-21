@@ -47,7 +47,7 @@ func delete_controllers() -> void:
 	if not multiplayer.is_server(): return
 	for controller: Node in get_children(): controller.queue_free()
 
-@rpc("any_peer", "reliable")
+@rpc("any_peer", "reliable", "call_local")
 func start_game() -> void:
 	var pid: int = multiplayer.get_remote_sender_id()
 	if not NetworkManager.is_online: return

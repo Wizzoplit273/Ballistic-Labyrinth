@@ -103,12 +103,6 @@ func _on_exit_game_button_pressed() -> void:
 	unfocus()
 	$ExitConfirmDialog.visible = true
 
-func _on_host_button_pressed() -> void:
-	NetworkManager.start_server()
-
-func _on_start_game_button_pressed() -> void:
-	IngameManager.start_game()
-
 func _on_username_edit_text_submitted(new_text: String) -> void:
 	var username: String = new_text.strip_edges()
 	%UsernameEdit.text = username

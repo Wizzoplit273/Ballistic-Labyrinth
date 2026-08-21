@@ -134,32 +134,16 @@ metadata/_edit_lock_ = true
 [node name="Version" type="Label" parent="Frame" unique_id=1260827880]
 layout_mode = 2
 size_flags_vertical = 2
-size_flags_stretch_ratio = 0.07
+size_flags_stretch_ratio = 0.15
 text = "Version xyp.yp.yp.yp"
 label_settings = SubResource("LabelSettings_pqpuc")
 horizontal_alignment = 1
 metadata/_edit_lock_ = true
 
-[node name="HOSTOPTIONS" type="HBoxContainer" parent="Frame" unique_id=604005830]
-layout_mode = 2
-metadata/_edit_lock_ = true
-
-[node name="HostButton" type="Button" parent="Frame/HOSTOPTIONS" unique_id=987661017]
-layout_mode = 2
-size_flags_horizontal = 6
-size_flags_vertical = 4
-text = "HOST GAME"
-metadata/_edit_lock_ = true
-
-[node name="StartGameButton" type="Button" parent="Frame/HOSTOPTIONS" unique_id=663712079]
-layout_mode = 2
-size_flags_horizontal = 6
-size_flags_vertical = 4
-text = "START GAME"
-metadata/_edit_lock_ = true
-
 [node name="Side1" type="HBoxContainer" parent="Frame" unique_id=258531281]
 layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 2.0
 metadata/_edit_lock_ = true
 
 [node name="Spacer1" type="Control" parent="Frame/Side1" unique_id=2063243769]
@@ -291,14 +275,13 @@ metadata/_edit_lock_ = true
 
 [node name="VSpacer2" type="Control" parent="Frame" unique_id=142324849]
 layout_mode = 2
-size_flags_vertical = 3
-size_flags_stretch_ratio = 0.05
 metadata/_edit_lock_ = true
 
 [node name="TextureRect" type="TextureRect" parent="Frame" unique_id=1813913914]
 self_modulate = Color(1, 1, 1, 0.54901963)
 layout_mode = 2
-size_flags_vertical = 3
+size_flags_vertical = 8
+size_flags_stretch_ratio = 0.1
 texture = ExtResource("4_5wkb4")
 metadata/_edit_lock_ = true
 
@@ -321,8 +304,6 @@ metadata/_edit_lock_ = true
 
 [connection signal="pressed" from="ExitConfirmDialog/Frame/ButtonContainer/DiscardButton" to="." method="_on_discard_button_pressed"]
 [connection signal="pressed" from="ExitConfirmDialog/Frame/ButtonContainer/ConfirmButton" to="." method="_on_confirm_button_pressed"]
-[connection signal="pressed" from="Frame/HOSTOPTIONS/HostButton" to="." method="_on_host_button_pressed"]
-[connection signal="pressed" from="Frame/HOSTOPTIONS/StartGameButton" to="." method="_on_start_game_button_pressed"]
 [connection signal="pressed" from="Frame/Side1/JoinContainer/JoinGameButton" to="." method="_on_join_game_button_pressed"]
 [connection signal="text_submitted" from="Frame/Side1/NameContainer/UsernameEdit" to="." method="_on_username_edit_text_submitted"]
 [connection signal="color_changed" from="Frame/Side1/PlayerColor/PlayerColorContainer/PlayerColorPicker" to="." method="_on_player_color_picker_color_changed"]
