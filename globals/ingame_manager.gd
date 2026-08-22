@@ -93,6 +93,7 @@ func delete_ingame() -> void:
 		if not spawner is MultiplayerSpawner: continue
 		for instance: Node in spawner.get_children():
 			instance.free()
+	delete_controllers()
 	client_delete_ingame.rpc()
 
 @rpc("authority", "reliable", "call_local")
