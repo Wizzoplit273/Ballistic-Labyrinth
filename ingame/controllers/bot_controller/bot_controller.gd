@@ -260,6 +260,8 @@ func dodge_bullet(bullet: RigidBody2D) -> void:
 	left_bullet_dot += left_offset_vector
 	right_bullet_dot -= left_offset_vector
 	var chosen_direction: Vector2
+	$DEBUGLeftBulletDot.global_position = left_bullet_dot
+	$DEBUGRightBulletDot.global_position = right_bullet_dot
 	
 	$NavAgent.target_desired_distance = 0.0
 	## left bullet dot navigation distance
@@ -316,4 +318,4 @@ func dodge_bullet(bullet: RigidBody2D) -> void:
 	look_at(chosen_direction)
 	var dodge_angle: float = rotation
 	rotation = auxiliary
-	rotation = lerp_angle(pawn.rotation, dodge_angle, ROTATION_INTERPOLATION_WEIGHT * 1.5)
+	rotation = lerp_angle(pawn.rotation, dodge_angle, ROTATION_INTERPOLATION_WEIGHT * 3)

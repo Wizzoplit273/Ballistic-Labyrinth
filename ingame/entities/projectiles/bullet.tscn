@@ -214,24 +214,28 @@ texture = ExtResource("1_qp50q")
 metadata/_edit_lock_ = true
 
 [node name="VelocityRaycast1" type="RayCast2D" parent="Rest" unique_id=1355516928]
+visible = false
 rotation = -1.5708
 scale = Vector2(10, 10)
 collision_mask = 17
 metadata/_edit_lock_ = true
 
 [node name="VelocityRaycast2" type="RayCast2D" parent="Rest" unique_id=2117798277]
+visible = false
 rotation = -1.6231562
 scale = Vector2(10, 10)
 collision_mask = 17
 metadata/_edit_lock_ = true
 
 [node name="VelocityRaycast3" type="RayCast2D" parent="Rest" unique_id=193421612]
+visible = false
 rotation = -1.5184364
 scale = Vector2(10, 10)
 collision_mask = 17
 metadata/_edit_lock_ = true
 
 [node name="Hitbox" type="CollisionShape2D" parent="." unique_id=969049502]
+visible = false
 scale = Vector2(0.1, 0.1)
 shape = SubResource("CircleShape2D_d633r")
 metadata/_edit_lock_ = true
