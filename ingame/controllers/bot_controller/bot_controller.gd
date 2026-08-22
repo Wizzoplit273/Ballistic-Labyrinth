@@ -30,12 +30,15 @@ func apply_angular_input(delta: float) -> void:
 	if pawn == null: return
 	var diff: float = angle_difference(pawn.rotation, rotation)
 	var max_step: float = pawn.angular_speed * delta
-	if abs(diff) > max_step: angular_input = sign(diff)
+	if abs(diff) >= max_step: angular_input = sign(diff)
 	else: angular_input = 0
 
 const IDLE_DISTANCE: float = 1.0
 const IDLE_STUCK_RESET: float = 10.0
 func apply_linear_input() -> void:
+	if is_aiming:
+		linear_input = 0
+		return
 	if not $IdleStartCooldown.is_stopped(): return
 	if is_reversing and $IdleEndCooldown.is_stopped():
 		linear_input = -1
@@ -53,6 +56,38 @@ func apply_linear_input() -> void:
 func _on_idle_start_cooldown_timeout() -> void:
 	$IdleEndCooldown.start()
 
+func configure_target_reach_distance() -> void:
+	if ($NavAgent.is_target_reached() and is_adjacent_wall_to_target):
+		if target.get_meta("entity_type", "null") != "crate": $NavAgent.target_desired_distance = 1000.0
+	elif target.get_meta("entity_type", "null") == "crate":
+		$NavAgent.target_desired_distance = CRATE_DESIRED_DISTANCE
+	else: $NavAgent.target_desired_distance = TARGET_DESIRED_DISTANCE
+
+func configure_aiming() -> void:
+	is_aiming = false
+	if target == null: return
+	if is_dodging_bullets: return
+	if is_adjacent_wall_to_target: return
+	if not $NavAgent.is_navigation_finished(): return
+	if target.get_meta("entity_type", "null") == "crate": return
+	is_aiming = true
+	var was_patroling: bool = is_patrol_set
+	is_patrol_set = false
+	var auxiliary: float = rotation
+	var direction_to_player: float
+	look_at(target.position)
+	direction_to_player = rotation
+	rotation = auxiliary
+	var direction_deviation: float = randf_range(-DIRECTION_DEVIATION, DIRECTION_DEVIATION)
+	rotation = direction_to_player + direction_deviation
+	if abs(rotation - direction_to_player) <= MAX_SHOOT_ANGLE_DIFFERENCE and $ShootingCooldown.is_stopped():
+		if not was_patroling:
+			$ShootingCooldown.start()
+			direction_deviation = randf_range(-DIRECTION_DEVIATION, DIRECTION_DEVIATION)
+			rotation += direction_deviation
+			pawn.shoot()
+
+var is_aiming: bool = false
 func _physics_process(delta: float) -> void:
 	if not multiplayer.is_server(): return
 	if pawn == null: return
@@ -62,34 +97,16 @@ func _physics_process(delta: float) -> void:
 	determine_target()
 	check_nearby_bullets()
 	configure_patrol()
-	if target == null: return
+	if target == null:
+		if not is_dodging_bullets:
+			linear_input = 0
+			angular_input = 0
+		return
 	point_to_target_if_seen()
 	configure_nav_agent_process()
 	configure_reversing()
-	if ($NavAgent.is_target_reached() and is_adjacent_wall_to_target):
-		if target.get_meta("entity_type", "null") != "crate": $NavAgent.target_desired_distance = 1000.0
-	elif target.get_meta("entity_type", "null") == "crate":
-		$NavAgent.target_desired_distance = CRATE_DESIRED_DISTANCE
-	else: $NavAgent.target_desired_distance = TARGET_DESIRED_DISTANCE
-	if $NavAgent.is_navigation_finished() and not is_adjacent_wall_to_target and not is_dodging_bullets:
-		if target.get_meta("entity_type", "null") != "crate":
-			var was_patroling: bool = is_patrol_set
-			is_patrol_set = false
-			if target == null: return
-			var auxiliary: float = rotation
-			var direction_to_player: float
-			look_at(target.position)
-			direction_to_player = rotation
-			rotation = auxiliary
-			var direction_deviation: float = randf_range(-DIRECTION_DEVIATION, DIRECTION_DEVIATION)
-			rotation = lerp_angle(rotation, direction_to_player+direction_deviation, ROTATION_INTERPOLATION_WEIGHT * 2)
-			if abs(rotation - direction_to_player) <= MAX_SHOOT_ANGLE_DIFFERENCE and $ShootingCooldown.is_stopped():
-				if not was_patroling:
-					$ShootingCooldown.start()
-					direction_deviation = randf_range(-DIRECTION_DEVIATION, DIRECTION_DEVIATION)
-					rotation += direction_deviation
-					#shoot.emit(self, weapon_type)
-			return
+	configure_target_reach_distance()
+	configure_aiming()
 	var next_point: Vector2 = $NavAgent.get_next_path_position()
 	var direction: Vector2 = (next_point - global_position).normalized()
 	if target != null:
@@ -164,7 +181,9 @@ func determine_target() -> void:
 			continue
 		if global_position.distance_to(crate.position) < global_position.distance_to(target.position):
 			target = crate
-	if target == null: return # may need some more code at this if statement
+	if target == null: # may need some more code at this if statement
+		$NavAgent.target_desired_distance = 0.0
+		return
 	if is_patrol_set: return
 	if target.get_meta("entity_type", "null") == "crate":
 		$NavAgent.target_desired_distance = CRATE_DESIRED_DISTANCE
@@ -206,6 +225,7 @@ func configure_patrol() -> void:
 	else: $NavAgent.target_desired_distance = TARGET_DESIRED_DISTANCE
 
 func configure_reversing() -> void:
+	if is_aiming: return
 	var is_stuck: bool = (previous_position - global_position).length() <= MAX_STUCK_POSITION_CHANGE
 	if not is_reversing and not $NavAgent.is_target_reached() and is_stuck:
 		is_stuck = false
