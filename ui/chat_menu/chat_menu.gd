@@ -32,6 +32,8 @@ func add_message(message: Dictionary) -> void:
 		%ChatText.text += ":: "
 	elif message.get("channel") == "shell_output":
 		%ChatText.text += "-SH-: "
+	elif message.get("channel") == "admin":
+		%ChatText.text += "OP: "
 	%ChatText.text += message.get("text") + "\n"
 
 func _input(event: InputEvent) -> void:

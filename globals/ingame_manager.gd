@@ -242,6 +242,25 @@ func teleport_tank(pos: Vector2) -> void:
 	if pawn == null: return
 	pawn.global_position = pos
 
+@rpc("any_peer", "reliable", "call_local")
+func change_invincibility() -> void:
+	var pid: int = multiplayer.get_remote_sender_id()
+	if not multiplayer.is_server(): return
+	if SessionManager.data[pid].get("admin") != true: return
+	var pawn: Node2D = null
+	for controller: Node in get_children():
+		if controller.sid != pid: continue
+		if controller.pawn == null: return
+		pawn = controller.pawn
+		break
+	if pawn == null: return
+	pawn.is_invincible = not pawn.is_invincible
+	var text: String = "invincibility set to "
+	if pawn.is_invincible: text += "true "
+	else: text += "false "
+	text += "for pid = " + SessionManager.encode_session_id(pid)
+	ConsoleManager.print_output(text, 0, "admin")
+
 ### connected to each bullet's despawn signal
 #func on_bullet_despawn(bullet: RigidBody2D) -> void:
 	#if bullet.type == "regular": bullet.owner_node.fired_bullet_count -= 1

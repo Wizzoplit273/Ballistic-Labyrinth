@@ -58,7 +58,10 @@ func process_message(text: String, channel: String = "global") -> void:
 	chat_history.append(message)
 	while chat_history.size() > MAX_HISTORY:
 		chat_history.pop_front()
-	if NetworkManager.is_online and multiplayer.is_server() and not channel.contains("shell"):
-		rpc("update_chat_history", message)
+	if NetworkManager.is_online and multiplayer.is_server():
+		if not channel in RELATIVE_LOCAL_CHANNELS:
+			rpc("update_chat_history", message)
 	new_array.append(message)
 	update_local_chat_ui.emit(new_array)
+
+const RELATIVE_LOCAL_CHANNELS: PackedStringArray = ["shell_execute", "shell_input", "admin"]

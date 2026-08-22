@@ -76,8 +76,10 @@ func _physics_process(_delta: float) -> void:
 	if linear_velocity.length() > max_linear_speed: linear_velocity = linear_velocity.normalized() * max_linear_speed
 	if not multiplayer.is_server(): return
 
+var is_invincible: bool = false
 ## called by bullet scenes that hit the player
 func die() -> void:
+	if is_invincible: return
 	$Rest.visible = false
 	process_mode = Node.PROCESS_MODE_DISABLED
 	$DeathParticles.restart()

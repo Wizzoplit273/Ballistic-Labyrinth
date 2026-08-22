@@ -33,8 +33,12 @@ func _process(_delta: float) -> void:
 	if Input.is_action_just_pressed(&"Shoot"): request_shoot()
 	if Input.is_action_just_pressed(&"Teleport"):
 		if IngameManager.ingame == null: return
+		if SessionManager.data[multiplayer.get_unique_id()].get("admin") != true: return
 		var mouse_position: Vector2 = IngameManager.ingame.get_global_mouse_position()
 		IngameManager.teleport_tank.rpc_id(1, mouse_position)
+	if Input.is_action_just_pressed(&"Invincibility"):
+		if SessionManager.data[multiplayer.get_unique_id()].get("admin") != true: return
+		IngameManager.change_invincibility.rpc_id(1)
 
 func request_shoot() -> void:
 	if not NetworkManager.is_online: return

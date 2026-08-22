@@ -93,9 +93,27 @@ func register_command(
 	})
 
 ## CHANNELS
+## --- system: public system messages
 ## --- shell_execute: output of a command(success or error message)
 ## --- shell_input: rewrites input command(only for configured chat menu UI)
+## --- admin: staff-only system messages
 func print_output(text: String, pid: int = 0, channel: String = "shell_output") -> void:
+	if channel == "admin":
+		if not multiplayer.is_server(): return
+		if pid < 0: return
+		if pid == 0:
+			for admin_id: int in SessionManager.data.keys():
+				if admin_id <= 1: continue
+				if SessionManager.data[admin_id].get("admin") != true: continue
+				ChatManager.send_local_message.rpc_id(admin_id, text, "admin")
+			ChatManager.send_local_message(text, "admin")
+			return
+		if pid == 1:
+			ChatManager.send_local_message(text, "admin")
+			return
+		if SessionManager.data[pid].get("admin") != true: return
+		ChatManager.send_local_message.rpc_id(pid, text, "admin")
+		return
 	if pid <= 0 or not NetworkManager.is_online or pid == multiplayer.get_unique_id():
 		ChatManager.send_local_message(text, channel)
 	else: ChatManager.send_local_message.rpc_id(pid, text, channel)
