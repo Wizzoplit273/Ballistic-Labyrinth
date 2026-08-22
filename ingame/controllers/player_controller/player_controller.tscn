@@ -17,3 +17,4 @@ properties/2/replication_mode = 1
 root_path = NodePath(".")
 replication_config = SubResource("SceneReplicationConfig_kfqpx")
 script = ExtResource("1_kfqpx")
+metadata/type = "player"

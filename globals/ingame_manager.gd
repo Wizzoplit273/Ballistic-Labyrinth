@@ -145,6 +145,7 @@ func broadcast_generation_finish() -> void:
 		return
 	add_finished_generation.rpc_id(1)
 
+const PAWN_LINEAR_STUCK_FACTOR: float = 200 / 3.2
 const NEW_TANK_PAWN_PATH: String = "res://ingame/entities/tank_pawn/tank_pawn.tscn"
 func place_pawns() -> void:
 	if not NetworkManager.is_online: return
@@ -161,6 +162,8 @@ func place_pawns() -> void:
 			break
 		if target_controller == null: continue # normally shouldn't happen
 		target_controller.pawn = tank_pawn
+		if target_controller.get_meta("type", "null") == "bot":
+			target_controller.MAX_STUCK_POSITION_CHANGE = tank_pawn.linear_speed / PAWN_LINEAR_STUCK_FACTOR
 		tank_pawn.controller = target_controller
 		tank_pawn.get_node(^"Rest/Image").modulate = SessionManager.data[sid]["color"]
 		tank_pawn.get_node(^"DeathParticles").modulate = SessionManager.data[sid]["color"]

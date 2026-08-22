@@ -26,16 +26,32 @@ var target: Node2D = null
 var is_adjacent_wall_to_target: bool = false ## determined by IngameManager.ingame
 var is_dodging_bullets: bool = false
 
-func apply_angular_input(rot: float, delta: float) -> void:
+func apply_angular_input(delta: float) -> void:
 	if pawn == null: return
-	var diff: float = angle_difference(rotation, rot)
+	var diff: float = angle_difference(pawn.rotation, rotation)
 	var max_step: float = pawn.angular_speed * delta
 	if abs(diff) > max_step: angular_input = sign(diff)
-	#else: angular_input = 0
+	else: angular_input = 0
 
+const IDLE_DISTANCE: float = 1.0
+const IDLE_STUCK_RESET: float = 10.0
 func apply_linear_input() -> void:
-	if is_reversing: linear_input = -1
-	else: linear_input = 1
+	if not $IdleStartCooldown.is_stopped(): return
+	if is_reversing and $IdleEndCooldown.is_stopped():
+		linear_input = -1
+		return
+	linear_input = 1
+	if not $IdleEndCooldown.is_stopped():
+		if position.distance_to($NavAgent.get_next_path_position()) < IDLE_STUCK_RESET and is_patrol_set:
+			$NavAgent.target_position = target.position
+		return
+	var next_point: Vector2 = $NavAgent.get_next_path_position()
+	if abs(position.distance_to(next_point) - previous_position.distance_to(next_point)) <= IDLE_DISTANCE:
+		linear_input = 0
+		$IdleStartCooldown.start()
+
+func _on_idle_start_cooldown_timeout() -> void:
+	$IdleEndCooldown.start()
 
 func _physics_process(delta: float) -> void:
 	if not multiplayer.is_server(): return
@@ -85,7 +101,7 @@ func _physics_process(delta: float) -> void:
 	if not $PathStuckDelay.is_stopped():
 		initial_path_stuck_distance = global_position.distance_to($NavAgent.get_next_path_position())
 		$PathStuckDelay.start()
-	apply_angular_input(rotation, delta)
+	apply_angular_input(delta)
 	apply_linear_input()
 	previous_position = position
 	previous_rotation = rotation
@@ -102,10 +118,11 @@ func _on_path_stuck_delay_timeout() -> void:
 
 @onready var TARGET_DESIRED_DISTANCE: float = $NavAgent.target_desired_distance
 const CRATE_DESIRED_DISTANCE: float = 5.0
-const TARGET_PATROL_DISTANCE: float = 300.0
+const TARGET_PATROL_DISTANCE: float = 400.0
 
-const MAX_STUCK_POSITION_CHANGE: float = 2.0
-const MAX_STUCK_ROTATION_CHANGE: float = 0.1
+## modified by ingame manager so it depends on the attached pawn's linear speed
+var MAX_STUCK_POSITION_CHANGE: float = 3.2
+
 const MAX_SHOOT_ANGLE_DIFFERENCE: float = 0.4
 
 var previous_position: Vector2 = Vector2.ZERO
@@ -121,10 +138,10 @@ func point_to_target_if_seen() -> void:
 		else: is_patrol_set = false
 		return
 
-var FLANK_RESET: float = 1100.0
-var FLANK_RADIUS: float = 300.0
-var FLANK_MIN_INTERVAL: float = 100.0
-var FLANK_MAX_INTERVAL: float = 400.0
+var FLANK_RESET: float = 800.0
+var FLANK_RADIUS: float = 500.0
+var FLANK_MIN_INTERVAL: float = 50.0
+var FLANK_MAX_INTERVAL: float = 200.0
 var FLANK_FRONT_DISTANCE: float = 400.0
 const DIRECTION_DEVIATION: float = PI/180*10
 var is_patrol_set: bool = false
@@ -189,9 +206,7 @@ func configure_patrol() -> void:
 	else: $NavAgent.target_desired_distance = TARGET_DESIRED_DISTANCE
 
 func configure_reversing() -> void:
-	var is_velocity_stuck: bool = (previous_position - global_position).length() <= MAX_STUCK_POSITION_CHANGE
-	var is_angle_stuck: bool = abs(previous_rotation - rotation) <= MAX_STUCK_ROTATION_CHANGE
-	var is_stuck: bool = is_velocity_stuck and is_angle_stuck
+	var is_stuck: bool = (previous_position - global_position).length() <= MAX_STUCK_POSITION_CHANGE
 	if not is_reversing and not $NavAgent.is_target_reached() and is_stuck:
 		is_stuck = false
 		is_reversing = true
@@ -216,7 +231,7 @@ func check_nearby_bullets() -> void:
 		is_dodging_bullets = true
 		dodge_bullet(bullet)
 
-@export var BULLET_DANGER_SENSITIVITY: float = 0.3
+@export var BULLET_DANGER_SENSITIVITY: float = 0.4
 #@export var DODGE_SPEED: float = 200.0
 func is_bullet_dangerous(bullet: RigidBody2D) -> bool:
 	if bullet == null: return false
@@ -234,7 +249,7 @@ func is_bullet_dangerous(bullet: RigidBody2D) -> bool:
 
 ## whether it's a bullet is verified by the is_bullet_dangerous() function
 const PERPENDICULAR_VELOCITY_DOT_OFFSET: float = 75.0
-@export var ROTATION_INTERPOLATION_WEIGHT: float = 0.1
+@export var ROTATION_INTERPOLATION_WEIGHT: float = 0.25
 @export var ANGLE_DILATION: float = 0.1
 #const MAX_BULLET_STOP_DISTANCE: float = 20.0
 func dodge_bullet(bullet: RigidBody2D) -> void:
@@ -301,4 +316,4 @@ func dodge_bullet(bullet: RigidBody2D) -> void:
 	look_at(chosen_direction)
 	var dodge_angle: float = rotation
 	rotation = auxiliary
-	rotation = lerp_angle(rotation, dodge_angle, ROTATION_INTERPOLATION_WEIGHT * 1.5)
+	rotation = lerp_angle(pawn.rotation, dodge_angle, ROTATION_INTERPOLATION_WEIGHT * 1.5)
