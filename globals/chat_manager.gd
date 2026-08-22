@@ -60,6 +60,7 @@ func process_message(text: String, channel: String = "global") -> void:
 		chat_history.pop_front()
 	if NetworkManager.is_online and multiplayer.is_server():
 		if not channel in RELATIVE_LOCAL_CHANNELS:
+			print("IS IN RELATIVE")
 			rpc("update_chat_history", message)
 	new_array.append(message)
 	update_local_chat_ui.emit(new_array)
