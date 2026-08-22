@@ -29,6 +29,7 @@ font_size = 50
 
 [node name="Lobby" type="CanvasLayer" unique_id=1701394940]
 process_mode = 3
+layer = 3
 script = ExtResource("2_k0yk8")
 metadata/_edit_lock_ = true
 
@@ -46,7 +47,7 @@ texture = ExtResource("1_qp8cv")
 metadata/_edit_lock_ = true
 
 [node name="ExitConfirmDialog" type="CanvasLayer" parent="." unique_id=1626898685]
-layer = 2
+layer = 4
 visible = false
 
 [node name="Background" type="TextureRect" parent="ExitConfirmDialog" unique_id=829023834]

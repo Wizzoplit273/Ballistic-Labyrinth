@@ -73,7 +73,7 @@ func _enter_tree() -> void:
 		true
 	)
 	register_command(
-		["start_game", "play"],
+		["start_game", "play", "start"],
 		"starts the game",
 		true,
 		false
