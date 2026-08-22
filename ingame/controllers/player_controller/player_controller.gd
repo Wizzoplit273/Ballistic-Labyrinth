@@ -31,6 +31,10 @@ func _process(_delta: float) -> void:
 	angular_input = int(Input.get_axis(&"RotateCounterclockwise", &"RotateClockwise"))
 	is_drifting = Input.is_action_pressed(&"Drift")
 	if Input.is_action_just_pressed(&"Shoot"): request_shoot()
+	if Input.is_action_just_pressed(&"Teleport"):
+		if IngameManager.ingame == null: return
+		var mouse_position: Vector2 = IngameManager.ingame.get_global_mouse_position()
+		IngameManager.teleport_tank.rpc_id(1, mouse_position)
 
 func request_shoot() -> void:
 	if not NetworkManager.is_online: return

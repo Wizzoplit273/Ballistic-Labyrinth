@@ -228,6 +228,20 @@ func spawn_bullet(payload: Dictionary) -> Node:
 	if bullet.type == "trap": ingame.get_node("Sounds/TrapPlaceNoise").play()
 	return bullet
 
+@rpc("any_peer", "reliable", "call_local")
+func teleport_tank(pos: Vector2) -> void:
+	var pid: int = multiplayer.get_remote_sender_id()
+	if not multiplayer.is_server(): return
+	if SessionManager.data[pid].get("admin") != true: return
+	var pawn: Node2D = null
+	for controller: Node in get_children():
+		if controller.sid != pid: continue
+		if controller.pawn == null: return
+		pawn = controller.pawn
+		break
+	if pawn == null: return
+	pawn.global_position = pos
+
 ### connected to each bullet's despawn signal
 #func on_bullet_despawn(bullet: RigidBody2D) -> void:
 	#if bullet.type == "regular": bullet.owner_node.fired_bullet_count -= 1
