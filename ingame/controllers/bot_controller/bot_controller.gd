@@ -26,6 +26,9 @@ var target: Node2D = null
 var is_adjacent_wall_to_target: bool = false ## determined by IngameManager.ingame
 var is_dodging_bullets: bool = false
 
+func _ready() -> void:
+	is_stopping_to_aim = bool(randi_range(0, 1))
+
 func apply_angular_input(delta: float) -> void:
 	if pawn == null: return
 	var diff: float = angle_difference(pawn.rotation, rotation)
@@ -56,13 +59,20 @@ func apply_linear_input() -> void:
 func _on_idle_start_cooldown_timeout() -> void:
 	$IdleEndCooldown.start()
 
+const LONG_RANGE_SHOOT_DISTANCE: float = 600.0
+@onready var MEDIUM_RANGE_SHOOT_DISTANCE: float = $NavAgent.target_desired_distance
 func configure_target_reach_distance() -> void:
-	if ($NavAgent.is_target_reached() and is_adjacent_wall_to_target):
-		if target.get_meta("entity_type", "null") != "crate": $NavAgent.target_desired_distance = 1000.0
-	elif target.get_meta("entity_type", "null") == "crate":
+	if target.get_meta("entity_type", "null") == "crate":
 		$NavAgent.target_desired_distance = CRATE_DESIRED_DISTANCE
-	else: $NavAgent.target_desired_distance = TARGET_DESIRED_DISTANCE
+	else:
+		if pawn.weapon_type == "laser": TARGET_DESIRED_DISTANCE = LONG_RANGE_SHOOT_DISTANCE
+		else: TARGET_DESIRED_DISTANCE = MEDIUM_RANGE_SHOOT_DISTANCE
+		$NavAgent.target_desired_distance = TARGET_DESIRED_DISTANCE
 
+## randomly set by ingame manager when the controller is created
+var is_stopping_to_aim: bool = true
+
+const MAX_SHOOT_ANGLE_DIFFERENCE: float = PI/180 * 15.0
 func configure_aiming() -> void:
 	is_aiming = false
 	if target == null: return
@@ -70,22 +80,32 @@ func configure_aiming() -> void:
 	if is_adjacent_wall_to_target: return
 	if not $NavAgent.is_navigation_finished(): return
 	if target.get_meta("entity_type", "null") == "crate": return
-	is_aiming = true
-	var was_patroling: bool = is_patrol_set
-	is_patrol_set = false
 	var auxiliary: float = rotation
 	var direction_to_player: float
 	look_at(target.position)
 	direction_to_player = rotation
 	rotation = auxiliary
+	if not is_stopping_to_aim:
+		if abs(angle_difference(pawn.rotation, direction_to_player)) > MAX_SHOOT_ANGLE_DIFFERENCE: return
+	is_aiming = true
+	var was_patroling: bool = is_patrol_set
+	is_patrol_set = false
 	var direction_deviation: float = randf_range(-DIRECTION_DEVIATION, DIRECTION_DEVIATION)
 	rotation = direction_to_player + direction_deviation
-	if abs(rotation - direction_to_player) <= MAX_SHOOT_ANGLE_DIFFERENCE and $ShootingCooldown.is_stopped():
-		if not was_patroling:
-			$ShootingCooldown.start()
-			direction_deviation = randf_range(-DIRECTION_DEVIATION, DIRECTION_DEVIATION)
-			rotation += direction_deviation
-			pawn.shoot()
+	if abs(angle_difference(pawn.rotation, direction_to_player)) > MAX_SHOOT_ANGLE_DIFFERENCE: return
+	if not $ShootingCooldown.is_stopped(): return
+	if was_patroling: return
+	$ShootingCooldown.start()
+	direction_deviation = randf_range(-DIRECTION_DEVIATION, DIRECTION_DEVIATION)
+	rotation += direction_deviation
+	pawn.shoot()
+
+func idle_if_no_tanks() -> bool:
+	if not tanks_exist and not is_dodging_bullets:
+		linear_input = 0
+		angular_input = 0
+		return true
+	return false
 
 var is_aiming: bool = false
 func _physics_process(delta: float) -> void:
@@ -97,11 +117,7 @@ func _physics_process(delta: float) -> void:
 	determine_target()
 	check_nearby_bullets()
 	configure_patrol()
-	if target == null:
-		if not is_dodging_bullets:
-			linear_input = 0
-			angular_input = 0
-		return
+	if idle_if_no_tanks(): return
 	point_to_target_if_seen()
 	configure_nav_agent_process()
 	configure_reversing()
@@ -114,7 +130,6 @@ func _physics_process(delta: float) -> void:
 	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 	if target != null or is_dodging_bullets:
 		rotation += rng.randf_range(-ANGLE_DILATION, ANGLE_DILATION)
-	#if position.distance_to($NavAgent.get_next_path_position()) <= PATH_STUCK_DISTANCE:
 	if not $PathStuckDelay.is_stopped():
 		initial_path_stuck_distance = global_position.distance_to($NavAgent.get_next_path_position())
 		$PathStuckDelay.start()
@@ -130,17 +145,12 @@ func _on_path_stuck_delay_timeout() -> void:
 	if current_polygon_distance > PATH_STUCK_DISTANCE: return
 	if abs(current_polygon_distance - initial_path_stuck_distance) <= 10.0: is_path_stuck = true
 
-#func _ready() -> void:
-	#$NavAgent.max_speed = LINEAR_SPEED
-
 @onready var TARGET_DESIRED_DISTANCE: float = $NavAgent.target_desired_distance
 const CRATE_DESIRED_DISTANCE: float = 5.0
 const TARGET_PATROL_DISTANCE: float = 400.0
 
 ## modified by ingame manager so it depends on the attached pawn's linear speed
 var MAX_STUCK_POSITION_CHANGE: float = 3.2
-
-const MAX_SHOOT_ANGLE_DIFFERENCE: float = 0.4
 
 var previous_position: Vector2 = Vector2.ZERO
 var previous_rotation: float = 0.0
@@ -164,11 +174,14 @@ const DIRECTION_DEVIATION: float = PI/180*10
 var is_patrol_set: bool = false
 var is_reversing: bool = false
 
+var tanks_exist: bool = false
 func determine_target() -> void:
 	target = null
+	tanks_exist = false
 	for tank: RigidBody2D in IngameManager.ingame.get_node(^"TankPawns").get_children():
 		if tank == pawn: continue
 		if tank.get_node("Rest").visible == false: continue
+		tanks_exist = true
 		if target == null:
 			target = tank
 			continue
@@ -180,7 +193,7 @@ func determine_target() -> void:
 			continue
 		if global_position.distance_to(crate.position) < global_position.distance_to(target.position):
 			target = crate
-	if target == null: # may need some more code at this if statement
+	if target == null:
 		$NavAgent.target_desired_distance = 0.0
 		return
 	if is_patrol_set: return
@@ -251,12 +264,10 @@ func check_nearby_bullets() -> void:
 		dodge_bullet(bullet)
 
 @export var BULLET_DANGER_SENSITIVITY: float = 0.4
-#@export var DODGE_SPEED: float = 200.0
 func is_bullet_dangerous(bullet: RigidBody2D) -> bool:
 	if bullet == null: return false
 	if bullet.get_meta("entity_type", "NULL") != "bullet": return false
 	if (previous_position - global_position).length() == 0.0:
-		#if not bullet.has_node("VelocityRaycast"): return false
 		var is_raycast_hitting_bot: bool = bullet.get_node(^"Rest/VelocityRaycast1").get_collider() == self
 		is_raycast_hitting_bot = is_raycast_hitting_bot or bullet.get_node(^"Rest/VelocityRaycast2").get_collider() == self
 		is_raycast_hitting_bot = is_raycast_hitting_bot or bullet.get_node(^"Rest/VelocityRaycast3").get_collider() == self
@@ -268,9 +279,9 @@ func is_bullet_dangerous(bullet: RigidBody2D) -> bool:
 
 ## whether it's a bullet is verified by the is_bullet_dangerous() function
 const PERPENDICULAR_VELOCITY_DOT_OFFSET: float = 75.0
+const DODGE_INTERPOLATE_FACTOR: float = 2.7
 @export var ROTATION_INTERPOLATION_WEIGHT: float = 0.25
 @export var ANGLE_DILATION: float = 0.1
-#const MAX_BULLET_STOP_DISTANCE: float = 20.0
 func dodge_bullet(bullet: RigidBody2D) -> void:
 	var bullet_velocity_direction: Vector2 = bullet.linear_velocity.normalized()
 	var left_bullet_dot: Vector2 = bullet.global_position
@@ -299,42 +310,15 @@ func dodge_bullet(bullet: RigidBody2D) -> void:
 	$NavAgent.target_position = target.global_position
 	var left_is_closer_than_right_navigation: bool = navigation_distance_to_left < navigation_distance_to_right
 	var left_is_closer_than_right_euclidean: bool = global_position.distance_to(left_bullet_dot) < global_position.distance_to(right_bullet_dot)
-	#var is_bullet_area_hitting_bot: bool = false
-	#for body: CollisionObject2D in bullet.get_node("EnemyDodgeRadius").get_overlapping_bodies():
-		#if body == self: is_bullet_area_hitting_bot = true
-	#if not is_bullet_area_hitting_bot: return
-	#if abs(global_position - bullet.global_position).length() <= MAX_BULLET_STOP_DISTANCE: return
 	if navigation_distance_to_left != navigation_distance_to_right:
 		if left_is_closer_than_right_navigation:
 			chosen_direction = left_bullet_dot
-			#for body: CollisionObject2D in get_colliding_bodies():
-				#if body.get_meta("id", "NULL") == "wall":
-					#chosen_direction = right_bullet_dot
-					#$WallDodgeEvadeCooldown.start()
-			#if not $WallDodgeEvadeCooldown.is_stopped(): chosen_direction = right_bullet_dot
-		else:
-			chosen_direction = right_bullet_dot
-			#for body: CollisionObject2D in get_colliding_bodies():
-				#if body.get_meta("id", "NULL") == "wall":
-					#chosen_direction = left_bullet_dot
-					#$WallDodgeEvadeCooldown.start()
-			#if not $WallDodgeEvadeCooldown.is_stopped(): chosen_direction = left_bullet_dot
+		else: chosen_direction = right_bullet_dot
 	elif left_is_closer_than_right_euclidean:
 		chosen_direction = left_bullet_dot
-		#for body: CollisionObject2D in get_colliding_bodies():
-			#if body.get_meta("id", "NULL") == "wall":
-				#chosen_direction = right_bullet_dot
-				#$WallDodgeEvadeCooldown.start()
-		#if not $WallDodgeEvadeCooldown.is_stopped(): chosen_direction = right_bullet_dot
-	else:
-		chosen_direction = right_bullet_dot
-		#for body: CollisionObject2D in get_colliding_bodies():
-			#if body.get_meta("id", "NULL") == "wall":
-				#chosen_direction = left_bullet_dot
-				#$WallDodgeEvadeCooldown.start()
-		#if not $WallDodgeEvadeCooldown.is_stopped(): chosen_direction = left_bullet_dot
+	else: chosen_direction = right_bullet_dot
 	var auxiliary: float = rotation
 	look_at(chosen_direction)
 	var dodge_angle: float = rotation
 	rotation = auxiliary
-	rotation = lerp_angle(pawn.rotation, dodge_angle, ROTATION_INTERPOLATION_WEIGHT * 3)
+	rotation = lerp_angle(pawn.rotation, dodge_angle, ROTATION_INTERPOLATION_WEIGHT * DODGE_INTERPOLATE_FACTOR)
