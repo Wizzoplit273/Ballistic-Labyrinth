@@ -35,7 +35,6 @@ metadata/_edit_lock_ = true
 
 [node name="Soundtrack" type="AudioStreamPlayer" parent="." unique_id=807736029]
 stream = ExtResource("3_rk1hj")
-pitch_scale = 0.96
 
 [node name="Background" type="TextureRect" parent="." unique_id=433230952]
 self_modulate = Color(0.31061712, 0.31061712, 0.31061706, 0.3137255)

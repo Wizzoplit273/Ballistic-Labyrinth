@@ -11,7 +11,7 @@ var max_bullet_count: int = 5
 var fired_bullet_count: int = 0
 
 const REGULAR_SPAWN_OFFSET: float = 30.0
-const ROCKET_SPAWN_OFFSET: float = 32.0
+const ROCKET_SPAWN_OFFSET: float = 40.0
 const LASER_SPAWN_OFFSET: float = 30.0
 const TRAP_SPAWN_OFFSET: float = 60.0
 
