@@ -95,8 +95,9 @@ volume_db = -7.0
 pitch_scale = 0.65
 
 [node name="TrapPlaceNoise" type="AudioStreamPlayer" parent="Sounds" unique_id=1001089527]
-stream = ExtResource("4_qj304")
-volume_db = -10.0
+stream = ExtResource("3_hqbxh")
+volume_db = -5.0
+pitch_scale = 0.35
 
 [node name="RocketShootNoise" type="AudioStreamPlayer" parent="Sounds" unique_id=1891990658]
 stream = ExtResource("3_hqbxh")
@@ -109,7 +110,7 @@ pitch_scale = 0.7
 [node name="NormalShootNoise" type="AudioStreamPlayer" parent="Sounds" unique_id=2072726849]
 stream = ExtResource("3_hqbxh")
 volume_db = -7.0
-pitch_scale = 0.65
+pitch_scale = 0.64
 
 [node name="WallRemoveNoise" type="AudioStreamPlayer" parent="Sounds" unique_id=1371332677]
 stream = ExtResource("2_qj304")
@@ -120,7 +121,7 @@ max_polyphony = 60
 [node name="MazeGenerationNoise" type="AudioStreamPlayer" parent="Sounds" unique_id=1303161301]
 stream = ExtResource("2_qj304")
 volume_db = -22.0
-pitch_scale = 0.4
+pitch_scale = 0.55
 max_polyphony = 10000
 
 [node name="TerrainGenerationNoise" type="AudioStreamPlayer" parent="Sounds" unique_id=1773927033]

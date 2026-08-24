@@ -146,6 +146,12 @@ one_shot = true
 process_mode = 1
 libraries/ = SubResource("AnimationLibrary_jhhk6")
 
+[node name="BounceTrap" type="AudioStreamPlayer" parent="." unique_id=712872008]
+process_mode = 1
+stream = ExtResource("3_qbrdm")
+volume_db = -7.0
+pitch_scale = 2.7
+
 [node name="BounceLaser" type="AudioStreamPlayer" parent="." unique_id=1283858372]
 process_mode = 1
 stream = ExtResource("3_qbrdm")

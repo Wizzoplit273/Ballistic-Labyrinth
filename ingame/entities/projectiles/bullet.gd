@@ -76,9 +76,14 @@ func configure_if_trap() -> void:
 	if type != "trap": return
 	initial_velocity_speed /= TRAP_DECAY_SPEED
 	if initial_velocity_speed <= TRAP_HIDE_DISTANCE:
-		$AnimationPlayer.play(&"hide_trap")
+		play_animation.rpc("hide_trap")
 		initial_velocity_speed = 0.0
 		TRAP_HIDE_DISTANCE = -1.0
+
+@rpc("authority", "reliable", "call_local")
+func play_animation(animation: String) -> void:
+	if not $AnimationPlayer.has_animation(animation): return
+	$AnimationPlayer.play(animation)
 
 func set_node_rotations() -> void:
 	$Rest/VelocityRaycast1.rotation = linear_velocity.angle() - PI/2
@@ -99,6 +104,7 @@ func _on_body_entered(body: Node) -> void:
 	if not $Rest.visible: return
 	if body.get_meta("entity_type", "NULL") == "wall":
 		if type != "laser": MasterManager.play_server_sound($BounceRegular)
+		elif type == "trap": MasterManager.play_server_sound($BounceTrap)
 		else: MasterManager.play_server_sound($BounceLaser)
 	if body.get_meta("entity_type", "NULL") == "tank":
 		if body.controller != null and owner_node.controller != null:
