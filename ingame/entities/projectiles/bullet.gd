@@ -103,12 +103,12 @@ func _on_lifespan_timer_timeout() -> void:
 func _on_body_entered(body: Node) -> void:
 	if not $Rest.visible: return
 	if body.get_meta("entity_type", "NULL") == "wall":
-		if type != "laser": MasterManager.play_server_sound($BounceRegular)
+		if type == "laser": MasterManager.play_server_sound($BounceLaser)
 		elif type == "trap": MasterManager.play_server_sound($BounceTrap)
-		else: MasterManager.play_server_sound($BounceLaser)
+		else: MasterManager.play_server_sound($BounceRegular)
 	if body.get_meta("entity_type", "NULL") == "tank":
 		if body.controller != null and owner_node.controller != null:
-			if body.controller.sid != owner_node.controller.sid:
+			if body.controller.sid != owner_node.controller.sid and not body.is_invincible:
 				SessionManager.increment_kill(owner_node.controller.sid)
 		body.die()
 		die("tank")

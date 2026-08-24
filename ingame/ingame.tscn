@@ -97,7 +97,7 @@ pitch_scale = 0.65
 [node name="TrapPlaceNoise" type="AudioStreamPlayer" parent="Sounds" unique_id=1001089527]
 stream = ExtResource("3_hqbxh")
 volume_db = -5.0
-pitch_scale = 0.35
+pitch_scale = 0.5
 
 [node name="RocketShootNoise" type="AudioStreamPlayer" parent="Sounds" unique_id=1891990658]
 stream = ExtResource("3_hqbxh")

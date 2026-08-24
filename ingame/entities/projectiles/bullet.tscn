@@ -66,21 +66,46 @@ _data = {
 &"hide_trap": SubResource("Animation_qbrdm")
 }
 
+[sub_resource type="Curve" id="Curve_7jw2j"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_jhhk6"]
+curve = SubResource("Curve_7jw2j")
+
 [sub_resource type="Gradient" id="Gradient_05xpt"]
 colors = PackedColorArray(1, 1, 1, 1, 0, 0, 0, 0.431373)
 
 [sub_resource type="GradientTexture1D" id="GradientTexture1D_qbrdm"]
 gradient = SubResource("Gradient_05xpt")
 
+[sub_resource type="Curve" id="Curve_jhhk6"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_7jw2j"]
+curve = SubResource("Curve_jhhk6")
+
 [sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_qnes1"]
 particle_flag_disable_z = true
+spread = 180.0
+initial_velocity_max = 5.0
 gravity = Vector3(0, 0, 0)
 damping_min = 0.010000001
 damping_max = 0.010000001
-scale_min = 0.099999994
-scale_max = 0.099999994
+scale_min = 0.02
+scale_max = 0.049999997
+scale_curve = SubResource("CurveTexture_7jw2j")
 color = Color(0.41598046, 0.41598043, 0.4159804, 1)
 color_ramp = SubResource("GradientTexture1D_qbrdm")
+alpha_curve = SubResource("CurveTexture_jhhk6")
+
+[sub_resource type="Curve" id="Curve_qnes1"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_msrsx"]
+curve = SubResource("Curve_qnes1")
 
 [sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_05xpt"]
 particle_flag_disable_z = true
@@ -91,6 +116,7 @@ scale_min = 0.01
 scale_max = 0.01
 color = Color(0.41568628, 0.41568628, 0.41568628, 0.42745098)
 color_ramp = SubResource("GradientTexture1D_qbrdm")
+alpha_curve = SubResource("CurveTexture_msrsx")
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_d633r"]
 radius = 32.0
@@ -150,7 +176,7 @@ libraries/ = SubResource("AnimationLibrary_jhhk6")
 process_mode = 1
 stream = ExtResource("3_qbrdm")
 volume_db = -7.0
-pitch_scale = 2.7
+pitch_scale = 3.1
 
 [node name="BounceLaser" type="AudioStreamPlayer" parent="." unique_id=1283858372]
 process_mode = 1
@@ -197,7 +223,7 @@ amount = 3000
 texture = ExtResource("1_qp50q")
 lifetime = 32.0
 speed_scale = 64.0
-fixed_fps = 60
+fixed_fps = 120
 trail_lifetime = 2.0
 process_material = SubResource("ParticleProcessMaterial_qnes1")
 metadata/_edit_lock_ = true
