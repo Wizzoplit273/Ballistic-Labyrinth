@@ -138,6 +138,28 @@ func set_bot_trait_from_str(sid: int, attribute: String, value: String) -> void:
 	if not multiplayer.is_server(): return
 	set_bot_trait_from_str.rpc(sid, attribute, value)
 
+func add_crate(count: int, type: String) -> void:
+	if not multiplayer.is_server(): return
+	if type == "bulk" and count <= 0: return
+	if IngameManager.ingame == null: return
+	if not IngameManager.is_ingame_configured: return
+	if type == "bulk":
+		for i: int in range(0, count): IngameManager.ingame._on_crate_spawn_delay_timeout("bulk")
+		return
+	IngameManager.ingame._on_crate_spawn_delay_timeout(type)
+
+func remove_crate(count: int) -> void:
+	if not multiplayer.is_server(): return
+	if count <= 0: return
+	if IngameManager.ingame == null: return
+	if not IngameManager.is_ingame_configured: return
+	var crates_node: Node = IngameManager.ingame.get_node(^"Crates")
+	var current_count: int = crates_node.get_child_count()
+	if current_count < count: count = current_count
+	while count > 0:
+		crates_node.get_child(0).free()
+		count -= 1
+
 func wrap_request_profile_update() -> void:
 	if not NetworkManager.is_online:
 		UIManager.update_lobby_register()

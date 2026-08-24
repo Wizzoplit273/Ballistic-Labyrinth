@@ -27,6 +27,8 @@ func _ready() -> void:
 	set_process(is_multiplayer_authority())
 
 func _process(_delta: float) -> void:
+	if UIManager.is_ui_configured:
+		if UIManager.chat_menu_node.is_blocked: return
 	linear_input = int(Input.get_axis(&"MoveBackward", &"MoveForward"))
 	angular_input = int(Input.get_axis(&"RotateCounterclockwise", &"RotateClockwise"))
 	is_drifting = Input.is_action_pressed(&"Drift")

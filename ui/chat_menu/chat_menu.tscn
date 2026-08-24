@@ -102,6 +102,6 @@ placeholder_text = "write your message here"
 metadata/_edit_lock_ = true
 
 [connection signal="focus_entered" from="." to="." method="_on_focus_entered"]
-[connection signal="focus_entered" from="Window/Texture/Container/ChatInput" to="Window" method="_on_chat_input_focus_entered"]
-[connection signal="focus_exited" from="Window/Texture/Container/ChatInput" to="Window" method="_on_chat_input_focus_exited"]
+[connection signal="focus_entered" from="Window/Texture/Container/ChatInput" to="." method="_on_chat_input_focus_entered"]
+[connection signal="focus_exited" from="Window/Texture/Container/ChatInput" to="." method="_on_chat_input_focus_exited"]
 [connection signal="text_submitted" from="Window/Texture/Container/ChatInput" to="." method="_on_chat_input_text_submitted"]

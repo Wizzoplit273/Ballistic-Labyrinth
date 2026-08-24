@@ -687,15 +687,18 @@ func on_bullet_despawn(bullet: RigidBody2D) -> void:
 	if bullet.type == "regular": bullet.owner_node.bullet_count -= 1
 
 var crate_count: int = 0
-func _on_crate_spawn_delay_timeout() -> void:
+func _on_crate_spawn_delay_timeout(type: String = "null") -> void:
 	if not multiplayer.is_server(): return
 	var selected_maze_cell: Vector2i = maze_cells[SEEDED_RNG.randi_range(0, maze_cells.size() - 1)]
 	var pos: Vector2 = maze_cell_to_world(selected_maze_cell)
 	var spawn_data := {
 		"pos": pos,
-		"seed": SEEDED_RNG.randi()
+		"seed": SEEDED_RNG.randi(),
+		"type": type
 	}
-	if crate_count >= IngameManager.alive_tanks_count: return
+	## if a type is provided or it's "bulk", that means it's executed by staff using console, so bypass max count
+	if type == "null" and type != "bulk":
+		if crate_count >= IngameManager.alive_tanks_count: return
 	crate_count += 1
 	$Crates.spawn(spawn_data)
 
@@ -707,6 +710,8 @@ func spawn_crate(spawn_data: Dictionary) -> Node:
 	crate.connect("equip_weapon", equip_weapon)
 	crate.position = spawn_data["pos"]
 	crate.rng_seed = spawn_data["seed"]
+	if spawn_data["type"] == "bulk": spawn_data["type"] = "null"
+	crate.type = spawn_data["type"]
 	crate.network_ready()
 	return crate
 

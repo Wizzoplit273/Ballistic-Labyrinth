@@ -17,7 +17,8 @@ const TYPE_DICTIONARY: Dictionary = {
 	3: "trap"
 }
 
-var type: String = "NULL"
+## may be overwritten by spawn function before network_ready executes
+var type: String = "null"
 
 const TEXTURE_PATH_PREFIX: String = "res://ingame/entities/crates/crate_"
 const TEXTURE_EXTENSION: String = ".png"
@@ -27,7 +28,7 @@ var rng_seed: int = 0
 func network_ready() -> void:
 	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 	rng.seed = rng_seed
-	type = TYPE_DICTIONARY[rng.randi_range(1, TYPE_DICTIONARY.size())]
+	if type == "null": type = TYPE_DICTIONARY[rng.randi_range(1, TYPE_DICTIONARY.size())]
 	$Image.texture = load(TEXTURE_PATH_PREFIX + type + TEXTURE_EXTENSION)
 	rotation = rng.randf_range(-PI, PI)
 

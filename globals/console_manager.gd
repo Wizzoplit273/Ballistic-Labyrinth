@@ -78,6 +78,12 @@ func _enter_tree() -> void:
 		true,
 		false
 	)
+	register_command(
+		["crate", "powerup", "weapon"],
+		"general command for manipulating crates ingame",
+		true,
+		false
+	)
 
 ## first string in alias list corresponds with a callable's name(ex: "connect" corresponds with cmd_connect)
 func register_command(
@@ -221,7 +227,7 @@ func request_network_cmd(cmd: Dictionary, args: PackedStringArray, flags: Array[
 	if pid == 0 and multiplayer.is_server(): pid = 1
 	if not cmd in registry: return
 	if cmd["is_local"]: return
-	if cmd["requires_admin"] and not SessionManager.data[pid]["admin"]: return
+	if cmd["requires_admin"] and SessionManager.data[pid]["admin"] != true: return
 	Callable(self, "cmd_" + cmd["aliases"][0]).call(args, flags, pid)
 
 ## if y entry is < 0, then x entry refers to a number of SIDs(no specific SIDs)
@@ -519,3 +525,29 @@ func cmd_chat_resize(args: PackedStringArray, _flags: Array[PackedStringArray], 
 func cmd_start_game(_args: PackedStringArray, _flags: Array[PackedStringArray], pid: int = 0) -> void:
 	if pid == 0 or pid == 1: IngameManager.start_game()
 	else: IngameManager.start_game.rpc_id(1)
+
+func cmd_crate(args: PackedStringArray, _flags: Array[PackedStringArray], pid: int = 0) -> void:
+	if args.is_empty():
+		print_output(
+			"usage: crate (add [COUNT/TYPE])/(delete [COUNT])",
+			pid)
+		return
+	const ALIASES_1 := ["add", "create"]
+	const ALIASES_2 := ["remove", "delete", "erase"]
+	if args[0] in ALIASES_1: # CRATE add ...
+		var count: int = 1
+		var specific_type: String = "bulk"
+		if args.size() >= 2:
+			if not args[1].is_valid_int():
+				specific_type = args[1]
+			else: count = abs(int(args[1])) # CRATE add 1 [2] [3] [4] ...
+		SessionManager.add_crate(count, specific_type)
+		return
+	elif args[0] in ALIASES_2: # CRATE remove ...
+		var count: int = 1
+		if args.size() >= 2: count = abs(int(args[1])) # BOT remove 1 [2] [3] [4] ...
+		SessionManager.remove_crate(count)
+		return
+	else: # CRATE ...
+		print_output("invalid first argument. Should be add or delete", pid)
+		return
