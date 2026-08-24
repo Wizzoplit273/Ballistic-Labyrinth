@@ -21,6 +21,7 @@ var laser_speed: float = 3000.0
 var laser_lifespan: float = 1.0
 var rocket_speed: float = 300.0
 var rocket_lifespan: float = 15.0
+var trap_speed: float = 700.0
 
 var weapon_type: String = "regular"
 

@@ -186,7 +186,6 @@ func _on_shoot_bullet(weapon_type: String, tank: RigidBody2D) -> void:
 	if tank == null: return
 	if weapon_type != "regular":
 		if multiplayer.is_server(): tank.equip_weapon.rpc("regular")
-		else: tank.equip_weapon("regular")
 	var payload: Dictionary = {}
 	var bullet_offset: float
 	if weapon_type == "regular":
@@ -205,7 +204,7 @@ func _on_shoot_bullet(weapon_type: String, tank: RigidBody2D) -> void:
 		payload["type"] = "rocket"
 	if weapon_type == "trap":
 		bullet_offset = tank.TRAP_SPAWN_OFFSET
-		payload["initial_velocity_speed"] = 0.0
+		payload["initial_velocity_speed"] = tank.trap_speed
 		payload["type"] = "trap"
 	payload["owner"] = tank.get_path()
 	payload["initial_velocity_direction"] = tank.rotation

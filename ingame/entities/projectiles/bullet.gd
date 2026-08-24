@@ -36,7 +36,7 @@ func _ready() -> void:
 		$Rest/Image.scale = Vector2.ONE * TRAP_SCALE_MODIFIER_TEXTURE
 		$Hitbox.scale = Vector2.ONE * TRAP_SCALE_MODIFIER_REST
 		$Rest.scale = Vector2.ONE * TRAP_SCALE_MODIFIER_REST
-		$AnimationPlayer.play(&"hide_trap")
+		#$AnimationPlayer.play(&"hide_trap")
 	if type != "trap": $LifespanTimer.start()
 
 func determine_closest_target() -> void:
@@ -70,15 +70,26 @@ func configure_if_rocket() -> void:
 			proper_rotation = lerp_angle(proper_rotation, direction.angle(), ROCKET_MAX_TURN_SPEED)
 	linear_velocity = (Vector2.RIGHT * linear_velocity.length()).rotated(proper_rotation)
 
+const TRAP_DECAY_SPEED: float = 1.02
+var TRAP_HIDE_DISTANCE: float = 30.0
+func configure_if_trap() -> void:
+	if type != "trap": return
+	initial_velocity_speed /= TRAP_DECAY_SPEED
+	if initial_velocity_speed <= TRAP_HIDE_DISTANCE:
+		$AnimationPlayer.play(&"hide_trap")
+		initial_velocity_speed = 0.0
+		TRAP_HIDE_DISTANCE = -1.0
+
 func set_node_rotations() -> void:
 	$Rest/VelocityRaycast1.rotation = linear_velocity.angle() - PI/2
 	$Rest/VelocityRaycast2.rotation = linear_velocity.angle() - PI/2 - PI/60
 	$Rest/VelocityRaycast3.rotation = linear_velocity.angle() - PI/2 + PI/60
-	$Rest/Image.rotation = linear_velocity.angle()
+	if type != "trap": $Rest/Image.rotation = linear_velocity.angle()
 
 func _physics_process(_delta: float) -> void:
 	if linear_velocity.length() != 0.0: linear_velocity = linear_velocity.normalized() * initial_velocity_speed
 	configure_if_rocket()
+	configure_if_trap()
 	set_node_rotations()
 
 func _on_lifespan_timer_timeout() -> void:
