@@ -23,7 +23,6 @@ var angular_input: int = 0
 var is_drifting: bool = false
 
 var target: Node2D = null
-var is_adjacent_wall_to_target: bool = false ## determined by IngameManager.ingame
 var is_dodging_bullets: bool = false
 
 func _ready() -> void:
@@ -59,7 +58,7 @@ func apply_linear_input() -> void:
 func _on_idle_start_cooldown_timeout() -> void:
 	$IdleEndCooldown.start()
 
-const LONG_RANGE_SHOOT_DISTANCE: float = 600.0
+const LONG_RANGE_SHOOT_DISTANCE: float = 1300.0
 @onready var MEDIUM_RANGE_SHOOT_DISTANCE: float = $NavAgent.target_desired_distance
 func configure_target_reach_distance() -> void:
 	if target.get_meta("entity_type", "null") == "crate":
@@ -118,6 +117,7 @@ func _physics_process(delta: float) -> void:
 	check_nearby_bullets()
 	configure_patrol()
 	if idle_if_no_tanks(): return
+	determine_if_wall_to_target()
 	point_to_target_if_seen()
 	configure_nav_agent_process()
 	configure_reversing()
@@ -154,6 +154,25 @@ var MAX_STUCK_POSITION_CHANGE: float = 3.2
 
 var previous_position: Vector2 = Vector2.ZERO
 var previous_rotation: float = 0.0
+
+const WALL_RAYCAST_OFFSET: float = 20.0
+var is_adjacent_wall_to_target: bool = false
+func determine_if_wall_to_target() -> void:
+	is_adjacent_wall_to_target = false
+	if target == null: return
+	if target.get_meta("entity_type", "null") == "crate": return
+	for raycast: RayCast2D in $WallRaycasts.get_children():
+		#raycast.rotation = -rotation
+		raycast.global_position = pawn.global_position
+		raycast.target_position = raycast.to_local(target.global_position)
+		var deviation: Vector2 = (raycast.target_position - raycast.global_position).normalized()
+		if raycast.name == "Left": deviation = deviation.rotated(-PI/2) * WALL_RAYCAST_OFFSET
+		if raycast.name == "Center": deviation = Vector2.ZERO
+		if raycast.name == "Right": deviation = deviation.rotated(PI/2) * WALL_RAYCAST_OFFSET
+		raycast.target_position += deviation
+		if not raycast.is_colliding(): continue
+		is_adjacent_wall_to_target = true
+		return
 
 func point_to_target_if_seen() -> void:
 	if target == self: return

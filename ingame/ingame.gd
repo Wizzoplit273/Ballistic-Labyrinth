@@ -56,16 +56,16 @@ func modified_ready(is_animated: bool = false) -> void:
 	is_finished_loading = true
 	IngameManager.broadcast_generation_finish()
 
-func _process(_delta: float) -> void:
-	if not multiplayer.is_server(): return
-	if is_queued_for_deletion(): return
-	for bot: RigidBody2D in $TankPawns.get_children():
-		if bot.controller == null: continue
-		if bot.controller.sid >= 0: continue
-		if bot.controller.target == null: continue
-		var target_cell: Vector2i = $Map/Ground.local_to_map($Map/Ground.to_local(bot.controller.target.position))
-		var bot_cell: Vector2i = $Map/Ground.local_to_map($Map/Ground.to_local(bot.position))
-		bot.controller.is_adjacent_wall_to_target = is_wall_between_cells(target_cell, bot_cell, 2, true)
+#func _process(_delta: float) -> void:
+	#if not multiplayer.is_server(): return
+	#if is_queued_for_deletion(): return
+	#for bot: RigidBody2D in $TankPawns.get_children():
+		#if bot.controller == null: continue
+		#if bot.controller.sid >= 0: continue
+		#if bot.controller.target == null: continue
+		#var target_cell: Vector2i = $Map/Ground.local_to_map($Map/Ground.to_local(bot.controller.target.position))
+		#var bot_cell: Vector2i = $Map/Ground.local_to_map($Map/Ground.to_local(bot.position))
+		#bot.controller.is_adjacent_wall_to_target = is_wall_between_cells(target_cell, bot_cell, 2, true)
 
 func activate_crate_spawn_timer() -> void:
 	$Timers/CrateSpawnDelay.process_mode = Node.PROCESS_MODE_INHERIT
@@ -234,31 +234,31 @@ func modify_physics_wall_length(wall_node: StaticBody2D, wall_increment: int, di
 		wall_node.position.y += unit_wall_length * wall_increment / 2 * int_is_positive_axis
 		wall_node.scale.y += (unit_wall_length * wall_increment / 2 + magic_tile_offset) * int_is_positive_axis
 
-func is_wall_between_cells(cell_1: Vector2i, cell_2: Vector2i, given_range: int, include_diagonals: bool) -> bool:
-	if cell_1 == cell_2: return false ## slight optimisation just in case
-	for k: int in range(given_range):
-		if cell_1.x + k + 1 == cell_2.x:
-			if maze_visual_wall_exists(cell_1, 0) or maze_visual_wall_exists(cell_2, 2): return true
-		if cell_1.y + k + 1 == cell_2.y:
-			if maze_visual_wall_exists(cell_1, 1) or maze_visual_wall_exists(cell_2, 3): return true
-		if cell_1.x - k - 1 == cell_2.x:
-			if maze_visual_wall_exists(cell_1, 2) or maze_visual_wall_exists(cell_2, 0): return true
-		if cell_1.y - k - 1 == cell_2.y:
-			if maze_visual_wall_exists(cell_1, 3) or maze_visual_wall_exists(cell_2, 1): return true
-	if not include_diagonals: return false
-	if cell_1 + Vector2i(1, 1) == cell_2:
-		if maze_visual_wall_exists(cell_1, 0) or maze_visual_wall_exists(cell_1, 1): return true
-		if maze_visual_wall_exists(cell_2, 2) or maze_visual_wall_exists(cell_2, 3): return true
-	if cell_1 + Vector2i(-1, 1) == cell_2:
-		if maze_visual_wall_exists(cell_1, 1) or maze_visual_wall_exists(cell_1, 2): return true
-		if maze_visual_wall_exists(cell_2, 3) or maze_visual_wall_exists(cell_2, 0): return true
-	if cell_1 + Vector2i(-1, -1) == cell_2:
-		if maze_visual_wall_exists(cell_1, 2) or maze_visual_wall_exists(cell_1, 3): return true
-		if maze_visual_wall_exists(cell_2, 0) or maze_visual_wall_exists(cell_2, 1): return true
-	if cell_1 + Vector2i(1, -1) == cell_2:
-		if maze_visual_wall_exists(cell_1, 3) or maze_visual_wall_exists(cell_1, 0): return true
-		if maze_visual_wall_exists(cell_2, 1) or maze_visual_wall_exists(cell_2, 2): return true
-	return false
+#func is_wall_between_cells(cell_1: Vector2i, cell_2: Vector2i, given_range: int, include_diagonals: bool) -> bool:
+	#if cell_1 == cell_2: return false ## slight optimisation just in case
+	#for k: int in range(given_range):
+		#if cell_1.x + k + 1 == cell_2.x:
+			#if maze_visual_wall_exists(cell_1, 0) or maze_visual_wall_exists(cell_2, 2): return true
+		#if cell_1.y + k + 1 == cell_2.y:
+			#if maze_visual_wall_exists(cell_1, 1) or maze_visual_wall_exists(cell_2, 3): return true
+		#if cell_1.x - k - 1 == cell_2.x:
+			#if maze_visual_wall_exists(cell_1, 2) or maze_visual_wall_exists(cell_2, 0): return true
+		#if cell_1.y - k - 1 == cell_2.y:
+			#if maze_visual_wall_exists(cell_1, 3) or maze_visual_wall_exists(cell_2, 1): return true
+	#if not include_diagonals: return false
+	#if cell_1 + Vector2i(1, 1) == cell_2:
+		#if maze_visual_wall_exists(cell_1, 0) or maze_visual_wall_exists(cell_1, 1): return true
+		#if maze_visual_wall_exists(cell_2, 2) or maze_visual_wall_exists(cell_2, 3): return true
+	#if cell_1 + Vector2i(-1, 1) == cell_2:
+		#if maze_visual_wall_exists(cell_1, 1) or maze_visual_wall_exists(cell_1, 2): return true
+		#if maze_visual_wall_exists(cell_2, 3) or maze_visual_wall_exists(cell_2, 0): return true
+	#if cell_1 + Vector2i(-1, -1) == cell_2:
+		#if maze_visual_wall_exists(cell_1, 2) or maze_visual_wall_exists(cell_1, 3): return true
+		#if maze_visual_wall_exists(cell_2, 0) or maze_visual_wall_exists(cell_2, 1): return true
+	#if cell_1 + Vector2i(1, -1) == cell_2:
+		#if maze_visual_wall_exists(cell_1, 3) or maze_visual_wall_exists(cell_1, 0): return true
+		#if maze_visual_wall_exists(cell_2, 1) or maze_visual_wall_exists(cell_2, 2): return true
+	#return false
 
 var MAX_PRIM_EXTRA_CELLS: int = 5
 ## Randomized Prim's Algorithm: it's the primary maze generating algorithm for this project

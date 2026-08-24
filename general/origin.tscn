@@ -4,3 +4,5 @@
 
 [node name="Origin" type="Node" unique_id=1976139409]
 script = ExtResource("1_nd25w")
+
+[node name="Node2D" type="Node2D" parent="." unique_id=464914689]
