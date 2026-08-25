@@ -98,22 +98,42 @@ func increment_score(sid: int) -> void:
 	if sid == 0: return
 	assign_from_str(sid, "score", str(data[sid].get("score") + 1))
 
+## alpha channel isn't used, so every color is opaque by default
+func color_to_string(color: Color) -> String:
+	var result: String = "\"" + str(color.r) + " " + str(color.g) + " " + str(color.b) + "\""
+	return result
+
+func string_to_color(string: String) -> Color:
+	string = string.replace("\"", "")
+	var split: PackedStringArray = string.split(" ", false)
+	if split.size() <= 2: return Color.WHITE
+	var floats: PackedFloat32Array = []
+	for i: int in range(0, 3):
+		floats.append(float(split[i]))
+		if floats[i] < 0: floats[i] = 0.0
+		if floats[i] > 1.0: floats[i] = 1.0
+	var color: Color = Color(floats[0], floats[1], floats[2])
+	return color
+
 @rpc("authority", "reliable")
 func assign_from_str(sid: int, attribute: String, value: String) -> void:
 	if sid == 0 and NetworkManager.is_online: sid = multiplayer.get_unique_id()
 	if not data.has(sid): return
 	if not data[sid].has(attribute): return
-	if typeof(data[sid][attribute]) == TYPE_BOOL:
-		if attribute == "admin": # stricter console set for admin permission
-			if value == "true": set_admin(sid, true)
-			else: set_admin(sid, false)
-		else:
-			if value == "false" or value == "0": data[sid][attribute] = false
-			else: data[sid][attribute] = true
-	if typeof(data[sid][attribute]) == TYPE_INT: data[sid][attribute] = int(value)
-	if typeof(data[sid][attribute]) == TYPE_FLOAT: data[sid][attribute] = float(value)
-	if typeof(data[sid][attribute]) == TYPE_STRING: data[sid][attribute] = value
-	if sid == multiplayer.get_unique_id(): profile_data[attribute] = data[sid][attribute]
+	if attribute == "color":
+		data[sid][attribute] = string_to_color(value)
+	else:
+		if typeof(data[sid][attribute]) == TYPE_BOOL:
+			if attribute == "admin": # stricter console set for admin permission
+				if value == "true": set_admin(sid, true)
+				else: set_admin(sid, false)
+			else:
+				if value == "false" or value == "0": data[sid][attribute] = false
+				else: data[sid][attribute] = true
+		if typeof(data[sid][attribute]) == TYPE_INT: data[sid][attribute] = int(value)
+		if typeof(data[sid][attribute]) == TYPE_FLOAT: data[sid][attribute] = float(value)
+		if typeof(data[sid][attribute]) == TYPE_STRING: data[sid][attribute] = value
+		if sid == multiplayer.get_unique_id(): profile_data[attribute] = data[sid][attribute]
 	UIManager.update_lobby_register()
 	if not NetworkManager.is_online: return
 	if not multiplayer.is_server(): return

@@ -373,7 +373,11 @@ func cmd_get(args: PackedStringArray, flags: Array[PackedStringArray], _pid: int
 			return
 	for key: PackedStringArray in ATTRIBUTE_ALIASES.values():
 		if not args[0] in key: continue
-		var result: String = str(SessionManager.data[target_sid].get(key[0]))
+		var session_entry: Dictionary = SessionManager.data[target_sid]
+		var result: String
+		if key[0] == "color":
+			result = SessionManager.color_to_string(session_entry.get(key[0]))
+		else: result = str(session_entry.get(key[0]))
 		print_output(key[0] + ": " + result)
 		return
 
