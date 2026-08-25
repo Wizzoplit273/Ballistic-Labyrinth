@@ -484,7 +484,10 @@ func cmd_bot(args: PackedStringArray, flags: Array[PackedStringArray], pid: int 
 		if filter[1] == 0:
 			var sid: int = filter[0]
 			sid = -abs(sid)
-			SessionManager.remove_bot_sid(sid)
+			SessionManager.remove_bot_sid.rpc(sid)
+			return
+		if filter[1] == -1:
+			SessionManager.remove_bot_count.rpc(filter[0])
 			return
 	elif args[0] in ALIASES_3: # BOT set ...
 		if args.size() < 3: # BOT set ?"trait"? ?VALUE?

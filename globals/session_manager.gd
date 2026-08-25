@@ -55,17 +55,14 @@ func add_bot(count: int = 1) -> void:
 		count -= 1
 	UIManager.update_lobby_register()
 
-@rpc("authority", "reliable")
+@rpc("authority", "reliable", "call_local")
 func remove_bot_sid(sid: int) -> void:
 	if sid >= 0: return
 	if not data.has(sid): return
 	data.erase(sid)
 	UIManager.update_lobby_register()
-	if not NetworkManager.is_online: return
-	if not multiplayer.is_server(): return
-	remove_bot_sid.rpc(sid)
 
-@rpc("authority", "reliable")
+@rpc("authority", "reliable", "call_local")
 func remove_bot_count(count: int = 1) -> void:
 	if count <= 0: return
 	for sid: int in data.keys():
@@ -74,9 +71,6 @@ func remove_bot_count(count: int = 1) -> void:
 		data.erase(sid)
 		count -= 1
 	UIManager.update_lobby_register()
-	if not NetworkManager.is_online: return
-	if not multiplayer.is_server(): return
-	remove_bot_count.rpc(count)
 
 func set_profile_name(name_string: String) -> void:
 	profile_data["name"] = name_string
