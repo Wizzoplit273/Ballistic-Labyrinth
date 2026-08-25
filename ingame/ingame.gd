@@ -730,6 +730,7 @@ func spawn_crate(spawn_data: Dictionary) -> Node:
 
 ## connected to crates when one of them gets picked up by a tank
 func equip_weapon(tank: RigidBody2D, type: String) -> void:
+	if not multiplayer.is_server(): return
 	crate_count -= 1
 	MasterManager.play_server_sound($Sounds/EquipWeaponNoise)
 	tank.equip_weapon.rpc(type)

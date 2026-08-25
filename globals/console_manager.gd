@@ -538,9 +538,9 @@ func cmd_bot(args: PackedStringArray, flags: Array[PackedStringArray], pid: int)
 			bot_controller.linear_input = 0
 			bot_controller.angular_input = 0
 	elif args[0] in ALIASES_6: # BOT random ...
-		var seed: int = randi()
-		if args.size() >= 2: seed = int(args[1])
-		SessionManager.random_bot_color.rpc(seed)
+		var set_seed: int = randi()
+		if args.size() >= 2: set_seed = int(args[1])
+		SessionManager.random_bot_color.rpc(set_seed)
 		return
 	else: # BOT ...
 		print_output("invalid first argument. Should be add, delete, set, enable, disable or random", "shell_error", pid)

@@ -23,6 +23,7 @@ func update_chat(new_messages: Array[Dictionary]) -> void:
 const NO_TIMESTAMP_CHANNELS: PackedStringArray = ["shell_input", "shell_error", "shell_output"]
 func add_message(message: Dictionary) -> void:
 	var readable_sid: String = SessionManager.encode_session_id(message.get("sender_sid"))
+	if not NetworkManager.is_online: readable_sid = "#OFFLINE"
 	if not message.get("channel") in NO_TIMESTAMP_CHANNELS:
 		%ChatText.text += str(message.get("timestamp")) + " "
 	if message.get("channel") == "peer":

@@ -50,10 +50,17 @@ func create_controllers() -> void:
 	if not multiplayer.is_server(): return
 	for sid: int in SessionManager.data: create_controller(sid)
 
+@rpc("authority", "reliable", "call_local")
+func disable_client_controller(path: NodePath) -> void:
+	get_node(path).set_multiplayer_authority(1)
+
 func delete_controllers() -> void:
 	if not NetworkManager.is_online: return
 	if not multiplayer.is_server(): return
-	for controller: Node in get_children(): controller.queue_free()
+	for controller: Node in get_children():
+		if controller is MultiplayerSynchronizer:
+			disable_client_controller.rpc_id(controller.sid, controller.get_path())
+		controller.call_deferred("queue_free")
 
 @rpc("any_peer", "reliable", "call_local")
 func start_game() -> void:
@@ -199,7 +206,7 @@ func _on_tank_die() -> void:
 func _on_shoot_bullet(weapon_type: String, tank: RigidBody2D) -> void:
 	if tank == null: return
 	if weapon_type != "regular":
-		if multiplayer.is_server(): tank.equip_weapon.rpc("regular")
+		tank.equip_weapon.rpc("regular")
 	var payload: Dictionary = {}
 	var bullet_offset: float
 	if weapon_type == "regular":

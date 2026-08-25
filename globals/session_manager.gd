@@ -166,9 +166,9 @@ func set_bot_trait_from_str(sid: int, attribute: String, value: String) -> void:
 const MIN_RANDOM_COLOR: float = 0.05
 const MAX_RANDOM_COLOR: float = 0.97
 @rpc("authority", "reliable", "call_local")
-func random_bot_color(seed: int) -> void:
+func random_bot_color(set_seed: int) -> void:
 	var rng := RandomNumberGenerator.new()
-	rng.seed = seed
+	rng.seed = set_seed
 	var result: String
 	for bot_id: int in SessionManager.data.keys():
 		if bot_id >= 0: continue
