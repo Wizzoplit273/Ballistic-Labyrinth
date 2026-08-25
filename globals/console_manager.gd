@@ -468,7 +468,7 @@ func cmd_assign(args: PackedStringArray, flags: Array[PackedStringArray], pid: i
 func cmd_bot(args: PackedStringArray, flags: Array[PackedStringArray], pid: int = 0) -> void:
 	if args.is_empty():
 		print_output(
-			"usage: bot {add [COUNT]}/{delete =s/=c/=n SID/COUNT/NAME}/{set =s/=n SID/NAME \"trait\" VALUE}/{enable}/{disable}",
+			"usage: bot {add [COUNT]}/{delete =s/=c/=n SID/COUNT/NAME}/{set =s/=n SID/NAME \"trait\" VALUE}/{enable}/{disable}/{random}",
 			pid)
 		return
 	const ALIASES_1 := ["add", "create"]
@@ -476,6 +476,7 @@ func cmd_bot(args: PackedStringArray, flags: Array[PackedStringArray], pid: int 
 	const ALIASES_3 := ["set", "assign", "set_personality", "assign_personality", "set_trait", "assign_trait", "trait"]
 	const ALIASES_4 := ["enable", "on", "activate", "turn_on"]
 	const ALIASES_5 := ["disable", "off", "deactivate", "turn_off"]
+	const ALIASES_6 := ["random", "randomise", "randomize", "rand", "rng", "generate"]
 	if args[0] in ALIASES_1: # BOT add ...
 		var count1: int = 1
 		if args.size() >= 2: count1 = abs(int(args[1])) # BOT add 1 [2] [3] [4] ...
@@ -539,8 +540,13 @@ func cmd_bot(args: PackedStringArray, flags: Array[PackedStringArray], pid: int 
 			bot_controller.process_mode = Node.PROCESS_MODE_DISABLED
 			bot_controller.linear_input = 0
 			bot_controller.angular_input = 0
+	elif args[0] in ALIASES_6: # BOT random ...
+		var seed: int = randi()
+		if args.size() >= 2: seed = int(args[1])
+		SessionManager.random_bot_color.rpc(seed)
+		return
 	else: # BOT ...
-		print_output("invalid first argument. Should be add, delete, set, enable, disable or reset", pid)
+		print_output("invalid first argument. Should be add, delete, set, enable, disable or random", pid)
 		return
 
 # temporary quick configuration

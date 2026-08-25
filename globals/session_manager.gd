@@ -163,6 +163,20 @@ func set_bot_trait_from_str(sid: int, attribute: String, value: String) -> void:
 	if not multiplayer.is_server(): return
 	set_bot_trait_from_str.rpc(sid, attribute, value)
 
+const MIN_RANDOM_COLOR: float = 0.05
+const MAX_RANDOM_COLOR: float = 0.97
+@rpc("authority", "reliable", "call_local")
+func random_bot_color(seed: int) -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = seed
+	var result: String
+	for bot_id: int in SessionManager.data.keys():
+		if bot_id >= 0: continue
+		result = "\"" + str(rng.randf_range(MIN_RANDOM_COLOR, MAX_RANDOM_COLOR))
+		result += " " + str(rng.randf_range(MIN_RANDOM_COLOR, MAX_RANDOM_COLOR))
+		result += " " + str(rng.randf_range(MIN_RANDOM_COLOR, MAX_RANDOM_COLOR)) + "\""
+		assign_from_str(bot_id, "color", result)
+
 func add_crate(count: int, type: String) -> void:
 	if not multiplayer.is_server(): return
 	if type == "bulk" and count <= 0: return
@@ -233,9 +247,11 @@ func request_profile_update(profile: Dictionary) -> void:
 
 const ENCODE_ALPHABET: String = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 const ENCODE_BOT_PREFIX: String = "ai#"
+const ENCODE_HOST: String = "#HOST"
 
 func encode_session_id(session_id: int) -> String:
 	if session_id == 0: return "0"
+	if session_id == 1: return ENCODE_HOST
 	var is_negative: bool = session_id < 0
 	var num: int = abs(session_id)
 	var result: String = ""
@@ -248,6 +264,7 @@ func encode_session_id(session_id: int) -> String:
 
 func decode_session_id(encoded_id: String) -> int:
 	if encoded_id.is_empty(): return 0
+	if encoded_id == ENCODE_HOST: return 1
 	var is_negative: bool = encoded_id.begins_with(ENCODE_BOT_PREFIX)
 	if is_negative: encoded_id = encoded_id.substr(ENCODE_BOT_PREFIX.length())
 	var result: int = 0
