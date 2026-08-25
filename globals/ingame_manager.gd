@@ -7,6 +7,7 @@ var scene_root: Node = null
 
 var current_seed: int = 0
 var current_maze_dimensions: Vector2i = Vector2i(20, 12) ## first entry is width, second is height
+var set_maze_dimensions: Vector4i = Vector4i(20, 20, 12, 12)
 
 const INGAME_FILE: String = "res://ingame/ingame.tscn"
 var ingame: Node = null
@@ -20,6 +21,13 @@ var alive_tanks_count: int = 0
 func _enter_tree() -> void:
 	spawn_path = get_path()
 	spawn_function = _custom_spawn
+
+@rpc("authority", "reliable", "call_local")
+func set_maze_size(string: String) -> void:
+	var result: Vector4i = SessionManager.string_to_vector4i(string)
+	if result[0] <= 0 or result[1] <= 0 or result[2] <= 0 or result[3] <= 0: return
+	if result[0] > result[1] or result[2] > result[3]: return
+	set_maze_dimensions = result
 
 func create_controller(sid: int) -> void:
 	if sid == 0: return
@@ -54,6 +62,12 @@ func start_game() -> void:
 	if not multiplayer.is_server(): return
 	if pid != 0 and SessionManager.data[pid].get("admin") == false: return
 	current_seed = randi()
+	current_maze_dimensions.x = randi_range(set_maze_dimensions[0], set_maze_dimensions[1])
+	current_maze_dimensions.y = randi_range(set_maze_dimensions[2], set_maze_dimensions[3])
+	if current_maze_dimensions.y > current_maze_dimensions.x:
+		var auxiliary: int = current_maze_dimensions.x
+		current_maze_dimensions.x = current_maze_dimensions.y
+		current_maze_dimensions.y = auxiliary
 	start_ingame.rpc(current_seed, current_maze_dimensions, true)
 
 @rpc("any_peer", "reliable")

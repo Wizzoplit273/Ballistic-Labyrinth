@@ -23,9 +23,22 @@ const MAZE_GENERATION_NOISE_VARIANCE: float = 0.1
 
 var SEEDED_RNG: RandomNumberGenerator = RandomNumberGenerator.new()
 
+const CAMERA_MARGIN: float = 300.0
 func setup_camera_and_background_noise() -> void:
-	$Camera.position.x = $Map/Ground.tile_set.tile_size.x * $Map/Ground.scale.x * IngameManager.current_maze_dimensions.x / 2
-	$Camera.position.y = $Map/Ground.tile_set.tile_size.y * $Map/Ground.scale.y * IngameManager.current_maze_dimensions.y / 2
+	var maze_w: int = IngameManager.current_maze_dimensions.x
+	var maze_h: int = IngameManager.current_maze_dimensions.y
+	var first_cell: Vector2 = maze_cell_to_world(Vector2i.ZERO)
+	var last_cell: Vector2 = maze_cell_to_world(Vector2i(maze_w - 1, maze_h - 1))
+	$Camera.global_position = (first_cell + last_cell) / 2
+	var rect_size: Vector2 = (first_cell - last_cell).abs() + Vector2.ONE * CAMERA_MARGIN
+	var zoom: Vector2 = get_viewport().get_visible_rect().size
+	zoom.x /= rect_size.x
+	zoom.y /= rect_size.y
+	var zoom_factor: float = max(0.01, min(zoom.x, zoom.y))
+	$Camera.zoom = Vector2.ONE * zoom_factor
+	#$Camera.position.x = $Map/Ground.tile_set.tile_size.x * $Map/Ground.scale.x * IngameManager.current_maze_dimensions.x / 2
+	#$Camera.position.y = $Map/Ground.tile_set.tile_size.y * $Map/Ground.scale.y * IngameManager.current_maze_dimensions.y / 2
+	#$Camera.zoom = Vector2.ONE * CAMERA_ZOOM_FACTOR / IngameManager.current_maze_dimensions.x / IngameManager.current_maze_dimensions.y
 	$Map/GroundNoise.position = $Camera.position
 	$Map/GroundNoise.texture.noise.seed = SEEDED_RNG.randi_range(0, 10000)
 

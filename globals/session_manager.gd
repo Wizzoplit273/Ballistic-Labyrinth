@@ -109,6 +109,17 @@ func string_to_color(string: String) -> Color:
 	var color: Color = Color(floats[0], floats[1], floats[2])
 	return color
 
+func vector4i_to_string(vector: Vector4i) -> String:
+	var result: String = "\"" + str(vector[0]) + " " + str(vector[1])
+	result += " " + str(vector[2]) + " " + str(vector[3]) + "\""
+	return result
+
+func string_to_vector4i(string: String) -> Vector4i:
+	string = string.replace("\"", "")
+	var split: PackedStringArray = string.split(" ", false)
+	if split.size() <= 3: return Vector4i.ZERO
+	return Vector4i(int(split[0]), int(split[1]), int(split[2]), int(split[3]))
+
 @rpc("authority", "reliable")
 func assign_from_str(sid: int, attribute: String, value: String) -> void:
 	if sid == 0 and NetworkManager.is_online: sid = multiplayer.get_unique_id()

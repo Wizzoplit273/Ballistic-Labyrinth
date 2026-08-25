@@ -170,7 +170,7 @@ tile_set = ExtResource("4_ogvd8")
 metadata/_edit_lock_ = true
 
 [node name="GroundNoise" type="Sprite2D" parent="Map" unique_id=327495193]
-scale = Vector2(25.5, 15.4)
+scale = Vector2(25, 25)
 texture = SubResource("NoiseTexture2D_6g7ql")
 metadata/_edit_lock_ = true
 

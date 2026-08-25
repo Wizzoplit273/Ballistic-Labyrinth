@@ -84,6 +84,12 @@ func _enter_tree() -> void:
 		true,
 		false
 	)
+	register_command(
+		["maze", "maze_set", "maze_size", "maze_set_size", "set_maze_size"],
+		"sets the maze's minimum and maximum random width and height: \"min_w, max_w, min_h, max_h\"",
+		true,
+		false
+	)
 
 ## first string in alias list corresponds with a callable's name(ex: "connect" corresponds with cmd_connect)
 func register_command(
@@ -576,3 +582,11 @@ func cmd_crate(args: PackedStringArray, _flags: Array[PackedStringArray], pid: i
 	else: # CRATE ...
 		print_output("invalid first argument. Should be add or delete", pid)
 		return
+
+func cmd_maze(args: PackedStringArray, _flags: Array[PackedStringArray], pid: int = 0) -> void:
+	if args.is_empty():
+		print_output(
+			"usage: maze \"min_width, max_width, min_height, max_height\"",
+			pid)
+		return
+	IngameManager.set_maze_size.rpc(args[0])
