@@ -3,18 +3,14 @@ extends Node
 var chat_history: Array[Dictionary] = []
 var MAX_HISTORY: int = 100
 
-@rpc("authority", "reliable")
-func send_local_message(text: String, channel: String = "global") -> void:
+func send_local_message(text: String, channel: String) -> void:
 	if not UIManager.is_ui_configured: return
-	process_message(text, channel)
+	process_message(text, channel, 0)
 
-func send_message(text: String, channel: String = "global") -> void:
-	if NetworkManager.is_online and not multiplayer.is_server():
-		rpc_id(1, "process_message", text, channel)
-		return
-	process_message(text, channel)
+func send_message(text: String, channel: String, target_pid: int) -> void:
+	process_message.rpc_id(1, text, channel, target_pid)
 
-@rpc("authority", "reliable")
+@rpc("authority", "reliable", "call_local")
 func update_chat_history(new_message: Dictionary) -> void:
 	chat_history.append(new_message)
 	while chat_history.size() > MAX_HISTORY:
@@ -22,15 +18,22 @@ func update_chat_history(new_message: Dictionary) -> void:
 	var new_array: Array[Dictionary] = [new_message]
 	update_local_chat_ui.emit(new_array)
 
+## CHANNELS
+## --- shell_input: input command(only for configured chat menu UI, sent only locally)
+## --- shell_output: regular shell output(sent only for executing peer)
+## --- shell_error: error messages for commands(sent only for executing peer)
+## --- target: command outputs that target a specific peer id different than executing peer(eg: admin grant/revoke)
+## --- admin: staff only output messages
+## --- peer: regular messages sent by peers
+## --- global: system messages sent to everyone
 signal update_local_chat_ui(messages: Array[Dictionary])
-@rpc("any_peer", "reliable")
-func process_message(text: String, channel: String = "global") -> void:
+@rpc("any_peer", "reliable", "call_local")
+func process_message(text: String, channel: String, target_pid: int) -> void:
 	var sender_id: int = multiplayer.get_remote_sender_id()
 	var final_text: String = text.strip_edges()
 	var message: Dictionary = {}
 	var new_array: Array[Dictionary] = []
-	if NetworkManager.is_online and not multiplayer.is_server():
-		#if sender_id != 0: return
+	if sender_id == 0:
 		message = {
 			"sender_sid": sender_id,
 			"sender_name": SessionManager.profile_data.get("name"),
@@ -44,8 +47,7 @@ func process_message(text: String, channel: String = "global") -> void:
 		new_array.append(message)
 		update_local_chat_ui.emit(new_array)
 		return
-	if sender_id == 0 and NetworkManager.is_online: sender_id = 1
-	if sender_id > 1: channel = "global"
+	if not multiplayer.is_server(): return
 	var sender_name: String = ""
 	if SessionManager.data.has(sender_id): sender_name = SessionManager.data.get(sender_id).get("name")
 	message = {
@@ -55,13 +57,19 @@ func process_message(text: String, channel: String = "global") -> void:
 		"timestamp": Time.get_time_string_from_unix_time(int(Time.get_unix_time_from_system())),
 		"channel": channel
 	}
-	chat_history.append(message)
-	while chat_history.size() > MAX_HISTORY:
-		chat_history.pop_front()
-	if NetworkManager.is_online and multiplayer.is_server():
-		if not channel in RELATIVE_LOCAL_CHANNELS:
-			rpc("update_chat_history", message)
-	new_array.append(message)
-	update_local_chat_ui.emit(new_array)
+	if channel in PID_EXCLUSIVE_CHANNELS:
+		if target_pid == 0: return
+		update_chat_history.rpc_id(target_pid, message)
+		return
+	if channel == "admin":
+		for admin_id: int in SessionManager.data.keys():
+			if admin_id <= 0: continue
+			if SessionManager.data[admin_id].get("admin") != true: continue
+			update_chat_history.rpc_id(admin_id, message)
+		return
+	if channel == "peer" or channel == "global":
+		update_chat_history.rpc(message)
+		return
 
-const RELATIVE_LOCAL_CHANNELS: PackedStringArray = ["shell_execute", "shell_input", "admin"]
+const PID_EXCLUSIVE_CHANNELS: PackedStringArray = ["shell_output", "shell_error", "target"]
+const GROUP_CHANNELS: PackedStringArray = ["admin", "global"]

@@ -272,7 +272,7 @@ func change_invincibility() -> void:
 	if pawn.is_invincible: text += "true "
 	else: text += "false "
 	text += "for pid = " + SessionManager.encode_session_id(pid)
-	ConsoleManager.print_output(text, 0, "admin")
+	ConsoleManager.print_output(text, "admin", 0)
 
 ### connected to each bullet's despawn signal
 #func on_bullet_despawn(bullet: RigidBody2D) -> void:

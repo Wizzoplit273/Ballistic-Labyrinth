@@ -32,8 +32,8 @@ func _enter_tree() -> void:
 	)
 	register_command(
 		["start_server", "open_server"],
-		"configures this game instance as a server",
-		true,
+		"configures this game instance as a server(host only)",
+		false,
 		true
 	)
 	register_command(
@@ -104,29 +104,19 @@ func register_command(
 		"is_local": is_local
 	})
 
-## CHANNELS
-## --- system: public system messages
-## --- shell_execute: output of a command(success or error message)
-## --- shell_input: rewrites input command(only for configured chat menu UI)
-## --- admin: staff-only system messages
-func print_output(text: String, pid: int = 0, channel: String = "shell_output") -> void:
+func print_output(text: String, channel: String, pid: int) -> void:
 	if pid < 0: return
-	if channel == "admin":
-		if not multiplayer.is_server(): return
-		ChatManager.send_local_message(text, "admin")
-		if pid == 0:
-			for admin_id: int in SessionManager.data.keys():
-				if admin_id <= 1: continue
-				if SessionManager.data[admin_id].get("admin") != true: continue
-				ChatManager.send_local_message.rpc_id(admin_id, text, "admin")
-			return
-		if pid == 1: return
-		if SessionManager.data[pid].get("admin") != true: return
-		ChatManager.send_local_message.rpc_id(pid, text, "admin")
-		return
-	if pid == 0 or not NetworkManager.is_online or pid == multiplayer.get_unique_id():
+	if channel == "peer": return
+	if channel == "shell_input": pid = 0
+	if pid == 0 and not channel in ChatManager.GROUP_CHANNELS:
 		ChatManager.send_local_message(text, channel)
-	else: ChatManager.send_local_message.rpc_id(pid, text, channel)
+		return
+	if not multiplayer.is_server(): return
+	if channel in ChatManager.PID_EXCLUSIVE_CHANNELS:
+		if pid == 0: return
+		ChatManager.send_message(text, channel, pid)
+		return
+	ChatManager.send_message(text, channel, 0)
 
 func split_respecting_quotes(text: String) -> Array[String]:
 	var regex := RegEx.new()
@@ -136,37 +126,40 @@ func split_respecting_quotes(text: String) -> Array[String]:
 		result.append(item.get_string())
 	return result
 
-func execute_raw_string(raw_text: String) -> void:
-	var text: String = raw_text.strip_edges()
-	if UIManager.is_ui_configured: ChatManager.send_local_message(text, "shell_input")
-	if text.begins_with("/"): text = text.substr(1)
-	var tokens: PackedStringArray = split_respecting_quotes(text)
-	var invoked: String = ""
-	if not text.is_empty(): invoked = tokens[0]
-	if is_confirming_command:
-		if invoked == "yes": execute_cmd(confirmed_cmd, confirmed_args, confirmed_flags)
-		else: print_output("command aborted")
-		is_confirming_command = false
-		return
-	tokens.remove_at(0)
+## if returning true, execute_raw_string stops, else it keeps going
+const CONFIRM_COMMAND_STRING: String = "yes"
+func invoked_needs_confirmation(invoked: String) -> bool:
+	if not is_confirming_command: return false
+	if invoked == CONFIRM_COMMAND_STRING:
+		execute_cmd(confirmed_cmd, confirmed_args, confirmed_flags)
+	else: print_output("command aborted", "shell_output", 0)
+	is_confirming_command = false
+	return true
+
+func get_invoked_as_dictionary(invoked: String) -> Dictionary:
 	var active_cmd: Dictionary = {}
 	for cmd: Dictionary in registry:
 		if invoked in cmd["aliases"]:
 			active_cmd = cmd
 			break
 	if active_cmd.is_empty():
-		print_output("command not found: %s" % invoked)
-		return
+		print_output("command not found: " + invoked, "shell_error", 0)
+		return {}
+	return active_cmd
+
+func is_admin_local_verify(invoked: String, active_cmd: Dictionary) -> bool:
 	## temporary setup for testing the game
-	## cmd_start_server isn't shown in help list but can be used nonetheless
 	## in the future, client-only exports won't have cmd_start_server and cmd_close_server
-	if active_cmd["requires_admin"] and active_cmd["aliases"][0] != "start_server":
+	if active_cmd["requires_admin"]:
 		if not NetworkManager.is_online:
-			print_output("command not found: %s" % invoked)
-			return
+			print_output("command not found: " + invoked, "shell_error", 0)
+			return false
 		if SessionManager.data.get(multiplayer.get_unique_id()).get("admin") == false:
-			print_output("command not found: %s" % invoked)
-			return
+			print_output("command not found: " + invoked, "shell_error", 0)
+			return false
+	return true
+
+func get_flags_and_args_and_execute_cmd(tokens: PackedStringArray, active_cmd: Dictionary) -> void:
 	var flags: Array[PackedStringArray] = []
 	var args: PackedStringArray = []
 	var is_previous_token_argument_flag: bool = false
@@ -175,18 +168,52 @@ func execute_raw_string(raw_text: String) -> void:
 			token = token.trim_prefix("\"").trim_suffix("\"")
 		if token.begins_with("-"):
 			if is_previous_token_argument_flag:
-				print_output("invalid flag syntax: expected argument after = flag")
+				print_output("invalid flag syntax: expected argument after = flag", "shell_error", 0)
 				return
 			flags.append([token])
 		elif token.begins_with("="):
 			if is_previous_token_argument_flag:
-				print_output("invalid flag syntax: expected argument after = flag")
+				print_output("invalid flag syntax: expected argument after = flag", "shell_error", 0)
 				return
 			flags.append([token])
 			is_previous_token_argument_flag = true
 		elif is_previous_token_argument_flag: flags[-1].append(token)
 		else: args.append(token)
 	execute_cmd(active_cmd, args, flags)
+
+func execute_raw_string(raw_text: String) -> void:
+	var text: String = raw_text.strip_edges()
+	if UIManager.is_ui_configured: ChatManager.send_local_message(text, "shell_input")
+	if text.begins_with("/"): text = text.substr(1)
+	var tokens: PackedStringArray = split_respecting_quotes(text)
+	var invoked: String = ""
+	if not text.is_empty(): invoked = tokens[0]
+	if invoked_needs_confirmation(invoked): return
+	tokens.remove_at(0)
+	var active_cmd: Dictionary = get_invoked_as_dictionary(invoked)
+	if active_cmd.is_empty(): return
+	if not is_admin_local_verify(invoked, active_cmd): return
+	get_flags_and_args_and_execute_cmd(tokens, active_cmd)
+
+func execute_cmd(cmd: Dictionary, args: PackedStringArray, flags: Array[PackedStringArray]) -> void:
+	if cmd["is_local"]:
+		Callable(self, "cmd_" + cmd["aliases"][0]).call(args, flags, 0)
+		return
+	if not NetworkManager.is_online: return
+	request_network_cmd.rpc_id(1, cmd, args, flags)
+
+func is_admin_server_verify(cmd: Dictionary, pid: int) -> bool:
+	if not cmd in registry: return false
+	if cmd["is_local"]: return false
+	if cmd["requires_admin"] and SessionManager.data[pid]["admin"] != true: return false
+	return true
+
+@rpc("any_peer", "reliable", "call_local")
+func request_network_cmd(cmd: Dictionary, args: PackedStringArray, flags: Array[PackedStringArray]) -> void:
+	var pid: int = multiplayer.get_remote_sender_id()
+	if not multiplayer.is_server(): return
+	if not is_admin_server_verify(cmd, pid): return
+	Callable(self, "cmd_" + cmd["aliases"][0]).call(args, flags, pid)
 
 var is_confirming_command: bool = false
 var confirmed_cmd: Dictionary = {}
@@ -197,7 +224,7 @@ func confirm_cmd(cmd: Dictionary, args: PackedStringArray, flags: Array[PackedSt
 	print_output(
 		"are you sure you want to execute this command? " + cmd["aliases"][0] + "\n" +
 		"use the \"yes\" command to confirm or cancel by typing a dummy command(one / suffices)\n",
-		pid
+		"target", pid
 	)
 	confirmed_cmd = cmd
 	confirmed_args = args
@@ -217,25 +244,6 @@ func is_cmd_confirmed(callback: Callable, args: PackedStringArray, flags: Array[
 		return false
 	return false
 
-func execute_cmd(cmd: Dictionary, args: PackedStringArray, flags: Array[PackedStringArray]) -> void:
-	if not NetworkManager.is_online or cmd["is_local"]:
-		Callable(self, "cmd_" + cmd["aliases"][0]).call(args, flags)
-		return
-	if NetworkManager.is_online and multiplayer.is_server():
-		request_network_cmd(cmd, args, flags)
-		return
-	request_network_cmd.rpc_id(1, cmd, args, flags)
-
-@rpc("any_peer", "reliable")
-func request_network_cmd(cmd: Dictionary, args: PackedStringArray, flags: Array[PackedStringArray]) -> void:
-	var pid: int = multiplayer.get_remote_sender_id()
-	if NetworkManager.is_online and not multiplayer.is_server(): return
-	if pid == 0 and multiplayer.is_server(): pid = 1
-	if not cmd in registry: return
-	if cmd["is_local"]: return
-	if cmd["requires_admin"] and SessionManager.data[pid]["admin"] != true: return
-	Callable(self, "cmd_" + cmd["aliases"][0]).call(args, flags, pid)
-
 ## if y entry is < 0, then x entry refers to a number of SIDs(no specific SIDs)
 ## if y entry is = 0, then x entry refers to a target SID
 ## if y entry is = 1, then it's a silent exception
@@ -249,23 +257,23 @@ func get_session_reference_from_flags(flags: Array[PackedStringArray], pid: int 
 		if not flag[0] in COUNT_FLAGS and not flag[0] in SID_FLAGS and not flag[0] in NAME_FLAGS: continue
 		if flag[0] in COUNT_FLAGS:
 			if flag.size() <= 1:
-				print_output("provide a count integer to ==count", pid)
+				print_output("provide a count integer to ==count", "shell_error", pid)
 				return Vector2i(2, 2)
 			result = abs(int(flag[1]))
 			result = min(result, SessionManager.data.size())
 			return Vector2i(result, -1)
 		if flag[0] in SID_FLAGS:
 			if flag.size() <= 1:
-				print_output("provide an sid to ==sid to filter session ids", pid)
+				print_output("provide an sid to ==sid to filter session ids", "shell_error", pid)
 				return Vector2i(2, 2)
 			result = SessionManager.decode_session_id(flag[1])
 			if not result in SessionManager.data.keys():
-				print_output("session with ID = " + flag[1] + " doesn't exist", pid)
+				print_output("session with ID = " + flag[1] + " doesn't exist", "shell_error", pid)
 				return Vector2i(2, 2)
 			return Vector2i(result, 0)
 		# flag[0] in NAME_FLAGS:
 		if flag.size() <= 1:
-			print_output("provide a name to ==name to filter session ids", pid)
+			print_output("provide a name to ==name to filter session ids", "shell_error", pid)
 			return Vector2i(2, 2)
 		var match_count: int = 0
 		for key: int in SessionManager.data.keys():
@@ -275,20 +283,20 @@ func get_session_reference_from_flags(flags: Array[PackedStringArray], pid: int 
 			match_count += 1
 			if match_count >= 2: break
 		if match_count == 0:
-			print_output("session with name = \"%s\" doesn't exist" % flag[1], pid)
+			print_output("session with name = " + flag[1] + " doesn't exist", "shell_error", pid)
 			return Vector2i(2, 2)
 		if match_count > 1:
-			print_output("multiple sessions have the same name, consider filtering by sid", pid)
+			print_output("multiple sessions have the same name, consider filtering by sid", "shell_error", pid)
 			return Vector2i(2, 2)
 		return Vector2i(result, 0)
 	return Vector2i(1, 1)
 
-func cmd_help(args: PackedStringArray, _flags: Array[PackedStringArray], _pid: int = 0) -> void:
+func cmd_help(args: PackedStringArray, _flags: Array[PackedStringArray], _pid: int) -> void:
 	var command_list: String = ""
+	var is_admin: bool = false
+	if NetworkManager.is_online: is_admin = SessionManager.data.get(multiplayer.get_unique_id()).get("admin")
 	if args.is_empty():
 		for command: Dictionary in registry:
-			var is_admin: bool = false
-			if NetworkManager.is_online: is_admin = SessionManager.data.get(multiplayer.get_unique_id()).get("admin")
 			if command["requires_admin"] == true and not is_admin: continue
 			var length: int = command["aliases"].size()
 			var index: int = 0
@@ -297,7 +305,7 @@ func cmd_help(args: PackedStringArray, _flags: Array[PackedStringArray], _pid: i
 				else: command_list += alias + "/"
 				index += 1
 			command_list += ": " + command["description"] + "\n"
-		print_output(command_list)
+		print_output(command_list, "shell_output", 0)
 		return
 	for command: Dictionary in registry:
 		if not args[0] in command["aliases"]: continue
@@ -308,19 +316,19 @@ func cmd_help(args: PackedStringArray, _flags: Array[PackedStringArray], _pid: i
 			else: command_list += alias + "/"
 			index += 1
 		command_list += ": " + command["description"] + "\n"
-		print_output(command_list)
+		print_output(command_list, "shell_output", 0)
 		return
-	print_output("command not found: %s" % args[0])
+	print_output("command not found: " + args[0], "shell_error", 0)
 
-func cmd_connect(args: PackedStringArray, flags: Array[PackedStringArray], _pid: int = 0) -> void:
+func cmd_connect(args: PackedStringArray, flags: Array[PackedStringArray], _pid: int) -> void:
 	if NetworkManager.is_online:
-		print_output("already online/connected")
+		print_output("already online/connected", "shell_error", 0)
 		return
 	if args.is_empty() and flags.is_empty():
-		print_output("provide an IP address to connect to")
+		print_output("provide an IP address to connect to", "shell_error", 0)
 		return
 	if not args.is_empty() and not flags.is_empty():
-		print_output("invalid args/flag syntax: either provide IP directly or via ==ip flag")
+		print_output("invalid args/flag syntax: either provide IP directly or via ==ip flag", "shell_error", 0)
 		return
 	if not args.is_empty():
 		NetworkManager.start_client(args[0])
@@ -329,41 +337,37 @@ func cmd_connect(args: PackedStringArray, flags: Array[PackedStringArray], _pid:
 		if flag[0] != "==ip": continue
 		NetworkManager.start_client(flag[1])
 		return
-	print_output("invalid flag syntax: provide IP via ==ip flag")
+	print_output("invalid flag syntax: provide IP via ==ip flag", "shell_error", 0)
 
-func cmd_disconnect(args: PackedStringArray, flags: Array[PackedStringArray], _pid: int = 0) -> void:
+func cmd_disconnect(args: PackedStringArray, flags: Array[PackedStringArray], _pid: int) -> void:
 	if not NetworkManager.is_online:
-		print_output("already offline/disconnected")
+		print_output("already offline/disconnected", "shell_error", 0)
 		return
 	if multiplayer.is_server():
-		print_output("can't disconnect with this command. Consider using close_server instead")
+		print_output("can't disconnect with this command. Consider using close_server instead", "shell_error", 0)
 		return
 	if not is_cmd_confirmed(cmd_disconnect, args, flags): return
 	NetworkManager.disconnect_from_server()
 
-func cmd_start_server(_args: PackedStringArray, _flags: Array[PackedStringArray], _pid: int = 0) -> void:
+func cmd_start_server(_args: PackedStringArray, _flags: Array[PackedStringArray], _pid: int) -> void:
 	if NetworkManager.is_online:
-		print_output("server is already started")
+		print_output("server is already started", "shell_error", 0)
 		return
 	NetworkManager.start_server()
 
-func cmd_close_server(args: PackedStringArray, flags: Array[PackedStringArray], pid: int = 0) -> void:
+func cmd_close_server(args: PackedStringArray, flags: Array[PackedStringArray], _pid: int) -> void:
 	if not NetworkManager.is_online:
-		print_output("already offline/disconnected")
-		return
-	if pid < 0:
-		print_output("cmd_close_server: invalid peer id sender")
+		print_output("already offline/disconnected", "shell_error", 0)
 		return
 	if not multiplayer.is_server():
-		print_output("permission denied: only host can close the server", pid)
+		print_output("permission denied: only host can close the server", "shell_error", 0)
 		return
-	if not is_cmd_confirmed(cmd_close_server, args, flags, pid): return
-	is_confirming_command = false
+	if not is_cmd_confirmed(cmd_close_server, args, flags, 1): return
 	NetworkManager.close_server()
 
-func cmd_get(args: PackedStringArray, flags: Array[PackedStringArray], _pid: int = 0) -> void:
+func cmd_get(args: PackedStringArray, flags: Array[PackedStringArray], _pid: int) -> void:
 	if args.is_empty():
-		print_output("usage: get PROPERTY [SID/=s SID/=u NAME]")
+		print_output("usage: get PROPERTY [SID/=s SID/=u NAME]", "shell_output", 0)
 		return
 	var target_sid: int = 0
 	if NetworkManager.is_online: target_sid = multiplayer.get_unique_id()
@@ -375,7 +379,7 @@ func cmd_get(args: PackedStringArray, flags: Array[PackedStringArray], _pid: int
 		if filter[1] == 1: target_sid = multiplayer.get_unique_id()
 		if filter[1] == 0: target_sid = filter[0]
 		if filter[1] < 0:
-			print_output("can't get attributes from a bulk number")
+			print_output("can't get attributes from a bulk number", "shell_error", 0)
 			return
 	for key: PackedStringArray in ATTRIBUTE_ALIASES.values():
 		if not args[0] in key: continue
@@ -384,15 +388,16 @@ func cmd_get(args: PackedStringArray, flags: Array[PackedStringArray], _pid: int
 		if key[0] == "color":
 			result = SessionManager.color_to_string(session_entry.get(key[0]))
 		else: result = str(session_entry.get(key[0]))
-		print_output(key[0] + ": " + result)
+		print_output(key[0] + ": " + result, "shell_output", 0)
 		return
 
-func cmd_set(args: PackedStringArray, _flags: Array[PackedStringArray], pid: int = 0) -> void:
+func cmd_set(args: PackedStringArray, _flags: Array[PackedStringArray], pid: int) -> void:
+	if not multiplayer.is_server(): return
 	if args.is_empty():
-		print_output("usage: set PROPERTY VALUE", pid)
+		print_output("usage: set PROPERTY VALUE", "shell_output", pid)
 		return
 	if args.size() < 2:
-		print_output("provide a value to set your attribute to", pid)
+		print_output("provide a value to set your attribute to", "shell_output", pid)
 		return
 	var property: String = ""
 	for value: PackedStringArray in ATTRIBUTE_ALIASES.values():
@@ -400,20 +405,18 @@ func cmd_set(args: PackedStringArray, _flags: Array[PackedStringArray], pid: int
 		property = value[0]
 		break
 	if property.is_empty():
-		print_output("nonexistent attribute %s" % args[0], pid)
+		print_output("nonexistent attribute " + args[0], "shell_error", pid)
 		return
 	const PROHIBITED = ["admin", "kills", "score"]
 	if property in PROHIBITED:
-		print_output("nonexistent attribute %s" % args[0], pid)
+		print_output("nonexistent attribute " + args[0], "shell_error", pid)
 		return
 	SessionManager.assign_from_str(pid, args[0], args[1])
 
-func cmd_assign(args: PackedStringArray, flags: Array[PackedStringArray], pid: int = 0) -> void:
-	if args.is_empty():
-		print_output("usage: assign PROPERTY VALUE [=s/==sid SID]", pid)
-		return
+func cmd_assign(args: PackedStringArray, flags: Array[PackedStringArray], pid: int) -> void:
+	if not multiplayer.is_server(): return
 	if args.size() < 2:
-		print_output("usage: assign PROPERTY VALUE [=s/==sid SID]", pid)
+		print_output("usage: assign PROPERTY VALUE [=s/==sid SID]", "shell_output", pid)
 		return
 	var property: String = ""
 	for key: PackedStringArray in ATTRIBUTE_ALIASES.values():
@@ -421,33 +424,26 @@ func cmd_assign(args: PackedStringArray, flags: Array[PackedStringArray], pid: i
 		property = key[0]
 		break
 	if property.is_empty():
-		print_output("nonexistent attribute %s" % args[0])
+		print_output("nonexistent attribute " + args[0], "shell_error", pid)
 		return
-	if property == "admin":
-		if pid <= 0:
-			print_output("cmd_assign: invalid peer id sender")
-			return
-		if pid != 1 or not multiplayer.is_server():
-			print_output("permission denied: only host can change admin permissions", pid)
-			return
 	var target_sid: int = 0
 	var filter: Vector2i = get_session_reference_from_flags(flags, pid)
 	if filter[1] >= 2: return
-	if filter[1] == 1: target_sid = multiplayer.get_unique_id()
+	if filter[1] == 1: target_sid = pid
 	if filter[1] == 0: target_sid = filter[0]
 	if filter[1] < 0:
-		print_output("can't get attributes from a bulk number", pid)
+		print_output("can't get attributes from a bulk number", "shell_error", pid)
 		return
 	if filter[1] == 1: target_sid = multiplayer.get_unique_id()
 	if property == "admin":
 		if target_sid <= 0:
-			print_output("can't modify admin permissions for bots")
+			print_output("can't modify admin permissions for bots", "shell_error", pid)
 			return
 		if target_sid == 1:
-			print_output("host can't change its own admin role")
+			print_output("can't change host's admin role", "shell_error", pid)
 			return
 	if target_sid <= 0 and property == "personality":
-		print_output("can't change bot personality using the assign command. Consider using bot set instead")
+		print_output("can't change bot personality using the assign command", "shell_error", pid)
 		return
 	var old_admin_value: bool = SessionManager.data[target_sid]["admin"]
 	SessionManager.assign_from_str(target_sid, args[0], args[1])
@@ -455,21 +451,22 @@ func cmd_assign(args: PackedStringArray, flags: Array[PackedStringArray], pid: i
 	var current_admin_value: bool = args[1] == "true"
 	var has_admin_changed: bool = current_admin_value != old_admin_value
 	if not has_admin_changed:
-		if current_admin_value == true: print_output("this player is already an admin", pid)
-		else: print_output("this player already doesn't have admin", pid)
+		if current_admin_value == true: print_output("this player is already an admin", "shell_error", pid)
+		else: print_output("this player is already not an admin", "shell_error", pid)
 		return
 	if SessionManager.data[target_sid]["admin"] == true:
 		if target_sid <= 0: return
-		print_output("!!! you have been granted admin permissions", target_sid)
+		print_output("you have been granted admin permissions", "target", target_sid)
 		return
 	if target_sid <= 0: return
-	print_output("!!! you are no longer an admin", target_sid)
+	print_output("you are no longer an admin", "target", target_sid)
 
-func cmd_bot(args: PackedStringArray, flags: Array[PackedStringArray], pid: int = 0) -> void:
+func cmd_bot(args: PackedStringArray, flags: Array[PackedStringArray], pid: int) -> void:
+	if not multiplayer.is_server(): return
 	if args.is_empty():
 		print_output(
 			"usage: bot {add [COUNT]}/{delete =s/=c/=n SID/COUNT/NAME}/{set =s/=n SID/NAME \"trait\" VALUE}/{enable}/{disable}/{random}",
-			pid)
+			"shell_output", pid)
 		return
 	const ALIASES_1 := ["add", "create"]
 	const ALIASES_2 := ["remove", "delete", "erase"]
@@ -486,7 +483,7 @@ func cmd_bot(args: PackedStringArray, flags: Array[PackedStringArray], pid: int 
 		var filter: Vector2i = get_session_reference_from_flags(flags, pid)
 		if filter[1] >= 2: return
 		if filter[1] == 1:
-			print_output("usage: bot delete =s/=c/=n SID/COUNT/NAME", pid)
+			print_output("usage: bot delete =s/=c/=n SID/COUNT/NAME", "shell_output", pid)
 			return
 		if filter[1] == 0:
 			var sid: int = filter[0]
@@ -498,19 +495,19 @@ func cmd_bot(args: PackedStringArray, flags: Array[PackedStringArray], pid: int 
 			return
 	elif args[0] in ALIASES_3: # BOT set ...
 		if args.size() < 3: # BOT set ?"trait"? ?VALUE?
-			print_output("provide a bot trait and modify it to a value")
+			print_output("provide a bot trait and modify it to a value", "shell_output", pid)
 			return
 		var filter: Vector2i = get_session_reference_from_flags(flags, pid)
 		var sid: int
 		if filter[1] >= 2: return
 		if filter[1] == 1:
-			print_output("usage: bot set =s/=n SID/NAME \"trait\" VALUE", pid)
+			print_output("usage: bot set =s/=n SID/NAME \"trait\" VALUE", "shell_output", pid)
 			return
 		if filter[1] == 0:
 			sid = filter[0]
 			sid = -abs(sid)
 		if filter[1] <= -1:
-			print_output("can't refer to bots using a count integer when modifying traits", pid)
+			print_output("can't refer to bots using a count integer when modifying traits", "shell_error", pid)
 			return
 		var ATTRIBUTE: String = args[1]
 		var VALUE: String = args[2]
@@ -520,20 +517,20 @@ func cmd_bot(args: PackedStringArray, flags: Array[PackedStringArray], pid: int 
 			var traits: String = ""
 			for trait_attribute: String in SessionManager.data[sid]["personality"].keys():
 				traits += trait_attribute + "\n"
-			print_output(ERROR + HELP + traits, pid)
+			print_output(ERROR + HELP + traits, "shell_error", pid)
 			return
 		SessionManager.set_bot_trait_from_str(sid, ATTRIBUTE, VALUE)
 		return
 	elif args[0] in ALIASES_4: # BOT enable ...
 		if not IngameManager.is_ingame_configured:
-			print_output("can't change bot process mode when ingame is not loaded", pid)
+			print_output("can't change bot process mode when ingame is not loaded", "shell_error", pid)
 			return
 		for bot_controller: Node in IngameManager.get_children():
 			if bot_controller.get_meta("type", "null") != "bot": continue
 			bot_controller.process_mode = Node.PROCESS_MODE_PAUSABLE
 	elif args[0] in ALIASES_5: # BOT disable ...
 		if not IngameManager.is_ingame_configured:
-			print_output("can't change bot process mode when ingame is not loaded", pid)
+			print_output("can't change bot process mode when ingame is not loaded", "shell_error", pid)
 			return
 		for bot_controller: Node in IngameManager.get_children():
 			if bot_controller.get_meta("type", "null") != "bot": continue
@@ -546,28 +543,29 @@ func cmd_bot(args: PackedStringArray, flags: Array[PackedStringArray], pid: int 
 		SessionManager.random_bot_color.rpc(seed)
 		return
 	else: # BOT ...
-		print_output("invalid first argument. Should be add, delete, set, enable, disable or random", pid)
+		print_output("invalid first argument. Should be add, delete, set, enable, disable or random", "shell_error", pid)
 		return
 
 # temporary quick configuration
-func cmd_chat_resize(args: PackedStringArray, _flags: Array[PackedStringArray], _pid: int = 0) -> void:
+func cmd_chat_resize(args: PackedStringArray, _flags: Array[PackedStringArray], _pid: int) -> void:
 	if not UIManager.is_ui_configured:
-		print_output("no chat menu connected")
+		print_output("no chat menu connected", "shell_error", 0)
 		return
 	if args.is_empty():
-		print_output("provide a font size")
+		print_output("provide a font size", "shell_output", 0)
 		return
 	UIManager.chat_menu_node.set_font_size(int(args[0]))
 
-func cmd_start_game(_args: PackedStringArray, _flags: Array[PackedStringArray], pid: int = 0) -> void:
-	if pid == 0 or pid == 1: IngameManager.start_game()
-	else: IngameManager.start_game.rpc_id(1)
+func cmd_start_game(_args: PackedStringArray, _flags: Array[PackedStringArray], _pid: int) -> void:
+	if not multiplayer.is_server(): return
+	IngameManager.start_game()
 
-func cmd_crate(args: PackedStringArray, _flags: Array[PackedStringArray], pid: int = 0) -> void:
+func cmd_crate(args: PackedStringArray, _flags: Array[PackedStringArray], pid: int) -> void:
+	if not multiplayer.is_server(): return
 	if args.is_empty():
 		print_output(
 			"usage: crate (add [COUNT/TYPE])/(delete [COUNT])",
-			pid)
+			"shell_output" ,pid)
 		return
 	const ALIASES_1 := ["add", "create"]
 	const ALIASES_2 := ["remove", "delete", "erase"]
@@ -586,13 +584,14 @@ func cmd_crate(args: PackedStringArray, _flags: Array[PackedStringArray], pid: i
 		SessionManager.remove_crate(count)
 		return
 	else: # CRATE ...
-		print_output("invalid first argument. Should be add or delete", pid)
+		print_output("invalid first argument. Should be add or delete", "shell_error", pid)
 		return
 
-func cmd_maze(args: PackedStringArray, _flags: Array[PackedStringArray], pid: int = 0) -> void:
+func cmd_maze(args: PackedStringArray, _flags: Array[PackedStringArray], pid: int) -> void:
+	if not multiplayer.is_server(): return
 	if args.is_empty():
 		print_output(
 			"usage: maze \"min_width, max_width, min_height, max_height\"",
-			pid)
+			"shell_output", pid)
 		return
 	IngameManager.set_maze_size.rpc(args[0])

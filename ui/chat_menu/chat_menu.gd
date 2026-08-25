@@ -20,20 +20,26 @@ func update_chat(new_messages: Array[Dictionary]) -> void:
 	for message: Dictionary in new_messages:
 		add_message(message)
 
+const NO_TIMESTAMP_CHANNELS: PackedStringArray = ["shell_input", "shell_error", "shell_output"]
 func add_message(message: Dictionary) -> void:
 	var readable_sid: String = SessionManager.encode_session_id(message.get("sender_sid"))
-	if message.get("channel") != "shell_input": %ChatText.text += str(message.get("timestamp")) + " "
-	if message.get("channel") == "global":
+	if not message.get("channel") in NO_TIMESTAMP_CHANNELS:
+		%ChatText.text += str(message.get("timestamp")) + " "
+	if message.get("channel") == "peer":
 		%ChatText.text += message.get("sender_name")
 		%ChatText.text += "(" + readable_sid + "): "
-	elif message.get("channel") == "system":
-		%ChatText.text += "***: "
 	elif message.get("channel") == "shell_input":
 		%ChatText.text += ":: "
 	elif message.get("channel") == "shell_output":
-		%ChatText.text += "-SH-: "
+		%ChatText.text += "/: "
+	elif message.get("channel") == "shell_error":
+		%ChatText.text += "E: "
 	elif message.get("channel") == "admin":
-		%ChatText.text += "OP: "
+		%ChatText.text += "ADMIN: "
+	elif message.get("channel") == "target":
+		%ChatText.text += "!!!: "
+	elif message.get("channel") == "global":
+		%ChatText.text += "***: "
 	%ChatText.text += message.get("text") + "\n"
 
 func _input(event: InputEvent) -> void:
@@ -41,9 +47,8 @@ func _input(event: InputEvent) -> void:
 
 func _on_chat_input_text_submitted(raw: String) -> void:
 	%ChatInput.clear()
-	raw = raw.strip_edges()
 	if raw.begins_with("/"): ConsoleManager.execute_raw_string(raw)
-	else: ChatManager.send_message(raw)
+	else: ChatManager.send_message(raw, "peer", 0)
 
 func _on_chat_input_focus_entered() -> void:
 	is_blocked = true
