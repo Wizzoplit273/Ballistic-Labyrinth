@@ -458,12 +458,14 @@ func cmd_assign(args: PackedStringArray, flags: Array[PackedStringArray], pid: i
 func cmd_bot(args: PackedStringArray, flags: Array[PackedStringArray], pid: int = 0) -> void:
 	if args.is_empty():
 		print_output(
-			"usage: bot [add [COUNT]]/[delete =s/=c/=n SID/COUNT/NAME]/[set =s/=n SID/NAME \"trait\" VALUE]",
+			"usage: bot {add [COUNT]}/{delete =s/=c/=n SID/COUNT/NAME}/{set =s/=n SID/NAME \"trait\" VALUE}/{enable}/{disable}",
 			pid)
 		return
 	const ALIASES_1 := ["add", "create"]
 	const ALIASES_2 := ["remove", "delete", "erase"]
 	const ALIASES_3 := ["set", "assign", "set_personality", "assign_personality", "set_trait", "assign_trait", "trait"]
+	const ALIASES_4 := ["enable", "on", "activate", "turn_on"]
+	const ALIASES_5 := ["disable", "off", "deactivate", "turn_off"]
 	if args[0] in ALIASES_1: # BOT add ...
 		var count1: int = 1
 		if args.size() >= 2: count1 = abs(int(args[1])) # BOT add 1 [2] [3] [4] ...
@@ -508,8 +510,24 @@ func cmd_bot(args: PackedStringArray, flags: Array[PackedStringArray], pid: int 
 			return
 		SessionManager.set_bot_trait_from_str(sid, ATTRIBUTE, VALUE)
 		return
+	elif args[0] in ALIASES_4: # BOT enable ...
+		if not IngameManager.is_ingame_configured:
+			print_output("can't change bot process mode when ingame is not loaded", pid)
+			return
+		for bot_controller: Node in IngameManager.get_children():
+			if bot_controller.get_meta("type", "null") != "bot": continue
+			bot_controller.process_mode = Node.PROCESS_MODE_PAUSABLE
+	elif args[0] in ALIASES_5: # BOT disable ...
+		if not IngameManager.is_ingame_configured:
+			print_output("can't change bot process mode when ingame is not loaded", pid)
+			return
+		for bot_controller: Node in IngameManager.get_children():
+			if bot_controller.get_meta("type", "null") != "bot": continue
+			bot_controller.process_mode = Node.PROCESS_MODE_DISABLED
+			bot_controller.linear_input = 0
+			bot_controller.angular_input = 0
 	else: # BOT ...
-		print_output("invalid first argument. Should be add, delete or set", pid)
+		print_output("invalid first argument. Should be add, delete, set, enable, disable or reset", pid)
 		return
 
 # temporary quick configuration

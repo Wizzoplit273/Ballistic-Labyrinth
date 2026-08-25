@@ -4,6 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://xa5vxaptiwsv" path="res://ingame/entities/projectiles/bullet_normal.png" id="2_0ed5i"]
 
 [node name="BotController" type="Node2D" unique_id=1872713169]
+process_mode = 1
 script = ExtResource("1_0x8vh")
 metadata/type = "bot"
 
