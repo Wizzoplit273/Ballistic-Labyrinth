@@ -66,6 +66,7 @@ func _input(input: InputEvent) -> void:
 func activate(value: bool) -> void:
 	unfocus()
 	visible = value
+	$SpectateWindow.visible = false
 	if IngameManager.is_ingame_configured: return
 	if value:
 		$Soundtrack.play()

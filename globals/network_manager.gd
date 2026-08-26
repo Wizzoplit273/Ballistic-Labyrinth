@@ -19,7 +19,7 @@ func set_local_online_status(value_online: bool, value_server: bool) -> void:
 
 func print_console(text: String) -> void:
 	print(text)
-	ChatManager.send_local_message(text, "system")
+	ChatManager.send_message(text, "global", 0)
 
 func print_error(text: String) -> void:
 	push_error(text)
@@ -62,6 +62,12 @@ func peer_connected(peer_id: int) -> void:
 	if not multiplayer.is_server(): return
 	var encoded_pid: String = SessionManager.encode_session_id(peer_id)
 	print_console("Player connected with peer id = " + encoded_pid)
+	if not IngameManager.is_ingame_finished:
+		if not IngameManager.is_ingame_configured: return
+		UIManager.confirm_spectating.rpc_id(peer_id)
+		return
+	IngameManager.late_sync_ingame.rpc_id(peer_id,
+	IngameManager.current_seed, IngameManager.current_maze_dimensions)
 
 func peer_disconnected(peer_id: int) -> void:
 	if not multiplayer.is_server(): return

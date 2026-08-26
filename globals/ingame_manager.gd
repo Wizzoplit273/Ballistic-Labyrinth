@@ -1,4 +1,4 @@
-extends MultiplayerSpawner
+extends Node
 
 ## this node will have every controller node as a child node so they're easier to access
 
@@ -8,19 +8,30 @@ var scene_root: Node = null
 var current_seed: int = 0
 var current_maze_dimensions: Vector2i = Vector2i(20, 12) ## first entry is width, second is height
 var set_maze_dimensions: Vector4i = Vector4i(20, 20, 12, 12)
+var current_is_animated_generation: bool = false
 
 const INGAME_FILE: String = "res://ingame/ingame.tscn"
-var ingame: Node = null
+var ingame_container: MultiplayerSpawner = null
+var controller_container: MultiplayerSpawner = null
 
 var is_ingame_configured: bool = false
+var is_ingame_finished: bool = false
 
 var finished_clients: Array = []
 
 var alive_tanks_count: int = 0
 
 func _enter_tree() -> void:
-	spawn_path = get_path()
-	spawn_function = _custom_spawn
+	ingame_container = MultiplayerSpawner.new()
+	ingame_container.spawn_function = spawn_ingame
+	add_child(ingame_container, true)
+	ingame_container.name = "IngameContainer"
+	ingame_container.spawn_path = get_path()
+	controller_container = MultiplayerSpawner.new()
+	controller_container.spawn_function = _custom_spawn
+	add_child(controller_container, true)
+	controller_container.name = "ControllerContainer"
+	controller_container.spawn_path = get_path()
 
 @rpc("authority", "reliable", "call_local")
 func set_maze_size(string: String) -> void:
@@ -33,11 +44,17 @@ func create_controller(sid: int) -> void:
 	if sid == 0: return
 	if not NetworkManager.is_online: return
 	if not multiplayer.is_server(): return
-	spawn(sid)
+	#controller_container.spawn(sid)
+	var controller: Node
+	if sid >= 1: controller = load(NEW_PLAYER_CONTROLLER_FILE).instantiate()
+	if sid <= -1: controller = load(NEW_BOT_CONTROLLER_FILE).instantiate()
+	controller.set_sid(sid)
+	controller_container.add_child(controller, true)
 
 const NEW_PLAYER_CONTROLLER_FILE: String = "res://ingame/controllers/player_controller/player_controller.tscn"
 const NEW_BOT_CONTROLLER_FILE: String = "res://ingame/controllers/bot_controller/bot_controller.tscn"
-func _custom_spawn(sid: int) -> Node:
+func _custom_spawn(sid: Variant) -> Node:
+	sid = int(sid)
 	if sid == 0: return null
 	var controller: Node
 	if sid >= 1: controller = load(NEW_PLAYER_CONTROLLER_FILE).instantiate()
@@ -48,7 +65,15 @@ func _custom_spawn(sid: int) -> Node:
 func create_controllers() -> void:
 	if not NetworkManager.is_online: return
 	if not multiplayer.is_server(): return
-	for sid: int in SessionManager.data: create_controller(sid)
+	var already_has_controller: bool
+	for sid: int in SessionManager.data:
+		already_has_controller = false
+		for controller: Node in controller_container.get_children():
+			if controller.sid != sid: continue
+			already_has_controller = true
+			break
+		if already_has_controller: continue
+		create_controller(sid)
 
 @rpc("authority", "reliable", "call_local")
 func disable_client_controller(path: NodePath) -> void:
@@ -57,10 +82,10 @@ func disable_client_controller(path: NodePath) -> void:
 func delete_controllers() -> void:
 	if not NetworkManager.is_online: return
 	if not multiplayer.is_server(): return
-	for controller: Node in get_children():
+	for controller: Node in controller_container.get_children():
 		if controller is MultiplayerSynchronizer:
 			disable_client_controller.rpc_id(controller.sid, controller.get_path())
-		controller.call_deferred("queue_free")
+		controller.queue_free()
 
 @rpc("any_peer", "reliable", "call_local")
 func start_game() -> void:
@@ -75,7 +100,7 @@ func start_game() -> void:
 		var auxiliary: int = current_maze_dimensions.x
 		current_maze_dimensions.x = current_maze_dimensions.y
 		current_maze_dimensions.y = auxiliary
-	start_ingame.rpc(current_seed, current_maze_dimensions, true)
+	start_ingame(current_seed, current_maze_dimensions, true)
 
 @rpc("any_peer", "reliable")
 func end_game() -> void:
@@ -85,46 +110,56 @@ func end_game() -> void:
 	if pid != 0 and SessionManager.data[pid].get("admin") == false: return
 	end_ingame()
 
+const LATE_INGAME_SYNC_DELAY: float = 2.0
+@rpc("authority", "reliable")
+func late_sync_ingame(maze_seed: int, maze_dimensions: Vector2i) -> void:
+	await get_tree().create_timer(LATE_INGAME_SYNC_DELAY).timeout
+	start_ingame(maze_seed, maze_dimensions, false)
+
+func start_ingame(maze_seed: int, maze_dimensions: Vector2i, is_animated: bool) -> void:
+	if not multiplayer.is_server(): return
+	set_maze_properties.rpc(maze_seed, maze_dimensions, is_animated)
+	create_controllers()
+	create_ingame()
+
 @rpc("authority", "reliable", "call_local")
-func start_ingame(maze_seed: int, maze_dimensions: Vector2i, is_animated: bool = false) -> void:
-	if not NetworkManager.is_online: return
+func set_maze_properties(maze_seed: int, maze_dimensions: Vector2i, is_animated: bool) -> void:
 	if UIManager.is_ui_configured: UIManager.lobby_node.activate(false)
 	current_seed = maze_seed
 	current_maze_dimensions = maze_dimensions
-	create_controllers()
-	create_ingame(is_animated)
+	current_is_animated_generation = is_animated
 
-func create_ingame(is_animated: bool = false) -> void:
-	if ingame != null: return
-	ingame = load(INGAME_FILE).instantiate()
-	scene_root.add_child(ingame)
+func create_ingame() -> void:
+	if ingame_container.get_child_count() > 0: return
+	ingame_container.spawn()
 	is_ingame_configured = true
-	ingame.modified_ready(is_animated)
+
+var ingame_node: Node = null
+func spawn_ingame(_payload: Variant) -> Node:
+	var ingame: Node = load(INGAME_FILE).instantiate()
+	ingame_node = ingame
+	return ingame
 
 @rpc("authority", "reliable")
 func restart_ingame(maze_seed: int, maze_dimensions: Vector2i, is_animated: bool = false) -> void:
-	delete_ingame()
+	delete_ingame(false)
 	await get_tree().process_frame
 	start_ingame(maze_seed, maze_dimensions, is_animated)
 
-func delete_ingame() -> void:
+func delete_ingame(is_deleting_controllers: bool) -> void:
 	if not multiplayer.is_server(): return
-	if ingame == null: return
-	for spawner: Node in ingame.get_children():
+	if ingame_container.get_child_count() == 0: return
+	for spawner: Node in ingame_container.get_child(0).get_children():
 		if not spawner is MultiplayerSpawner: continue
 		for instance: Node in spawner.get_children():
 			instance.free()
-	delete_controllers()
-	client_delete_ingame.rpc()
-
-@rpc("authority", "reliable", "call_local")
-func client_delete_ingame() -> void:
-	ingame.queue_free()
-	is_ingame_configured = false
+	if is_deleting_controllers: delete_controllers()
+	ingame_container.get_child(0).queue_free()
 
 @rpc("authority", "reliable")
 func end_ingame() -> void:
-	delete_ingame()
+	is_ingame_finished = false
+	delete_ingame(true)
 	if UIManager.is_ui_configured: UIManager.lobby_node.activate(true)
 	if not NetworkManager.is_online: return
 	if multiplayer.is_server(): end_ingame.rpc()
@@ -139,19 +174,20 @@ func request_end_ingame() -> void:
 	end_ingame()
 
 func _on_ingame_next_round() -> void:
-	delete_ingame()
+	delete_ingame(false)
 	await get_tree().process_frame
 	start_game()
 
 func finish_network_maze_generation() -> void:
 	if not NetworkManager.is_online: return
 	if not multiplayer.is_server(): return
-	for pid: int in multiplayer.get_peers():
-		if pid in finished_clients: continue
-		restart_ingame.rpc_id(pid, current_seed, current_maze_dimensions, false)
+	#for pid: int in multiplayer.get_peers():
+		#if pid in finished_clients: continue
+		#restart_ingame.rpc_id(pid, current_seed, current_maze_dimensions, false)
 	place_pawns()
-	ingame.toggle_pawns.rpc(true)
-	ingame.activate_crate_spawn_timer()
+	ingame_node.toggle_pawns.rpc(true)
+	ingame_node.activate_crate_spawn_timer()
+	is_ingame_finished = true
 
 @rpc("any_peer", "reliable")
 func add_finished_generation() -> void:
@@ -161,11 +197,11 @@ func add_finished_generation() -> void:
 
 const FINISH_GENERATION_DELAY: float = 1.0
 func broadcast_generation_finish() -> void:
-	if multiplayer.is_server():
-		await get_tree().create_timer(FINISH_GENERATION_DELAY).timeout
-		finish_network_maze_generation()
-		return
-	add_finished_generation.rpc_id(1)
+	if not multiplayer.is_server(): return
+	#await get_tree().create_timer(FINISH_GENERATION_DELAY).timeout
+	finish_network_maze_generation()
+	#return
+	#add_finished_generation.rpc_id(1)
 
 const PAWN_LINEAR_STUCK_FACTOR: float = 200 / 3.2
 const NEW_TANK_PAWN_PATH: String = "res://ingame/entities/tank_pawn/tank_pawn.tscn"
@@ -178,7 +214,7 @@ func place_pawns() -> void:
 		if sid == 0: continue
 		tank_pawn = load(NEW_TANK_PAWN_PATH).instantiate()
 		var target_controller: Node = null
-		for controller: Node in get_children():
+		for controller: Node in controller_container.get_children():
 			if controller.sid != sid: continue
 			target_controller = controller
 			break
@@ -190,18 +226,18 @@ func place_pawns() -> void:
 		tank_pawn.get_node(^"Rest/Image").modulate = SessionManager.data[sid]["color"]
 		tank_pawn.get_node(^"DeathParticles").modulate = SessionManager.data[sid]["color"]
 		tank_pawn.label_node.text = SessionManager.data[sid]["name"]
-		var selected_cell: Vector2i = ingame.maze_cells.get(ingame.SEEDED_RNG.randi_range(0, ingame.maze_cells.size() - 1))
-		tank_pawn.global_position = ingame.maze_cell_to_world(selected_cell)
-		tank_pawn.rotation = ingame.SEEDED_RNG.randf_range(0, PI * 2)
+		var selected_cell: Vector2i = ingame_node.maze_cells.get(ingame_node.SEEDED_RNG.randi_range(0, ingame_node.maze_cells.size() - 1))
+		tank_pawn.global_position = ingame_node.maze_cell_to_world(selected_cell)
+		tank_pawn.rotation = ingame_node.SEEDED_RNG.randf_range(0, PI * 2)
 		tank_pawn.connect("shoot_bullet", _on_shoot_bullet)
-		ingame.get_node("TankPawns").add_child(tank_pawn, true)
+		ingame_node.get_node("TankPawns").add_child(tank_pawn, true)
 		alive_tanks_count += 1
 
 ## directly called by destroyed tanks
 func _on_tank_die() -> void:
 	alive_tanks_count -= 1
-	MasterManager.play_server_sound(ingame.get_node(^"Sounds/DeathNoise"))
-	if alive_tanks_count <= 1: ingame.get_node(^"Timers/DeathDelay").start()
+	MasterManager.play_server_sound(ingame_node.get_node(^"Sounds/DeathNoise"))
+	if alive_tanks_count <= 1: ingame_node.get_node(^"Timers/DeathDelay").start()
 
 func _on_shoot_bullet(weapon_type: String, tank: RigidBody2D) -> void:
 	if tank == null: return
@@ -231,7 +267,7 @@ func _on_shoot_bullet(weapon_type: String, tank: RigidBody2D) -> void:
 	payload["initial_velocity_direction"] = tank.rotation
 	payload["position"] = tank.position + Vector2(bullet_offset, 0).rotated(tank.rotation)
 	if weapon_type == "regular": tank.fired_bullet_count += 1
-	ingame.get_node("Bullets").spawn(payload)
+	ingame_node.get_node("Bullets").spawn(payload)
 
 const NEW_BULLET_FILE := "res://ingame/entities/projectiles/bullet.tscn"
 func spawn_bullet(payload: Dictionary) -> Node:
@@ -242,10 +278,10 @@ func spawn_bullet(payload: Dictionary) -> Node:
 	bullet.type = payload["type"]
 	bullet.initial_velocity_direction = payload["initial_velocity_direction"]
 	bullet.owner_node = get_node(payload["owner"])
-	if bullet.type == "regular": ingame.get_node("Sounds/NormalShootNoise").play()
-	if bullet.type == "laser": ingame.get_node("Sounds/LaserShootNoise").play()
-	if bullet.type == "rocket": ingame.get_node("Sounds/RocketShootNoise").play()
-	if bullet.type == "trap": ingame.get_node("Sounds/TrapPlaceNoise").play()
+	if bullet.type == "regular": ingame_node.get_node("Sounds/NormalShootNoise").play()
+	if bullet.type == "laser": ingame_node.get_node("Sounds/LaserShootNoise").play()
+	if bullet.type == "rocket": ingame_node.get_node("Sounds/RocketShootNoise").play()
+	if bullet.type == "trap": ingame_node.get_node("Sounds/TrapPlaceNoise").play()
 	return bullet
 
 @rpc("any_peer", "reliable", "call_local")
@@ -254,7 +290,7 @@ func teleport_tank(pos: Vector2) -> void:
 	if not multiplayer.is_server(): return
 	if SessionManager.data[pid].get("admin") != true: return
 	var pawn: Node2D = null
-	for controller: Node in get_children():
+	for controller: Node in controller_container.get_children():
 		if controller.sid != pid: continue
 		if controller.pawn == null: return
 		pawn = controller.pawn
@@ -268,7 +304,7 @@ func change_invincibility() -> void:
 	if not multiplayer.is_server(): return
 	if SessionManager.data[pid].get("admin") != true: return
 	var pawn: Node2D = null
-	for controller: Node in get_children():
+	for controller: Node in controller_container.get_children():
 		if controller.sid != pid: continue
 		if controller.pawn == null: return
 		pawn = controller.pawn

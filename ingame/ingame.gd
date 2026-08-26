@@ -49,9 +49,8 @@ func configure_spawners() -> void:
 	$Bullets.spawn_function = IngameManager.spawn_bullet
 
 #const TILE_SIZE: int = 16
-## called by ingame_manager.gd
-func modified_ready(is_animated: bool = false) -> void:
-	is_generation_animated = is_animated
+func _ready() -> void:
+	is_generation_animated = IngameManager.current_is_animated_generation
 	process_mode = Node.PROCESS_MODE_INHERIT
 	SEEDED_RNG.seed = IngameManager.current_seed
 	configure_spawners()

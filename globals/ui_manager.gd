@@ -1,8 +1,5 @@
 extends Node
 
-## updated once by origin node, remains constant
-var scene_root: Node = null
-
 const LOBBY_FILE: String = "res://ui/lobby/lobby.tscn"
 const PAUSE_MENU_FILE: String = "res://ui/pause_menu/pause_menu.tscn"
 const CHAT_MENU_FILE: String = "res://ui/chat_menu/chat_menu.tscn"
@@ -64,3 +61,8 @@ func delete_lobby() -> void:
 func toggle_admin_options(is_admin: bool) -> void:
 	if not is_ui_configured: return
 	pause_menu_node.toggle_admin_options(is_admin)
+
+@rpc("authority", "reliable")
+func confirm_spectating() -> void:
+	if lobby_node == null: return
+	lobby_node.get_node("SpectateWindow").visible = true

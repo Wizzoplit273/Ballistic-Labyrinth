@@ -33,6 +33,35 @@ layer = 3
 script = ExtResource("2_k0yk8")
 metadata/_edit_lock_ = true
 
+[node name="SpectateWindow" type="CanvasLayer" parent="." unique_id=2115348833]
+layer = 4
+visible = false
+
+[node name="Background" type="TextureRect" parent="SpectateWindow" unique_id=985987351]
+modulate = Color(1, 1, 1, 0.72549)
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("4_5wkb4")
+metadata/_edit_lock_ = true
+
+[node name="Title" type="Label" parent="SpectateWindow" unique_id=2092189379]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_vertical = 10
+size_flags_stretch_ratio = 0.17
+text = "Joined during maze generation.
+Spectating this round"
+label_settings = SubResource("LabelSettings_xyqw4")
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_lock_ = true
+
 [node name="Soundtrack" type="AudioStreamPlayer" parent="." unique_id=807736029]
 stream = ExtResource("3_rk1hj")
 
