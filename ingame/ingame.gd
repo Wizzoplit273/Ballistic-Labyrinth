@@ -771,4 +771,5 @@ func _on_next_round_delay_timeout() -> void:
 
 @rpc("authority", "reliable", "call_local")
 func toggle_pawns(value: bool) -> void:
+	if UIManager.is_ui_configured: UIManager.lobby_node.toggle_spectate_window(false)
 	for pawn: Node in $TankPawns.get_children(): pawn.toggle(value)

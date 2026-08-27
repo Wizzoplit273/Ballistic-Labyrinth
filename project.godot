@@ -51,7 +51,6 @@ enabled=PackedStringArray()
 [file_customization]
 
 folder_colors={
-"res://general/": "orange",
 "res://globals/": "gray",
 "res://ingame/": "blue",
 "res://ingame/entities/": "orange",

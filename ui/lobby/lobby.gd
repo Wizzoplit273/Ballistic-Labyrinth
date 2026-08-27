@@ -9,6 +9,9 @@ const EXIT_SERVER_CONFIRM: String = "Are you sure you want to leave the server?"
 const EXIT_GAME_CONFIRM: String = "Are you sure you want to exit the game?"
 const CLOSE_SERVER_CONFIRM: String = "Are you sure you want to close this server?"
 
+func toggle_spectate_window(value: bool) -> void:
+	$SpectateWindow.visible = value
+
 func update_lobby_register() -> void:
 	if not NetworkManager.is_online:
 		for lobby_widget: Node in %SessionsList.get_children():
@@ -67,7 +70,7 @@ func activate(value: bool) -> void:
 	unfocus()
 	visible = value
 	$SpectateWindow.visible = false
-	if IngameManager.is_ingame_configured: return
+	#if IngameManager.is_ingame_configured: return
 	if value:
 		$Soundtrack.play()
 	else: $Soundtrack.stop()

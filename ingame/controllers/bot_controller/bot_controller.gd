@@ -197,7 +197,7 @@ var tanks_exist: bool = false
 func determine_target() -> void:
 	target = null
 	tanks_exist = false
-	for tank: RigidBody2D in IngameManager.ingame.get_node(^"TankPawns").get_children():
+	for tank: RigidBody2D in IngameManager.ingame_container.get_child(0).get_node(^"TankPawns").get_children():
 		if tank == pawn: continue
 		if tank.get_node("Rest").visible == false: continue
 		tanks_exist = true
@@ -206,7 +206,7 @@ func determine_target() -> void:
 			continue
 		if global_position.distance_to(tank.position) < global_position.distance_to(target.position):
 			target = tank
-	for crate: Area2D in IngameManager.ingame.get_node(^"Crates").get_children():
+	for crate: Area2D in IngameManager.ingame_container.get_child(0).get_node(^"Crates").get_children():
 		if target == null:
 			target = crate
 			continue

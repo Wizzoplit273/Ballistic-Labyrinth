@@ -41,7 +41,7 @@ func _ready() -> void:
 
 func determine_closest_target() -> void:
 	var result: Node2D = owner_node
-	for tank: RigidBody2D in IngameManager.ingame.get_node("TankPawns").get_children():
+	for tank: RigidBody2D in IngameManager.ingame_container.get_child(0).get_node("TankPawns").get_children():
 		if tank.get_node("Rest").visible == false: continue
 		if result.get_node("Rest").visible == false:
 			result = tank

@@ -34,9 +34,9 @@ func _process(_delta: float) -> void:
 	is_drifting = Input.is_action_pressed(&"Drift")
 	if Input.is_action_just_pressed(&"Shoot"): request_shoot()
 	if Input.is_action_just_pressed(&"Teleport"):
-		if IngameManager.ingame == null: return
+		if IngameManager.ingame_container.get_child_count() == 0: return
 		if SessionManager.data[multiplayer.get_unique_id()].get("admin") != true: return
-		var mouse_position: Vector2 = IngameManager.ingame.get_global_mouse_position()
+		var mouse_position: Vector2 = IngameManager.ingame_container.get_child(0).get_global_mouse_position()
 		IngameManager.teleport_tank.rpc_id(1, mouse_position)
 	if Input.is_action_just_pressed(&"Invincibility"):
 		if SessionManager.data[multiplayer.get_unique_id()].get("admin") != true: return

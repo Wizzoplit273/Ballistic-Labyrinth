@@ -111,10 +111,17 @@ func print_output(text: String, channel: String, pid: int) -> void:
 	if pid == 0 and not channel in ChatManager.GROUP_CHANNELS:
 		ChatManager.send_local_message(text, channel)
 		return
+	if not NetworkManager.is_online: return
 	if not multiplayer.is_server(): return
 	if channel in ChatManager.PID_EXCLUSIVE_CHANNELS:
 		if pid == 0: return
 		ChatManager.send_message(text, channel, pid)
+		return
+	if channel == "global" and pid > 0:
+		ChatManager.send_message(text, "global", 1)
+		for peer: int in multiplayer.get_peers():
+			if peer == pid: continue
+			ChatManager.send_message(text, "global", peer)
 		return
 	ChatManager.send_message(text, channel, 0)
 

@@ -25,10 +25,11 @@ func update_chat_history(new_message: Dictionary) -> void:
 ## --- target: command outputs that target a specific peer id different than executing peer(eg: admin grant/revoke)
 ## --- admin: staff only output messages
 ## --- peer: regular messages sent by peers
-## --- global: system messages sent to everyone
+## --- global: system messages sent to everyone, excepting provided pid if pid > 0
 signal update_local_chat_ui(messages: Array[Dictionary])
 @rpc("any_peer", "reliable", "call_local")
 func process_message(text: String, channel: String, target_pid: int) -> void:
+	if target_pid < 0: return
 	var sender_id: int = multiplayer.get_remote_sender_id()
 	var final_text: String = text.strip_edges()
 	var message: Dictionary = {}
@@ -68,7 +69,8 @@ func process_message(text: String, channel: String, target_pid: int) -> void:
 			update_chat_history.rpc_id(admin_id, message)
 		return
 	if channel == "peer" or channel == "global":
-		update_chat_history.rpc(message)
+		if target_pid == 0: update_chat_history.rpc(message)
+		else: update_chat_history.rpc_id(target_pid, message)
 		return
 
 const PID_EXCLUSIVE_CHANNELS: PackedStringArray = ["shell_output", "shell_error", "target"]

@@ -17,9 +17,10 @@ func set_local_online_status(value_online: bool, value_server: bool) -> void:
 	UIManager.toggle_admin_options(value_server)
 	UIManager.update_online_status()
 
-func print_console(text: String) -> void:
+func print_local(text: String) -> void:
 	print(text)
-	ChatManager.send_message(text, "global", 0)
+	if not UIManager.is_ui_configured: return
+	ChatManager.process_message(text, "global", 0)
 
 func print_error(text: String) -> void:
 	push_error(text)
@@ -44,12 +45,12 @@ func start_server() -> void:
 		return
 	peer.get_host().compress(COMPRESSION)
 	multiplayer.set_multiplayer_peer(peer)
-	print_console("Server is up! Waiting for players...")
+	print_local("Server is up! Waiting for players...")
 	set_local_online_status(true, true)
 
 func start_client(ip: String) -> void:
 	if is_online: return
-	print_console("Trying to connect to ip = " + ip)
+	print_local("Trying to connect to ip = " + ip)
 	peer = ENetMultiplayerPeer.new()
 	var error: Error = peer.create_client(ip, PORT)
 	if error != OK: return
@@ -61,18 +62,14 @@ func start_client(ip: String) -> void:
 func peer_connected(peer_id: int) -> void:
 	if not multiplayer.is_server(): return
 	var encoded_pid: String = SessionManager.encode_session_id(peer_id)
-	print_console("Player connected with peer id = " + encoded_pid)
-	if not IngameManager.is_ingame_finished:
-		if not IngameManager.is_ingame_configured: return
+	ConsoleManager.print_output("Player connected with peer id = " + encoded_pid, "global", peer_id)
+	if not IngameManager.is_ingame_finished and IngameManager.is_ingame_configured:
 		UIManager.confirm_spectating.rpc_id(peer_id)
-		return
-	IngameManager.late_sync_ingame.rpc_id(peer_id,
-	IngameManager.current_seed, IngameManager.current_maze_dimensions)
 
 func peer_disconnected(peer_id: int) -> void:
 	if not multiplayer.is_server(): return
 	var encoded_pid: String = SessionManager.encode_session_id(peer_id)
-	print_console("Player disconnected with peer id = " + encoded_pid)
+	ConsoleManager.print_output("Player disconnected with peer id = " + encoded_pid, "global", peer_id)
 	SessionManager.data.erase(peer_id)
 	UIManager.update_lobby_register()
 	SessionManager.update_registry.rpc(SessionManager.data)
@@ -80,7 +77,7 @@ func peer_disconnected(peer_id: int) -> void:
 ## called on clients
 func connected_to_server() -> void:
 	var encoded_pid: String = SessionManager.encode_session_id(multiplayer.get_unique_id())
-	print_console("Successfully joined with peer id = " + encoded_pid)
+	print_local("Successfully joined with peer id = " + encoded_pid)
 	SessionManager.request_profile_update.rpc_id(1, SessionManager.profile_data)
 
 ## called on clients
@@ -102,7 +99,7 @@ func disconnect_client(peer_id: int) -> void:
 		return
 	set_local_online_status.rpc_id(peer_id, false, false)
 	peer.disconnect_peer(peer_id)
-	print_console("Kicked peer with id " + encoded_pid)
+	print_local("Kicked peer with id " + encoded_pid)
 
 func disconnect_from_server() -> void:
 	if multiplayer.is_server(): return
@@ -110,12 +107,12 @@ func disconnect_from_server() -> void:
 	await get_tree().process_frame
 	multiplayer.multiplayer_peer.close()
 	set_local_online_status(false, false)
-	print_console("Successfully disconnected from server")
+	ChatManager.process_message("Successfully disconnected from server", "global", 0)
 
 func close_server() -> void:
 	if not is_online: return
 	if not multiplayer.is_server(): return
-	print_console("Shutting down server...")
+	print_local("Shutting down server...")
 	if multiplayer.get_peers().size() > 0:
 		notify_server_shutdown.rpc()
 		await get_tree().create_timer(0.1).timeout
@@ -124,11 +121,11 @@ func close_server() -> void:
 		multiplayer.multiplayer_peer = null
 	SessionManager.clear_registry()
 	set_local_online_status(false, false)
-	print_console("Server successfully closed: local machine is no longer a server")
+	print_local("Server successfully closed: local machine is no longer a server")
 
 @rpc("authority", "reliable")
 func notify_server_shutdown() -> void:
 	if multiplayer.is_server(): return
 	SessionManager.clear_registry()
 	set_local_online_status(false, false)
-	print_console("Server is closing")
+	print_local("Server is closing")

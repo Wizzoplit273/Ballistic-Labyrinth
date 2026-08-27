@@ -65,4 +65,4 @@ func toggle_admin_options(is_admin: bool) -> void:
 @rpc("authority", "reliable")
 func confirm_spectating() -> void:
 	if lobby_node == null: return
-	lobby_node.get_node("SpectateWindow").visible = true
+	lobby_node.toggle_spectate_window(true)

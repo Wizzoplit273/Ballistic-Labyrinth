@@ -1,10 +1,5 @@
 extends Node
 
-### $$$ PROBLEMS TO FIX
-### when host changes invincibility using shift+i ingame, it shows message to intended staff,
-### but when a client admin does the same, it shows a console message to every non-admin and
-### host doesn't get message from "admin" channel
-
 func _enter_tree() -> void:
 	SessionManager.master_enter_tree()
 	UIManager.master_enter_tree()

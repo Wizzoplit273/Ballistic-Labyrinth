@@ -17,7 +17,7 @@ var controller_container: MultiplayerSpawner = null
 var is_ingame_configured: bool = false
 var is_ingame_finished: bool = false
 
-var finished_clients: Array = []
+#var finished_clients: Array = []
 
 var alive_tanks_count: int = 0
 
@@ -26,12 +26,12 @@ func _enter_tree() -> void:
 	ingame_container.spawn_function = spawn_ingame
 	add_child(ingame_container, true)
 	ingame_container.name = "IngameContainer"
-	ingame_container.spawn_path = get_path()
+	ingame_container.spawn_path = ingame_container.get_path()
 	controller_container = MultiplayerSpawner.new()
 	controller_container.spawn_function = _custom_spawn
 	add_child(controller_container, true)
 	controller_container.name = "ControllerContainer"
-	controller_container.spawn_path = get_path()
+	controller_container.spawn_path = controller_container.get_path()
 
 @rpc("authority", "reliable", "call_local")
 func set_maze_size(string: String) -> void:
@@ -44,12 +44,7 @@ func create_controller(sid: int) -> void:
 	if sid == 0: return
 	if not NetworkManager.is_online: return
 	if not multiplayer.is_server(): return
-	#controller_container.spawn(sid)
-	var controller: Node
-	if sid >= 1: controller = load(NEW_PLAYER_CONTROLLER_FILE).instantiate()
-	if sid <= -1: controller = load(NEW_BOT_CONTROLLER_FILE).instantiate()
-	controller.set_sid(sid)
-	controller_container.add_child(controller, true)
+	controller_container.spawn(sid)
 
 const NEW_PLAYER_CONTROLLER_FILE: String = "res://ingame/controllers/player_controller/player_controller.tscn"
 const NEW_BOT_CONTROLLER_FILE: String = "res://ingame/controllers/bot_controller/bot_controller.tscn"
@@ -131,13 +126,20 @@ func set_maze_properties(maze_seed: int, maze_dimensions: Vector2i, is_animated:
 
 func create_ingame() -> void:
 	if ingame_container.get_child_count() > 0: return
-	ingame_container.spawn()
-	is_ingame_configured = true
+	var data: Dictionary = {
+		"seed": current_seed,
+		"dimensions": current_maze_dimensions
+	}
+	ingame_container.spawn(data)
 
 var ingame_node: Node = null
-func spawn_ingame(_payload: Variant) -> Node:
+func spawn_ingame(data: Variant) -> Node:
+	if UIManager.is_ui_configured: UIManager.lobby_node.activate(false)
+	is_ingame_configured = true
 	var ingame: Node = load(INGAME_FILE).instantiate()
 	ingame_node = ingame
+	current_seed = data["seed"]
+	current_maze_dimensions = data["dimensions"]
 	return ingame
 
 @rpc("authority", "reliable")
@@ -189,16 +191,16 @@ func finish_network_maze_generation() -> void:
 	ingame_node.activate_crate_spawn_timer()
 	is_ingame_finished = true
 
-@rpc("any_peer", "reliable")
-func add_finished_generation() -> void:
-	var pid: int = multiplayer.get_remote_sender_id()
-	if pid <= 1: return
-	finished_clients.append(pid)
+#@rpc("any_peer", "reliable")
+#func add_finished_generation() -> void:
+	#var pid: int = multiplayer.get_remote_sender_id()
+	#if pid <= 1: return
+	#finished_clients.append(pid)
 
 const FINISH_GENERATION_DELAY: float = 1.0
 func broadcast_generation_finish() -> void:
 	if not multiplayer.is_server(): return
-	#await get_tree().create_timer(FINISH_GENERATION_DELAY).timeout
+	await get_tree().create_timer(FINISH_GENERATION_DELAY).timeout
 	finish_network_maze_generation()
 	#return
 	#add_finished_generation.rpc_id(1)
