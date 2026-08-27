@@ -46,18 +46,9 @@ func set_maze_size(string: String) -> void:
 	if result[0] > result[1] or result[2] > result[3]: return
 	set_maze_dimensions = result
 
-@rpc("any_peer", "reliable", "call_local")
-func request_maze_animated_flag() -> void:
-	var pid: int = multiplayer.get_remote_sender_id()
-	if not multiplayer.is_server(): return
-	var is_animated: bool
-	if is_ingame_configured or is_ingame_finished: is_animated = false
-	else: is_animated = true
-	get_maze_animated_flag.rpc_id(pid, is_animated)
-
 @rpc("authority", "reliable", "call_local")
-func get_maze_animated_flag(is_animated: bool) -> void:
-	current_is_animated_generation = is_animated
+func set_maze_animation_to_true() -> void:
+	current_is_animated_generation = true
 
 func create_controller(sid: int) -> void:
 	if sid == 0: return

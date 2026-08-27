@@ -43,6 +43,7 @@ func start_server() -> void:
 	if error != OK:
 		print_error("NETWORK ERROR: cannot host: " + str(error))
 		return
+	IngameManager.current_is_animated_generation = true
 	peer.get_host().compress(COMPRESSION)
 	multiplayer.set_multiplayer_peer(peer)
 	print_local("Server is up! Waiting for players...")
@@ -54,6 +55,7 @@ func start_client(ip: String) -> void:
 	peer = ENetMultiplayerPeer.new()
 	var error: Error = peer.create_client(ip, PORT)
 	if error != OK: return
+	IngameManager.current_is_animated_generation = false
 	ip_address = ip
 	peer.get_host().compress(COMPRESSION)
 	multiplayer.set_multiplayer_peer(peer)
@@ -63,7 +65,10 @@ func peer_connected(peer_id: int) -> void:
 	if not multiplayer.is_server(): return
 	var encoded_pid: String = SessionManager.encode_session_id(peer_id)
 	ConsoleManager.print_output("Player connected with peer id = " + encoded_pid, "global", peer_id)
-	if not IngameManager.is_ingame_finished and IngameManager.is_ingame_configured:
+	if not IngameManager.is_ingame_configured:
+		IngameManager.set_maze_animation_to_true.rpc_id(peer_id)
+		return
+	elif not IngameManager.is_ingame_finished:
 		UIManager.confirm_spectating.rpc_id(peer_id)
 
 func peer_disconnected(peer_id: int) -> void:

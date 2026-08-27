@@ -48,9 +48,7 @@ func configure_spawners() -> void:
 	$Crates.spawn_function = spawn_crate
 	$Bullets.spawn_function = IngameManager.spawn_bullet
 
-#const TILE_SIZE: int = 16
 func _ready() -> void:
-	IngameManager.request_maze_animated_flag()
 	IngameManager.is_ingame_configured = true
 	is_generation_animated = IngameManager.current_is_animated_generation
 	process_mode = Node.PROCESS_MODE_INHERIT
@@ -68,7 +66,9 @@ func _ready() -> void:
 	implement_maze_walls_physics()
 	implement_navigation()
 	is_finished_loading = true
+	IngameManager.current_is_animated_generation = true
 	IngameManager.broadcast_generation_finish()
+
 
 func activate_crate_spawn_timer() -> void:
 	$Timers/CrateSpawnDelay.process_mode = Node.PROCESS_MODE_INHERIT
