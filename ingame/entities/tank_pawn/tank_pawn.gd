@@ -35,7 +35,7 @@ func toggle(value: bool) -> void:
 	if value:
 		visible = true
 		process_mode = Node.PROCESS_MODE_INHERIT
-	else:
+	elif not $Rest.visible:
 		visible = false
 		process_mode = Node.PROCESS_MODE_DISABLED
 
