@@ -41,6 +41,9 @@ func _process(_delta: float) -> void:
 	if Input.is_action_just_pressed(&"Invincibility"):
 		if SessionManager.data[multiplayer.get_unique_id()].get("admin") != true: return
 		IngameManager.change_invincibility.rpc_id(1)
+	if Input.is_action_just_pressed(&"NoClip"):
+		if SessionManager.data[multiplayer.get_unique_id()].get("admin") != true: return
+		IngameManager.change_noclip.rpc_id(1)
 
 func request_shoot() -> void:
 	if not NetworkManager.is_online: return

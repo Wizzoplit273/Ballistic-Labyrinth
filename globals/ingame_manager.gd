@@ -361,6 +361,23 @@ func change_invincibility() -> void:
 	text += "for pid = " + SessionManager.encode_session_id(pid)
 	ConsoleManager.print_output(text, "admin", 0)
 
-### connected to each bullet's despawn signal
-#func on_bullet_despawn(bullet: RigidBody2D) -> void:
-	#if bullet.type == "regular": bullet.owner_node.fired_bullet_count -= 1
+@rpc("any_peer", "reliable", "call_local")
+func change_noclip() -> void:
+	var pid: int = multiplayer.get_remote_sender_id()
+	if not multiplayer.is_server(): return
+	if SessionManager.data[pid].get("admin") != true: return
+	var pawn: Node2D = null
+	for controller: Node in controller_container.get_children():
+		if controller.sid != pid: continue
+		if controller.pawn == null: return
+		pawn = controller.pawn
+		break
+	if pawn == null: return
+	var is_noclip: bool = not pawn.get_collision_layer_value(2)
+	pawn.set_collision_layer_value(2, is_noclip)
+	pawn.set_collision_mask_value(1, is_noclip)
+	var text: String = "noclip set to "
+	if not is_noclip: text += "true "
+	else: text += "false "
+	text += "for pid = " + SessionManager.encode_session_id(pid)
+	ConsoleManager.print_output(text, "admin", 0)
