@@ -181,10 +181,12 @@ func spawn_ingame(data: Variant) -> Node:
 	return ingame
 
 @rpc("authority", "reliable")
-func restart_ingame(maze_seed: int, maze_dimensions: Vector2i) -> void:
+func restart_ingame() -> void:
 	delete_ingame(false)
 	await get_tree().process_frame
-	start_ingame(maze_seed, maze_dimensions)
+	is_ingame_configured = false
+	is_ingame_finished = false
+	start_game()
 
 func delete_ingame(is_deleting_controllers: bool) -> void:
 	if not multiplayer.is_server(): return
@@ -194,7 +196,7 @@ func delete_ingame(is_deleting_controllers: bool) -> void:
 		for instance: Node in spawner.get_children():
 			instance.free()
 	if is_deleting_controllers: delete_controllers()
-	ingame_container.get_child(0).queue_free()
+	ingame_container.get_child(0).free()
 
 @rpc("authority", "reliable")
 func end_ingame() -> void:
@@ -219,6 +221,8 @@ func request_end_ingame() -> void:
 func _on_ingame_next_round() -> void:
 	delete_ingame(false)
 	await get_tree().process_frame
+	is_ingame_configured = false
+	is_ingame_finished = false
 	start_game()
 
 func finish_network_maze_generation() -> void:

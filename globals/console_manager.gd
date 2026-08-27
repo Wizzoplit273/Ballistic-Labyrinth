@@ -90,6 +90,18 @@ func _enter_tree() -> void:
 		true,
 		false
 	)
+	register_command(
+		["close_ingame", "end_ingame", "close_game", "end_game"],
+		"ends the currently playing game and gets everyone back to lobby",
+		true,
+		false
+	)
+	register_command(
+		["restart_ingame", "restart_game", "restart"],
+		"restarts the currently playing game",
+		true,
+		false
+	)
 
 ## first string in alias list corresponds with a callable's name(ex: "connect" corresponds with cmd_connect)
 func register_command(
@@ -602,3 +614,15 @@ func cmd_maze(args: PackedStringArray, _flags: Array[PackedStringArray], pid: in
 			"shell_output", pid)
 		return
 	IngameManager.set_maze_size.rpc(args[0])
+
+func cmd_close_ingame(_args: PackedStringArray, _flags: Array[PackedStringArray], _pid: int) -> void:
+	if not NetworkManager.is_online:
+		print_output("can't close ingame when offline/disconnected", "shell_error", 0)
+		return
+	IngameManager.end_ingame()
+
+func cmd_restart_ingame(_args: PackedStringArray, _flags: Array[PackedStringArray], _pid: int) -> void:
+	if not NetworkManager.is_online:
+		print_output("can't restart ingame when offline/disconnected", "shell_error", 0)
+		return
+	IngameManager.restart_ingame()
