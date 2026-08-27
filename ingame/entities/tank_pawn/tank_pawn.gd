@@ -47,7 +47,7 @@ signal shoot_bullet
 func shoot() -> void:
 	if not multiplayer.is_server(): return
 	if not $ShootCooldown.is_stopped(): return
-	if fired_bullet_count >= max_bullet_count:
+	if fired_bullet_count >= max_bullet_count and weapon_type == "regular":
 		MasterManager.play_server_sound($NoAmmoNoise)
 		return
 	for body: Node2D in $TunnelHitbox.get_overlapping_bodies():

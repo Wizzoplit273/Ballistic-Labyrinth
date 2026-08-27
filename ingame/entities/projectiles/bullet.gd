@@ -122,7 +122,7 @@ func disable_process_mode() -> void:
 func die(cause: String) -> void:
 	$Rest.visible = false
 	call_deferred("disable_process_mode")
-	if type != "trap": owner_node.fired_bullet_count -= 1
+	if type == "regular": owner_node.fired_bullet_count -= 1
 	if cause == "lifespan":
 		if multiplayer.is_server(): queue_free()
 		return
