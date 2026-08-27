@@ -22,41 +22,39 @@ gradient = SubResource("Gradient_2lmgt")
 fill_from = Vector2(0.24034335, 0.8025751)
 fill_to = Vector2(0.9527897, 0.45064378)
 
-[node name="ChatMenu" type="Control" unique_id=828475156]
+[sub_resource type="LabelSettings" id="LabelSettings_2lmgt"]
+font_size = 25
+
+[node name="ChatMenu" type="CanvasLayer" unique_id=328487595]
 process_mode = 3
-visible = false
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+layer = 100
 script = ExtResource("1_2lmgt")
 metadata/_edit_lock_ = true
 
-[node name="Window" type="Window" parent="." unique_id=67123143]
-disable_3d = true
-transparent_bg = true
-oversampling_override = 1.0
-size = Vector2i(400, 500)
-transient = true
-borderless = true
-transparent = true
-
-[node name="Texture" type="TextureRect" parent="Window" unique_id=337031931]
+[node name="Texture" type="TextureRect" parent="." unique_id=337031931]
 unique_name_in_owner = true
 self_modulate = Color(1, 1, 1, 0.61960787)
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
+custom_minimum_size = Vector2(100, 100)
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -700.0
+offset_top = 225.0
+offset_right = -200.0
+offset_bottom = 825.0
 grow_horizontal = 2
 grow_vertical = 2
+offset_transform_enabled = true
+offset_transform_position_ratio = Vector2(-0.5, -0.5)
+offset_transform_visual_only = false
 texture = SubResource("NoiseTexture2D_2lmgt")
 expand_mode = 1
 metadata/_edit_lock_ = true
 metadata/_edit_use_anchors_ = true
 
-[node name="Container" type="VBoxContainer" parent="Window/Texture" unique_id=350228305]
+[node name="Container" type="VBoxContainer" parent="Texture" unique_id=350228305]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -66,7 +64,7 @@ grow_vertical = 2
 alignment = 1
 metadata/_edit_lock_ = true
 
-[node name="ChatHeader" type="TextureRect" parent="Window/Texture/Container" unique_id=1104628381]
+[node name="ChatHeader" type="TextureRect" parent="Texture/Container" unique_id=1104628381]
 self_modulate = Color(1, 1, 1, 0.49803922)
 custom_minimum_size = Vector2(0, 17)
 layout_mode = 2
@@ -74,7 +72,8 @@ texture = SubResource("GradientTexture2D_g2pgw")
 expand_mode = 1
 metadata/_edit_lock_ = true
 
-[node name="Label" type="Label" parent="Window/Texture/Container/ChatHeader" unique_id=247762255]
+[node name="Header" type="Label" parent="Texture/Container/ChatHeader" unique_id=247762255]
+unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -82,27 +81,27 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 text = "Chat"
+label_settings = SubResource("LabelSettings_2lmgt")
 horizontal_alignment = 1
 vertical_alignment = 1
 metadata/_edit_lock_ = true
 
-[node name="ChatText" type="RichTextLabel" parent="Window/Texture/Container" unique_id=908706404]
+[node name="ChatText" type="RichTextLabel" parent="Texture/Container" unique_id=908706404]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 focus_mode = 2
-theme_override_font_sizes/normal_font_size = 16
+theme_override_font_sizes/normal_font_size = 25
 selection_enabled = true
 metadata/_edit_lock_ = true
 
-[node name="ChatInput" type="LineEdit" parent="Window/Texture/Container" unique_id=420602209]
+[node name="ChatInput" type="LineEdit" parent="Texture/Container" unique_id=420602209]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_font_sizes/font_size = 16
+theme_override_font_sizes/font_size = 25
 placeholder_text = "write your message here"
 metadata/_edit_lock_ = true
 
-[connection signal="focus_entered" from="." to="." method="_on_focus_entered"]
-[connection signal="focus_entered" from="Window/Texture/Container/ChatInput" to="." method="_on_chat_input_focus_entered"]
-[connection signal="focus_exited" from="Window/Texture/Container/ChatInput" to="." method="_on_chat_input_focus_exited"]
-[connection signal="text_submitted" from="Window/Texture/Container/ChatInput" to="." method="_on_chat_input_text_submitted"]
+[connection signal="focus_entered" from="Texture/Container/ChatInput" to="." method="_on_chat_input_focus_entered"]
+[connection signal="focus_exited" from="Texture/Container/ChatInput" to="." method="_on_chat_input_focus_exited"]
+[connection signal="text_submitted" from="Texture/Container/ChatInput" to="." method="_on_chat_input_text_submitted"]

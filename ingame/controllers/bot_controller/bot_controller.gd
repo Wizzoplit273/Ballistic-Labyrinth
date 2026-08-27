@@ -327,7 +327,8 @@ func dodge_bullet(bullet: RigidBody2D) -> void:
 	for i: int in range(navigation_path.size() - 1):
 		navigation_distance_to_right += navigation_path[i].distance_to(navigation_path[i + 1])
 	## final navigation distance
-	$NavAgent.target_position = target.global_position
+	if target == null: $NavAgent.target_position = bullet.global_position
+	else: $NavAgent.target_position = target.global_position
 	var left_is_closer_than_right_navigation: bool = navigation_distance_to_left < navigation_distance_to_right
 	var left_is_closer_than_right_euclidean: bool = global_position.distance_to(left_bullet_dot) < global_position.distance_to(right_bullet_dot)
 	if navigation_distance_to_left != navigation_distance_to_right:

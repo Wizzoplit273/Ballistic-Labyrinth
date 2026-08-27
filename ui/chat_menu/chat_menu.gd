@@ -1,17 +1,22 @@
-extends Control
+extends CanvasLayer
 
 var is_blocked: bool = false
 
+@onready var body: TextureRect = %Texture
+
 func toggle_visibility() -> void:
-	%Texture.visible = not %Texture.visible
+	visible = not visible
 
 func move_window() -> void:
-	if not %Texture.visible: return
+	if not visible: return
 	var mouse_pos: Vector2 = DisplayServer.mouse_get_position()
-	$Window.position = mouse_pos - ($Window.size / 2.0)
+	body.position = mouse_pos
 
-func toggle_chat_resize() -> void:
-	$Window.borderless = not $Window.borderless
+func resize_window() -> void:
+	if not visible: return
+	var mouse_pos: Vector2 = DisplayServer.mouse_get_position()
+	var body_center_pos: Vector2 = body.position
+	body.size = abs(body_center_pos - mouse_pos) * 2
 
 func _ready() -> void:
 	ChatManager.connect(&"update_local_chat_ui", update_chat)
@@ -43,9 +48,6 @@ func add_message(message: Dictionary) -> void:
 		%ChatText.text += "***: "
 	%ChatText.text += message.get("text") + "\n"
 
-func _input(event: InputEvent) -> void:
-	UIManager._input(event)
-
 func _on_chat_input_text_submitted(raw: String) -> void:
 	%ChatInput.clear()
 	if raw.begins_with("/"): ConsoleManager.execute_raw_string(raw)
@@ -62,3 +64,5 @@ func _on_focus_entered() -> void:
 
 func set_font_size(value: int) -> void:
 	%ChatText.add_theme_font_size_override(&"normal_font_size", value)
+	%Header.add_theme_font_size_override(&"font_size", value)
+	%ChatInput.add_theme_font_size_override(&"font_size", value)
