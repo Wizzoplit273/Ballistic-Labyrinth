@@ -70,6 +70,7 @@ func peer_disconnected(peer_id: int) -> void:
 	if not multiplayer.is_server(): return
 	var encoded_pid: String = SessionManager.encode_session_id(peer_id)
 	ConsoleManager.print_output("Player disconnected with peer id = " + encoded_pid, "global", peer_id)
+	IngameManager.delete_player(peer_id)
 	SessionManager.data.erase(peer_id)
 	UIManager.update_lobby_register()
 	SessionManager.update_registry.rpc(SessionManager.data)

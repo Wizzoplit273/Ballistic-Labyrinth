@@ -90,6 +90,29 @@ func delete_controllers() -> void:
 		await get_tree().process_frame
 		controller.queue_free()
 
+func delete_player(pid: int) -> void:
+	if pid <= 1: return
+	if not is_ingame_configured: return
+	var target_controller: MultiplayerSynchronizer = null
+	for cont: Node in controller_container.get_children():
+		if cont.sid <= 1: continue
+		if cont.sid != pid: continue
+		target_controller = cont
+		break
+	if target_controller == null: return
+	if target_controller.pawn == null:
+		#disable_client_controller.rpc_id(target_controller.sid, target_controller.get_path())
+		#await get_tree().process_frame
+		target_controller.queue_free()
+		return
+	for bullet: Node in IngameManager.ingame_node.get_node(^"Bullets").get_children():
+		if bullet.owner_node != target_controller.pawn: continue
+		bullet.queue_free()
+	target_controller.pawn.queue_free()
+	#disable_client_controller.rpc_id(target_controller.sid, target_controller.get_path())
+	#await get_tree().process_frame
+	target_controller.queue_free()
+
 @rpc("any_peer", "reliable", "call_local")
 func start_game() -> void:
 	var pid: int = multiplayer.get_remote_sender_id()
