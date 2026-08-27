@@ -50,6 +50,8 @@ func configure_spawners() -> void:
 
 #const TILE_SIZE: int = 16
 func _ready() -> void:
+	IngameManager.request_maze_animated_flag()
+	IngameManager.is_ingame_configured = true
 	is_generation_animated = IngameManager.current_is_animated_generation
 	process_mode = Node.PROCESS_MODE_INHERIT
 	SEEDED_RNG.seed = IngameManager.current_seed

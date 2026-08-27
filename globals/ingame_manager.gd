@@ -46,6 +46,19 @@ func set_maze_size(string: String) -> void:
 	if result[0] > result[1] or result[2] > result[3]: return
 	set_maze_dimensions = result
 
+@rpc("any_peer", "reliable", "call_local")
+func request_maze_animated_flag() -> void:
+	var pid: int = multiplayer.get_remote_sender_id()
+	if not multiplayer.is_server(): return
+	var is_animated: bool
+	if is_ingame_configured or is_ingame_finished: is_animated = false
+	else: is_animated = true
+	get_maze_animated_flag.rpc_id(pid, is_animated)
+
+@rpc("authority", "reliable", "call_local")
+func get_maze_animated_flag(is_animated: bool) -> void:
+	current_is_animated_generation = is_animated
+
 func create_controller(sid: int) -> void:
 	if sid == 0: return
 	if not NetworkManager.is_online: return
@@ -101,16 +114,12 @@ func delete_player(pid: int) -> void:
 		break
 	if target_controller == null: return
 	if target_controller.pawn == null:
-		#disable_client_controller.rpc_id(target_controller.sid, target_controller.get_path())
-		#await get_tree().process_frame
 		target_controller.queue_free()
 		return
 	for bullet: Node in IngameManager.ingame_node.get_node(^"Bullets").get_children():
 		if bullet.owner_node != target_controller.pawn: continue
 		bullet.queue_free()
 	target_controller.pawn.queue_free()
-	#disable_client_controller.rpc_id(target_controller.sid, target_controller.get_path())
-	#await get_tree().process_frame
 	target_controller.queue_free()
 
 @rpc("any_peer", "reliable", "call_local")
@@ -126,7 +135,7 @@ func start_game() -> void:
 		var auxiliary: int = current_maze_dimensions.x
 		current_maze_dimensions.x = current_maze_dimensions.y
 		current_maze_dimensions.y = auxiliary
-	start_ingame(current_seed, current_maze_dimensions, true)
+	start_ingame(current_seed, current_maze_dimensions)
 
 @rpc("any_peer", "reliable")
 func end_game() -> void:
@@ -140,20 +149,19 @@ const LATE_INGAME_SYNC_DELAY: float = 2.0
 @rpc("authority", "reliable")
 func late_sync_ingame(maze_seed: int, maze_dimensions: Vector2i) -> void:
 	await get_tree().create_timer(LATE_INGAME_SYNC_DELAY).timeout
-	start_ingame(maze_seed, maze_dimensions, false)
+	start_ingame(maze_seed, maze_dimensions)
 
-func start_ingame(maze_seed: int, maze_dimensions: Vector2i, is_animated: bool) -> void:
+func start_ingame(maze_seed: int, maze_dimensions: Vector2i) -> void:
 	if not multiplayer.is_server(): return
-	set_maze_properties.rpc(maze_seed, maze_dimensions, is_animated)
+	set_maze_properties.rpc(maze_seed, maze_dimensions)
 	create_controllers()
 	create_ingame()
 
 @rpc("authority", "reliable", "call_local")
-func set_maze_properties(maze_seed: int, maze_dimensions: Vector2i, is_animated: bool) -> void:
+func set_maze_properties(maze_seed: int, maze_dimensions: Vector2i) -> void:
 	if UIManager.is_ui_configured: UIManager.lobby_node.activate(false)
 	current_seed = maze_seed
 	current_maze_dimensions = maze_dimensions
-	current_is_animated_generation = is_animated
 
 func create_ingame() -> void:
 	if ingame_container.get_child_count() > 0: return
@@ -166,7 +174,6 @@ func create_ingame() -> void:
 var ingame_node: Node = null
 func spawn_ingame(data: Variant) -> Node:
 	if UIManager.is_ui_configured: UIManager.lobby_node.activate(false)
-	is_ingame_configured = true
 	var ingame: Node = load(INGAME_FILE).instantiate()
 	ingame_node = ingame
 	current_seed = data["seed"]
@@ -174,10 +181,10 @@ func spawn_ingame(data: Variant) -> Node:
 	return ingame
 
 @rpc("authority", "reliable")
-func restart_ingame(maze_seed: int, maze_dimensions: Vector2i, is_animated: bool = false) -> void:
+func restart_ingame(maze_seed: int, maze_dimensions: Vector2i) -> void:
 	delete_ingame(false)
 	await get_tree().process_frame
-	start_ingame(maze_seed, maze_dimensions, is_animated)
+	start_ingame(maze_seed, maze_dimensions)
 
 func delete_ingame(is_deleting_controllers: bool) -> void:
 	if not multiplayer.is_server(): return
