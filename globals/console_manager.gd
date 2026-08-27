@@ -584,7 +584,7 @@ func cmd_crate(args: PackedStringArray, _flags: Array[PackedStringArray], pid: i
 	if args.is_empty():
 		print_output(
 			"usage: crate (add [COUNT/TYPE [COUNT]])/(delete [COUNT])",
-			"shell_output" ,pid)
+			"shell_output", pid)
 		return
 	const ALIASES_1 := ["add", "create"]
 	const ALIASES_2 := ["remove", "delete", "erase"]

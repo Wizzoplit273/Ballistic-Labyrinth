@@ -207,6 +207,7 @@ func determine_target() -> void:
 		if global_position.distance_to(tank.position) < global_position.distance_to(target.position):
 			target = tank
 	for crate: Area2D in IngameManager.ingame_container.get_child(0).get_node(^"Crates").get_children():
+		if pawn.weapon_type != "regular": break
 		if target == null:
 			target = crate
 			continue

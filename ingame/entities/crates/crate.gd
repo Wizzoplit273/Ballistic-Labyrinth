@@ -35,5 +35,6 @@ func network_ready() -> void:
 signal equip_weapon(tank: RigidBody2D, type: String)
 func _on_body_entered(body: Node2D) -> void:
 	if body.get_meta("entity_type", "NULL") != "tank": return
+	if body.weapon_type != "regular": return
 	equip_weapon.emit(body, type)
 	if multiplayer.is_server(): queue_free()
