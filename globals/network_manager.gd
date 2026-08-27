@@ -113,9 +113,11 @@ func close_server() -> void:
 	if not is_online: return
 	if not multiplayer.is_server(): return
 	print_local("Shutting down server...")
+	IngameManager.end_ingame()
+	#await get_tree().create_timer(1.0).timeout
 	if multiplayer.get_peers().size() > 0:
 		notify_server_shutdown.rpc()
-		await get_tree().create_timer(0.1).timeout
+		await get_tree().create_timer(0.2).timeout
 	if multiplayer.multiplayer_peer:
 		multiplayer.multiplayer_peer.close()
 		multiplayer.multiplayer_peer = null
@@ -129,3 +131,4 @@ func notify_server_shutdown() -> void:
 	SessionManager.clear_registry()
 	set_local_online_status(false, false)
 	print_local("Server is closing")
+	

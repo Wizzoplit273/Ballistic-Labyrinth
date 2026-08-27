@@ -8,7 +8,8 @@ func send_local_message(text: String, channel: String) -> void:
 	process_message(text, channel, 0)
 
 func send_message(text: String, channel: String, target_pid: int) -> void:
-	process_message.rpc_id(1, text, channel, target_pid)
+	if not NetworkManager.is_online: process_message(text, channel, target_pid)
+	else: process_message.rpc_id(1, text, channel, target_pid)
 
 @rpc("authority", "reliable", "call_local")
 func update_chat_history(new_message: Dictionary) -> void:

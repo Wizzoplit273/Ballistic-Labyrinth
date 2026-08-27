@@ -23,6 +23,7 @@ fill_from = Vector2(0.24034335, 0.8025751)
 fill_to = Vector2(0.9527897, 0.45064378)
 
 [node name="ChatMenu" type="Control" unique_id=828475156]
+process_mode = 3
 visible = false
 layout_mode = 3
 anchors_preset = 15

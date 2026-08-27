@@ -22,11 +22,17 @@ var is_ingame_finished: bool = false
 var alive_tanks_count: int = 0
 
 func _enter_tree() -> void:
+	setup_ingame_container()
+	setup_controller_container()
+
+func setup_ingame_container() -> void:
 	ingame_container = MultiplayerSpawner.new()
 	ingame_container.spawn_function = spawn_ingame
 	add_child(ingame_container, true)
 	ingame_container.name = "IngameContainer"
 	ingame_container.spawn_path = ingame_container.get_path()
+
+func setup_controller_container() -> void:
 	controller_container = MultiplayerSpawner.new()
 	controller_container.spawn_function = _custom_spawn
 	add_child(controller_container, true)
@@ -73,6 +79,7 @@ func create_controllers() -> void:
 @rpc("authority", "reliable", "call_local")
 func disable_client_controller(path: NodePath) -> void:
 	get_node(path).set_multiplayer_authority(1)
+	get_node(path).set_visibility_public(false)
 
 func delete_controllers() -> void:
 	if not NetworkManager.is_online: return
@@ -80,6 +87,7 @@ func delete_controllers() -> void:
 	for controller: Node in controller_container.get_children():
 		if controller is MultiplayerSynchronizer:
 			disable_client_controller.rpc_id(controller.sid, controller.get_path())
+		await get_tree().process_frame
 		controller.queue_free()
 
 @rpc("any_peer", "reliable", "call_local")
@@ -161,10 +169,13 @@ func delete_ingame(is_deleting_controllers: bool) -> void:
 @rpc("authority", "reliable")
 func end_ingame() -> void:
 	is_ingame_finished = false
+	is_ingame_configured = false
 	delete_ingame(true)
 	if UIManager.is_ui_configured: UIManager.lobby_node.activate(true)
 	if not NetworkManager.is_online: return
-	if multiplayer.is_server(): end_ingame.rpc()
+	if not multiplayer.is_server(): return
+	MasterManager.set_pause(false)
+	end_ingame.rpc()
 
 @rpc("any_peer", "reliable", "call_local")
 func request_end_ingame() -> void:

@@ -85,7 +85,7 @@ func _on_confirm_button_pressed() -> void:
 	$ExitConfirmDialog.visible = false
 	if not NetworkManager.is_online:
 		get_tree().quit()
-	elif not NetworkManager.is_server:
+	elif not multiplayer.is_server():
 		NetworkManager.disconnect_from_server()
 	else:
 		NetworkManager.close_server()
