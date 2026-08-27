@@ -583,7 +583,7 @@ func cmd_crate(args: PackedStringArray, _flags: Array[PackedStringArray], pid: i
 	if not multiplayer.is_server(): return
 	if args.is_empty():
 		print_output(
-			"usage: crate (add [COUNT/TYPE])/(delete [COUNT])",
+			"usage: crate (add [COUNT/TYPE [COUNT]])/(delete [COUNT])",
 			"shell_output" ,pid)
 		return
 	const ALIASES_1 := ["add", "create"]
@@ -595,7 +595,11 @@ func cmd_crate(args: PackedStringArray, _flags: Array[PackedStringArray], pid: i
 			if not args[1].is_valid_int():
 				specific_type = args[1]
 			else: count = abs(int(args[1])) # CRATE add 1 [2] [3] [4] ...
-		SessionManager.add_crate(count, specific_type)
+		if args.size() == 2: SessionManager.add_crate(count, specific_type)
+		if args.size() >= 3:
+			count = int(args[2])
+			for i: int in range(0, count):
+				SessionManager.add_crate(1, specific_type)
 		return
 	elif args[0] in ALIASES_2: # CRATE remove ...
 		var count: int = 1
