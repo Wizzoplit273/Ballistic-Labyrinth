@@ -202,11 +202,13 @@ func get_flags_and_args_and_execute_cmd(tokens: PackedStringArray, active_cmd: D
 
 func execute_raw_string(raw_text: String) -> void:
 	var text: String = raw_text.strip_edges()
+	if text.is_empty(): return
+	if text.begins_with("/") and text.substr(1).is_empty(): return
 	if UIManager.is_ui_configured: ChatManager.send_local_message(text, "shell_input")
 	if text.begins_with("/"): text = text.substr(1)
 	var tokens: PackedStringArray = split_respecting_quotes(text)
 	var invoked: String = ""
-	if not text.is_empty(): invoked = tokens[0]
+	invoked = tokens[0]
 	if invoked_needs_confirmation(invoked): return
 	tokens.remove_at(0)
 	var active_cmd: Dictionary = get_invoked_as_dictionary(invoked)
@@ -339,24 +341,11 @@ func cmd_help(args: PackedStringArray, _flags: Array[PackedStringArray], _pid: i
 		return
 	print_output("command not found: " + args[0], "shell_error", 0)
 
-func cmd_connect(args: PackedStringArray, flags: Array[PackedStringArray], _pid: int) -> void:
+func cmd_connect(_args: PackedStringArray, _flags: Array[PackedStringArray], _pid: int) -> void:
 	if NetworkManager.is_online:
 		print_output("already online/connected", "shell_error", 0)
 		return
-	if args.is_empty() and flags.is_empty():
-		print_output("provide an IP address to connect to", "shell_error", 0)
-		return
-	if not args.is_empty() and not flags.is_empty():
-		print_output("invalid args/flag syntax: either provide IP directly or via ==ip flag", "shell_error", 0)
-		return
-	if not args.is_empty():
-		NetworkManager.start_client(args[0])
-		return
-	for flag: PackedStringArray in flags:
-		if flag[0] != "==ip": continue
-		NetworkManager.start_client(flag[1])
-		return
-	print_output("invalid flag syntax: provide IP via ==ip flag", "shell_error", 0)
+	NetworkManager.start_client()
 
 func cmd_disconnect(args: PackedStringArray, flags: Array[PackedStringArray], _pid: int) -> void:
 	if not NetworkManager.is_online:

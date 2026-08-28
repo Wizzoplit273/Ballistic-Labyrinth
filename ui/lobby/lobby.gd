@@ -60,11 +60,6 @@ func oneshot_update_lobby_register() -> void:
 
 func _ready() -> void:
 	$Frame/Version.text = "Version " + ProjectSettings.get_setting("application/config/version")
-
-func _input(input: InputEvent) -> void:
-	if not IngameManager.is_ingame_configured: return
-	if not input.is_action_pressed(&"ToggleLobby"): return
-	activate(not visible)
 	
 func activate(value: bool) -> void:
 	unfocus()
@@ -95,8 +90,7 @@ func _on_discard_button_pressed() -> void:
 	$ExitConfirmDialog.visible = false
 
 func _on_join_game_button_pressed() -> void:
-	var ip_address: String = %IPEdit.text.strip_edges()
-	NetworkManager.start_client(ip_address)
+	NetworkManager.start_client()
 
 func _on_exit_game_button_pressed() -> void:
 	unfocus()

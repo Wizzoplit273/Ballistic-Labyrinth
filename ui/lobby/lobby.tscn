@@ -18,9 +18,6 @@ shadow_color = Color(0, 0, 0, 0.639216)
 [sub_resource type="LabelSettings" id="LabelSettings_pqpuc"]
 font_size = 30
 
-[sub_resource type="LabelSettings" id="LabelSettings_03ljy"]
-font_size = 60
-
 [sub_resource type="LabelSettings" id="LabelSettings_x2qi5"]
 font_size = 35
 
@@ -188,26 +185,11 @@ layout_mode = 2
 alignment = 1
 metadata/_edit_lock_ = true
 
-[node name="IPLabel" type="Label" parent="Frame/Side1/JoinContainer" unique_id=2002616516]
-layout_mode = 2
-text = "IP address"
-label_settings = SubResource("LabelSettings_03ljy")
-horizontal_alignment = 1
-vertical_alignment = 1
-metadata/_edit_lock_ = true
-
-[node name="IPEdit" type="LineEdit" parent="Frame/Side1/JoinContainer" unique_id=1884564064]
-unique_name_in_owner = true
-layout_mode = 2
-placeholder_text = "IP address"
-alignment = 1
-metadata/_edit_lock_ = true
-
 [node name="JoinGameButton" type="Button" parent="Frame/Side1/JoinContainer" unique_id=1453929641]
 layout_mode = 2
 size_flags_horizontal = 6
 size_flags_vertical = 4
-text = "Join Game"
+text = "Join Server"
 metadata/_edit_lock_ = true
 
 [node name="Spacer2" type="Control" parent="Frame/Side1" unique_id=261301873]

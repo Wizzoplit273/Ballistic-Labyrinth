@@ -49,14 +49,13 @@ func start_server() -> void:
 	print_local("Server is up! Waiting for players...")
 	set_local_online_status(true, true)
 
-func start_client(ip: String) -> void:
+func start_client() -> void:
 	if is_online: return
-	print_local("Trying to connect to ip = " + ip)
+	print_local("Trying to connect to ip = " + ip_address)
 	peer = ENetMultiplayerPeer.new()
-	var error: Error = peer.create_client(ip, PORT)
+	var error: Error = peer.create_client(ip_address, PORT)
 	if error != OK: return
 	IngameManager.current_is_animated_generation = false
-	ip_address = ip
 	peer.get_host().compress(COMPRESSION)
 	multiplayer.set_multiplayer_peer(peer)
 	set_local_online_status(true, false)

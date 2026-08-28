@@ -1,11 +1,19 @@
 extends CanvasLayer
 
 var is_blocked: bool = false
+var is_moving_window: bool = false
+var is_resizing_window: bool = false
 
 @onready var body: TextureRect = %Texture
 
 func toggle_visibility() -> void:
 	visible = not visible
+
+func toggle_move_window() -> void:
+	is_moving_window = not is_moving_window
+
+func toggle_resize_window() -> void:
+	is_resizing_window = not is_resizing_window
 
 func move_window() -> void:
 	if not visible: return
@@ -17,6 +25,14 @@ func resize_window() -> void:
 	var mouse_pos: Vector2 = DisplayServer.mouse_get_position()
 	var body_center_pos: Vector2 = body.position
 	body.size = abs(body_center_pos - mouse_pos) * 2
+
+func focus_chat() -> void:
+	if not visible: return
+	%ChatInput.grab_focus()
+
+func _process(_delta: float) -> void:
+	if is_moving_window: move_window()
+	if is_resizing_window: resize_window()
 
 func _ready() -> void:
 	ChatManager.connect(&"update_local_chat_ui", update_chat)
@@ -53,14 +69,11 @@ func _on_chat_input_text_submitted(raw: String) -> void:
 	if raw.begins_with("/"): ConsoleManager.execute_raw_string(raw)
 	else: ChatManager.send_message(raw, "peer", 0)
 
-func _on_chat_input_focus_entered() -> void:
-	is_blocked = true
+func _on_container_mouse_entered() -> void:
+	print("yes")
 
-func _on_chat_input_focus_exited() -> void:
-	is_blocked = false
-
-func _on_focus_entered() -> void:
-	is_blocked = false
+func _on_container_mouse_exited() -> void:
+	print("no")
 
 func set_font_size(value: int) -> void:
 	%ChatText.add_theme_font_size_override(&"normal_font_size", value)

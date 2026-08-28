@@ -17,16 +17,37 @@ func update_online_status() -> void:
 	if not is_ui_configured: return
 	lobby_node.update_online_status()
 
-func _input(_event: InputEvent) -> void:
+## global handler for making line inputs unfocus when clicking outside them
+func _input(event: InputEvent) -> void:
+	if not is_ui_configured: return
+	if not event is InputEventMouseButton and not event.is_action_pressed(&"UnfocusChat"): return
+	if not event.is_pressed(): return
+	if event is InputEventMouseButton:
+		if event.button_index != MOUSE_BUTTON_LEFT: return
+	var focused_node: Control = get_viewport().gui_get_focus_owner()
+	if focused_node == null: return
+	var mouse_pos: Vector2 = focused_node.get_global_mouse_position()
+	var control_rect := Rect2(Vector2.ZERO, focused_node.size)
+	if control_rect.has_point(mouse_pos): return
+	focused_node.release_focus()
+
+func _unhandled_input(event: InputEvent) -> void:
 	if not is_ui_configured: return # could work for dedicated server console as well so idk
-	if chat_menu_node.is_blocked: return
-	if Input.is_action_just_pressed(&"HideChat"):
+	if event.is_action_pressed(&"FocusChat"):
+		chat_menu_node.focus_chat()
+	if event.is_action_pressed(&"Pause"):
+		if lobby_node.visible and not IngameManager.is_ingame_configured: return
+		if SessionManager.data[multiplayer.get_unique_id()].get("admin") != true: return
+		MasterManager.set_pause.rpc_id(1, not pause_menu_node.visible)
+	if event.is_action_pressed(&"MoveWindow"):
+		chat_menu_node.toggle_move_window()
+	if event.is_action_pressed(&"ResizeWindow"):
+		chat_menu_node.toggle_resize_window()
+	if event.is_action_pressed(&"ToggleLobby"):
+		lobby_node.activate(not lobby_node.visible)
+	if event.is_action_pressed(&"HideChat"):
 		chat_menu_node.toggle_visibility()
 		return
-	if Input.is_action_pressed(&"MoveWindow"):
-		chat_menu_node.move_window()
-	if Input.is_action_pressed(&"ResizeWindow"):
-		chat_menu_node.resize_window()
 
 func master_enter_tree() -> void:
 	if OS.has_feature("server") or DisplayServer.get_name() == "headless": return
