@@ -116,6 +116,33 @@ func register_command(
 		"is_local": is_local
 	})
 
+const NO_TIMESTAMP_CHANNELS: PackedStringArray = ["shell_input", "shell_error", "shell_output"]
+func dedicated_server_print(message: Dictionary) -> void:
+	if message.get("channel", "null") == "null": return
+	if message.get("channel", "null") == "shell_input": return
+	var readable_sid: String = SessionManager.encode_session_id(message.get("sender_sid"))
+	if not NetworkManager.is_online: readable_sid = "#OFFLINE"
+	var result_buffer: String = ""
+	if not message.get("channel") in NO_TIMESTAMP_CHANNELS:
+		result_buffer += str(message.get("timestamp")) + " "
+	if message.get("channel") == "peer":
+		result_buffer += message.get("sender_name")
+		result_buffer += "(" + readable_sid + "): "
+	elif message.get("channel") == "shell_input":
+		result_buffer += ":: "
+	elif message.get("channel") == "shell_output":
+		result_buffer += "/: "
+	elif message.get("channel") == "shell_error":
+		result_buffer += "E: "
+	elif message.get("channel") == "admin":
+		result_buffer += "ADMIN: "
+	elif message.get("channel") == "target":
+		result_buffer += "!!!: "
+	elif message.get("channel") == "global":
+		result_buffer += "***: "
+	result_buffer += message.get("text") + "\n"
+	print(result_buffer)
+
 func print_output(text: String, channel: String, pid: int) -> void:
 	if pid < 0: return
 	if channel == "peer": return

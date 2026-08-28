@@ -7,6 +7,7 @@ func is_bot(session_id: int) -> bool:
 	return session_id < 0
 
 func turn_local_to_online_profile() -> void:
+	if NetworkManager.is_dedicated_server: return
 	data.clear()
 	profile_data["admin"] = true
 	data[multiplayer.get_unique_id()] = profile_data
@@ -16,6 +17,7 @@ func master_enter_tree() -> void:
 	create_local_profile()
 
 func create_local_profile() -> void:
+	if NetworkManager.is_dedicated_server: return
 	if data.has(0): return
 	profile_data = {
 		"name": "unnamed",

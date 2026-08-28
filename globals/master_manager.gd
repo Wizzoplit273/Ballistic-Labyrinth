@@ -1,9 +1,9 @@
 extends Node
 
 func _enter_tree() -> void:
+	NetworkManager.master_enter_tree()
 	SessionManager.master_enter_tree()
 	UIManager.master_enter_tree()
-	NetworkManager.master_enter_tree()
 
 func play_server_sound(player: Node, pid: int = 0) -> void:
 	if not multiplayer.is_server(): return

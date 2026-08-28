@@ -34,7 +34,7 @@ func _process(_delta: float) -> void:
 	if is_moving_window: move_window()
 	if is_resizing_window: resize_window()
 
-func _ready() -> void:
+func connect_signal() -> void:
 	ChatManager.connect(&"update_local_chat_ui", update_chat)
 
 func update_chat(new_messages: Array[Dictionary]) -> void:

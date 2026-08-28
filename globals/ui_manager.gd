@@ -50,7 +50,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 
 func master_enter_tree() -> void:
-	if OS.has_feature("server") or DisplayServer.get_name() == "headless": return
+	if NetworkManager.is_dedicated_server: return
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	initialize_ui()
 	is_ui_configured = true
@@ -60,6 +60,8 @@ func initialize_ui() -> void:
 	lobby_node.activate(true)
 	create_pause_menu()
 	create_chat_menu()
+	lobby_node.write_version_text()
+	chat_menu_node.connect_signal()
 
 func create_lobby() -> void:
 	if lobby_node != null: return

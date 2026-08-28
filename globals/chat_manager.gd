@@ -35,7 +35,7 @@ func process_message(text: String, channel: String, target_pid: int) -> void:
 	var final_text: String = text.strip_edges()
 	var message: Dictionary = {}
 	var new_array: Array[Dictionary] = []
-	if sender_id == 0:
+	if sender_id == 0 or NetworkManager.is_dedicated_server:
 		message = {
 			"sender_sid": sender_id,
 			"sender_name": SessionManager.profile_data.get("name"),
@@ -47,7 +47,8 @@ func process_message(text: String, channel: String, target_pid: int) -> void:
 		while chat_history.size() > MAX_HISTORY:
 			chat_history.pop_front()
 		new_array.append(message)
-		update_local_chat_ui.emit(new_array)
+		if NetworkManager.is_dedicated_server: ConsoleManager.dedicated_server_print(message)
+		else: update_local_chat_ui.emit(new_array)
 		return
 	if not multiplayer.is_server(): return
 	var sender_name: String = ""

@@ -58,7 +58,7 @@ func oneshot_update_lobby_register() -> void:
 		%SessionsList.get_child(0).update(1)
 		return
 
-func _ready() -> void:
+func write_version_text() -> void:
 	$Frame/Version.text = "Version " + ProjectSettings.get_setting("application/config/version")
 	
 func activate(value: bool) -> void:
