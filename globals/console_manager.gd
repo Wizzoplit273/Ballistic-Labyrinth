@@ -124,18 +124,8 @@ func initialize_dedicated_server_console() -> void:
 
 ## only works for Linux instances
 func listen_for_console_input() -> void:
-	var cmd := "sh"
-	var args := PackedStringArray(["-c", "read input && echo \"$input\""])
 	while input_thread_should_run:
-		var process: Dictionary = OS.execute_with_pipe(cmd, args)
-		if process.is_empty() or not process.has("stdio"):
-			printerr("SERVER: Failed to create stdin pipe process")
-			break
-		var pipe: FileAccess = process["stdio"]
-		var line := pipe.get_line()
-		pipe.close()
-		if process.has("pid"):
-			OS.kill(process["pid"])
+		var line := OS.read_string_from_stdin()
 		if line.length() > 0:
 			call_deferred("execute_raw_string", line)
 
@@ -162,7 +152,7 @@ func dedicated_server_print(message: Dictionary) -> void:
 		result_buffer += "!!!: "
 	elif message.get("channel") == "global":
 		result_buffer += "***: "
-	result_buffer += message.get("text") + "\n"
+	result_buffer += message.get("text")
 	print(result_buffer)
 
 func print_output(text: String, channel: String, pid: int) -> void:
@@ -174,6 +164,7 @@ func print_output(text: String, channel: String, pid: int) -> void:
 		return
 	if not NetworkManager.is_online: return
 	if not multiplayer.is_server(): return
+	print("gaoegkjworga")
 	if channel in ChatManager.PID_EXCLUSIVE_CHANNELS:
 		if pid == 0: return
 		ChatManager.send_message(text, channel, pid)
@@ -215,16 +206,20 @@ func get_invoked_as_dictionary(invoked: String) -> Dictionary:
 		return {}
 	return active_cmd
 
+func is_admin(pid: int) -> bool:
+	if pid <= 0: return false
+	if not NetworkManager.is_online: return false
+	if NetworkManager.is_dedicated_server: return true
+	if not pid in SessionManager.data.keys(): return false
+	if SessionManager.data.get(pid).get("admin") != true: return false
+	return true
+
 func is_admin_local_verify(invoked: String, active_cmd: Dictionary) -> bool:
 	## temporary setup for testing the game
 	## in the future, client-only exports won't have cmd_start_server and cmd_close_server
-	if active_cmd["requires_admin"]:
-		if not NetworkManager.is_online:
-			print_output("command not found: " + invoked, "shell_error", 0)
-			return false
-		if SessionManager.data.get(multiplayer.get_unique_id()).get("admin") == false:
-			print_output("command not found: " + invoked, "shell_error", 0)
-			return false
+	if active_cmd["requires_admin"] and not is_admin(multiplayer.get_unique_id()):
+		print_output("command not found: " + invoked, "shell_error", 0)
+		return false
 	return true
 
 func get_flags_and_args_and_execute_cmd(tokens: PackedStringArray, active_cmd: Dictionary) -> void:
@@ -275,7 +270,7 @@ func execute_cmd(cmd: Dictionary, args: PackedStringArray, flags: Array[PackedSt
 func is_admin_server_verify(cmd: Dictionary, pid: int) -> bool:
 	if not cmd in registry: return false
 	if cmd["is_local"]: return false
-	if cmd["requires_admin"] and SessionManager.data[pid]["admin"] != true: return false
+	if cmd["requires_admin"] and not is_admin(pid): return false
 	return true
 
 @rpc("any_peer", "reliable", "call_local")
@@ -363,11 +358,10 @@ func get_session_reference_from_flags(flags: Array[PackedStringArray], pid: int 
 
 func cmd_help(args: PackedStringArray, _flags: Array[PackedStringArray], _pid: int) -> void:
 	var command_list: String = ""
-	var is_admin: bool = false
-	if NetworkManager.is_online: is_admin = SessionManager.data.get(multiplayer.get_unique_id()).get("admin")
+	var is_pid_admin: bool = is_admin(multiplayer.get_unique_id())
 	if args.is_empty():
 		for command: Dictionary in registry:
-			if command["requires_admin"] == true and not is_admin: continue
+			if command["requires_admin"] == true and not is_pid_admin: continue
 			var length: int = command["aliases"].size()
 			var index: int = 0
 			for alias: String in command["aliases"]:

@@ -4,7 +4,6 @@ var chat_history: Array[Dictionary] = []
 var MAX_HISTORY: int = 100
 
 func send_local_message(text: String, channel: String) -> void:
-	if not UIManager.is_ui_configured: return
 	process_message(text, channel, 0)
 
 func send_message(text: String, channel: String, target_pid: int) -> void:
