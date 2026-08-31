@@ -114,6 +114,12 @@ func _enter_tree() -> void:
 		true,
 		false
 	)
+	register_command(
+		["toggle_ingame_states", "toggle_ingame_state", "ingame_state"],
+		"toggles displaying messages for dedicated server when ingame state changes",
+		true,
+		false
+	)
 
 ## first string in alias list corresponds with a callable's name(ex: "connect" corresponds with cmd_connect)
 func register_command(
@@ -459,6 +465,9 @@ const CMD_GET_SESSION := ["session", "register"]
 
 func cmd_set(args: PackedStringArray, _flags: Array[PackedStringArray], pid: int) -> void:
 	if not multiplayer.is_server(): return
+	if NetworkManager.is_dedicated_server:
+		print_output("dedicated server doesn't have a session", "shell_error", pid)
+		return
 	if args.is_empty():
 		print_output("usage: set PROPERTY VALUE", "shell_output", pid)
 		return
@@ -700,8 +709,24 @@ func cmd_get_sessions(args: PackedStringArray, _flags: Array[PackedStringArray],
 			print_output(key[0] + ": " + result, "shell_output", 0)
 		return
 
-const PAUSE_ALIASES := ["true", "t", "yes", "y"]
+const AFFIRM_ALIASES := ["true", "t", "yes", "y"]
 func cmd_pause(args: PackedStringArray, _flags: Array[PackedStringArray], _pid: int) -> void:
 	if args.is_empty(): MasterManager.set_pause(not get_tree().is_paused())
-	elif args[0] == "true": MasterManager.set_pause(true)
+	elif args[0] in AFFIRM_ALIASES: MasterManager.set_pause(true)
 	else: MasterManager.set_pause(false)
+
+func cmd_toggle_ingame_states(args: PackedStringArray, _flags: Array[PackedStringArray], pid: int) -> void:
+	if not NetworkManager.is_dedicated_server:
+		print_output("can't toggle ingame state display if it's not a dedicated server", "shell_error", pid)
+		return
+	if args.is_empty(): IngameManager.is_showing_states = not IngameManager.is_showing_states
+	elif args[0] in AFFIRM_ALIASES: IngameManager.is_showing_states = true
+	else: IngameManager.is_showing_states = false
+	var message: Dictionary = {
+		"sender_sid": 1,
+		"sender_name": "server",
+		"text": "ingame state display set to " + str(IngameManager.is_showing_states),
+		"timestamp": Time.get_time_string_from_unix_time(int(Time.get_unix_time_from_system())),
+		"channel": "global"
+	}
+	ConsoleManager.dedicated_server_print(message)

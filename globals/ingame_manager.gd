@@ -9,9 +9,11 @@ enum State {
 
 var current_state: State = State.STOPPED
 
+var is_showing_states: bool = false
 func set_current_state(state: State) -> void:
 	current_state = state
 	if not NetworkManager.is_dedicated_server: return
+	if not is_showing_states: return
 	var state_name: String = ""
 	if state == State.STOPPED: state_name = " (STOPPED)"
 	if state == State.ANIMATING: state_name = " (ANIMATING)"
