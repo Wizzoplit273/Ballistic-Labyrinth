@@ -35,14 +35,14 @@ func _process(_delta: float) -> void:
 	if Input.is_action_just_pressed(&"Shoot"): request_shoot()
 	if Input.is_action_just_pressed(&"Teleport"):
 		if IngameManager.ingame_container.get_child_count() == 0: return
-		if SessionManager.data[multiplayer.get_unique_id()].get("admin") != true: return
+		if not SessionManager.is_admin(multiplayer.get_unique_id()): return
 		var mouse_position: Vector2 = IngameManager.ingame_container.get_child(0).get_global_mouse_position()
 		IngameManager.teleport_tank.rpc_id(1, mouse_position)
 	if Input.is_action_just_pressed(&"Invincibility"):
-		if SessionManager.data[multiplayer.get_unique_id()].get("admin") != true: return
+		if not SessionManager.is_admin(multiplayer.get_unique_id()): return
 		IngameManager.change_invincibility.rpc_id(1)
 	if Input.is_action_just_pressed(&"NoClip"):
-		if SessionManager.data[multiplayer.get_unique_id()].get("admin") != true: return
+		if not SessionManager.is_admin(multiplayer.get_unique_id()): return
 		IngameManager.change_noclip.rpc_id(1)
 
 func request_shoot() -> void:

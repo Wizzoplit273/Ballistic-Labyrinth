@@ -69,7 +69,7 @@ func process_message(text: String, channel: String, target_pid: int) -> void:
 	if channel == "admin":
 		for admin_id: int in SessionManager.data.keys():
 			if admin_id <= 0: continue
-			if SessionManager.data[admin_id].get("admin") != true: continue
+			if not SessionManager.is_admin(admin_id): continue
 			update_chat_history.rpc_id(admin_id, message)
 		return
 	if channel == "peer" or channel == "global":

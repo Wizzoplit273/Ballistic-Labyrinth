@@ -32,6 +32,14 @@ func clear_registry() -> void:
 	data.clear()
 	data[0] = profile_data
 
+func is_admin(pid: int) -> bool:
+	if pid <= 0: return false
+	if not NetworkManager.is_online: return false
+	if NetworkManager.is_dedicated_server: return true
+	if not pid in data.keys(): return false
+	if data.get(pid).get("admin") != true: return false
+	return true
+
 @rpc("authority", "reliable")
 func add_session(session_id: int, profile: Dictionary) -> void:
 	if session_id == 0: return
@@ -82,9 +90,9 @@ func set_profile_color(color: Color) -> void:
 	profile_data["color"] = color
 	wrap_request_profile_update()
 
-func set_admin(pid: int, is_admin: bool) -> void:
-	data[pid]["admin"] = is_admin
-	UIManager.toggle_admin_options(is_admin)
+func set_admin(pid: int, is_this_admin: bool) -> void:
+	data[pid]["admin"] = is_this_admin
+	UIManager.toggle_admin_options(is_this_admin)
 
 func increment_kill(sid: int) -> void:
 	if sid == 0: return

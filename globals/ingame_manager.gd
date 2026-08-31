@@ -118,7 +118,7 @@ func start_game() -> void:
 	var pid: int = multiplayer.get_remote_sender_id()
 	if not NetworkManager.is_online: return
 	if not multiplayer.is_server(): return
-	if pid != 0 and SessionManager.data[pid].get("admin") == false: return
+	if not SessionManager.is_admin(pid): return
 	current_seed = randi()
 	current_maze_dimensions.x = randi_range(set_maze_dimensions[0], set_maze_dimensions[1])
 	current_maze_dimensions.y = randi_range(set_maze_dimensions[2], set_maze_dimensions[3])
@@ -133,7 +133,7 @@ func end_game() -> void:
 	var pid: int = multiplayer.get_remote_sender_id()
 	if not NetworkManager.is_online: return
 	if not multiplayer.is_server(): return
-	if pid != 0 and SessionManager.data[pid].get("admin") == false: return
+	if not SessionManager.is_admin(pid): return
 	end_ingame()
 
 const LATE_INGAME_SYNC_DELAY: float = 2.0
@@ -209,7 +209,7 @@ func request_end_ingame() -> void:
 	var pid: int = multiplayer.get_remote_sender_id()
 	if not multiplayer.is_server(): return
 	if pid == 0: return
-	if SessionManager.data[pid].get("admin") != true: return
+	if not SessionManager.is_admin(pid): return
 	MasterManager.set_pause(false)
 	end_ingame()
 
@@ -323,7 +323,7 @@ func spawn_bullet(payload: Dictionary) -> Node:
 func teleport_tank(pos: Vector2) -> void:
 	var pid: int = multiplayer.get_remote_sender_id()
 	if not multiplayer.is_server(): return
-	if SessionManager.data[pid].get("admin") != true: return
+	if not SessionManager.is_admin(pid): return
 	var pawn: Node2D = null
 	for controller: Node in controller_container.get_children():
 		if controller.sid != pid: continue
@@ -337,7 +337,7 @@ func teleport_tank(pos: Vector2) -> void:
 func change_invincibility() -> void:
 	var pid: int = multiplayer.get_remote_sender_id()
 	if not multiplayer.is_server(): return
-	if SessionManager.data[pid].get("admin") != true: return
+	if not SessionManager.is_admin(pid): return
 	var pawn: Node2D = null
 	for controller: Node in controller_container.get_children():
 		if controller.sid != pid: continue
@@ -356,7 +356,7 @@ func change_invincibility() -> void:
 func change_noclip() -> void:
 	var pid: int = multiplayer.get_remote_sender_id()
 	if not multiplayer.is_server(): return
-	if SessionManager.data[pid].get("admin") != true: return
+	if not SessionManager.is_admin(pid): return
 	var pawn: Node2D = null
 	for controller: Node in controller_container.get_children():
 		if controller.sid != pid: continue

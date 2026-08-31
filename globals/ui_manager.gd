@@ -37,7 +37,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		chat_menu_node.focus_chat()
 	if event.is_action_pressed(&"Pause"):
 		if lobby_node.visible and not IngameManager.is_ingame_configured: return
-		if SessionManager.data[multiplayer.get_unique_id()].get("admin") != true: return
+		if not SessionManager.is_admin(multiplayer.get_unique_id()): return
 		MasterManager.set_pause.rpc_id(1, not pause_menu_node.visible)
 	if event.is_action_pressed(&"MoveWindow"):
 		chat_menu_node.toggle_move_window()

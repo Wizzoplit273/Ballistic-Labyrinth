@@ -164,7 +164,6 @@ func print_output(text: String, channel: String, pid: int) -> void:
 		return
 	if not NetworkManager.is_online: return
 	if not multiplayer.is_server(): return
-	print("gaoegkjworga")
 	if channel in ChatManager.PID_EXCLUSIVE_CHANNELS:
 		if pid == 0: return
 		ChatManager.send_message(text, channel, pid)
@@ -206,18 +205,10 @@ func get_invoked_as_dictionary(invoked: String) -> Dictionary:
 		return {}
 	return active_cmd
 
-func is_admin(pid: int) -> bool:
-	if pid <= 0: return false
-	if not NetworkManager.is_online: return false
-	if NetworkManager.is_dedicated_server: return true
-	if not pid in SessionManager.data.keys(): return false
-	if SessionManager.data.get(pid).get("admin") != true: return false
-	return true
-
 func is_admin_local_verify(invoked: String, active_cmd: Dictionary) -> bool:
 	## temporary setup for testing the game
 	## in the future, client-only exports won't have cmd_start_server and cmd_close_server
-	if active_cmd["requires_admin"] and not is_admin(multiplayer.get_unique_id()):
+	if active_cmd["requires_admin"] and not SessionManager.is_admin(multiplayer.get_unique_id()):
 		print_output("command not found: " + invoked, "shell_error", 0)
 		return false
 	return true
@@ -270,7 +261,7 @@ func execute_cmd(cmd: Dictionary, args: PackedStringArray, flags: Array[PackedSt
 func is_admin_server_verify(cmd: Dictionary, pid: int) -> bool:
 	if not cmd in registry: return false
 	if cmd["is_local"]: return false
-	if cmd["requires_admin"] and not is_admin(pid): return false
+	if cmd["requires_admin"] and not SessionManager.is_admin(pid): return false
 	return true
 
 @rpc("any_peer", "reliable", "call_local")
@@ -358,7 +349,7 @@ func get_session_reference_from_flags(flags: Array[PackedStringArray], pid: int 
 
 func cmd_help(args: PackedStringArray, _flags: Array[PackedStringArray], _pid: int) -> void:
 	var command_list: String = ""
-	var is_pid_admin: bool = is_admin(multiplayer.get_unique_id())
+	var is_pid_admin: bool = SessionManager.is_admin(multiplayer.get_unique_id())
 	if args.is_empty():
 		for command: Dictionary in registry:
 			if command["requires_admin"] == true and not is_pid_admin: continue
@@ -467,7 +458,7 @@ func cmd_set(args: PackedStringArray, _flags: Array[PackedStringArray], pid: int
 func cmd_assign(args: PackedStringArray, flags: Array[PackedStringArray], pid: int) -> void:
 	if not multiplayer.is_server(): return
 	if args.size() < 2:
-		print_output("usage: assign PROPERTY VALUE [=s/==sid SID]", "shell_output", pid)
+		print_output("usage: assign PROPERTY VALUE [=s/==sid SID / =n/==name NAME]", "shell_output", pid)
 		return
 	var property: String = ""
 	for key: PackedStringArray in ATTRIBUTE_ALIASES.values():
