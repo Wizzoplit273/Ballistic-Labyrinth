@@ -50,7 +50,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 
 func master_enter_tree() -> void:
-	if NetworkManager.is_dedicated_server: return
+	if NetworkManager.is_dedicated_server:
+		ConsoleManager.initialize_dedicated_server_console()
+		return
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	initialize_ui()
 	is_ui_configured = true

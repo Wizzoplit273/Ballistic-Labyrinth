@@ -30,7 +30,8 @@ func print_error(text: String) -> void:
 func master_enter_tree() -> void:
 	if OS.has_feature("server") or DisplayServer.get_name() == "headless":
 		is_dedicated_server = true
-	set_local_online_status(false, false)
+	if is_dedicated_server: start_server()
+	else: set_local_online_status(false, false)
 
 func _enter_tree() -> void:
 	multiplayer.peer_connected.connect(peer_connected)

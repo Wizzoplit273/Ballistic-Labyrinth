@@ -116,20 +116,42 @@ func register_command(
 		"is_local": is_local
 	})
 
+var input_thread: Thread
+var input_thread_should_run: bool = true
+func initialize_dedicated_server_console() -> void:
+	input_thread = Thread.new()
+	input_thread.start(listen_for_console_input)
+
+## only works for Linux instances
+func listen_for_console_input() -> void:
+	var cmd := "sh"
+	var args := PackedStringArray(["-c", "read input && echo \"$input\""])
+	while input_thread_should_run:
+		var process: Dictionary = OS.execute_with_pipe(cmd, args)
+		if process.is_empty() or not process.has("stdio"):
+			printerr("SERVER: Failed to create stdin pipe process")
+			break
+		var pipe: FileAccess = process["stdio"]
+		var line := pipe.get_line()
+		pipe.close()
+		if process.has("pid"):
+			OS.kill(process["pid"])
+		if line.length() > 0:
+			call_deferred("execute_raw_string", line)
+
+func _exit_tree() -> void:
+	input_thread_should_run = false
+	if input_thread and input_thread.is_started():
+		input_thread.wait_to_finish()
+
 const NO_TIMESTAMP_CHANNELS: PackedStringArray = ["shell_input", "shell_error", "shell_output"]
 func dedicated_server_print(message: Dictionary) -> void:
 	if message.get("channel", "null") == "null": return
 	if message.get("channel", "null") == "shell_input": return
-	var readable_sid: String = SessionManager.encode_session_id(message.get("sender_sid"))
-	if not NetworkManager.is_online: readable_sid = "#OFFLINE"
+	if message.get("channel", "null") == "peer": return
 	var result_buffer: String = ""
 	if not message.get("channel") in NO_TIMESTAMP_CHANNELS:
 		result_buffer += str(message.get("timestamp")) + " "
-	if message.get("channel") == "peer":
-		result_buffer += message.get("sender_name")
-		result_buffer += "(" + readable_sid + "): "
-	elif message.get("channel") == "shell_input":
-		result_buffer += ":: "
 	elif message.get("channel") == "shell_output":
 		result_buffer += "/: "
 	elif message.get("channel") == "shell_error":

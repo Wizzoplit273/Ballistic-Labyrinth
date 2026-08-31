@@ -69,12 +69,6 @@ func _on_chat_input_text_submitted(raw: String) -> void:
 	if raw.begins_with("/"): ConsoleManager.execute_raw_string(raw)
 	else: ChatManager.send_message(raw, "peer", 0)
 
-func _on_container_mouse_entered() -> void:
-	print("yes")
-
-func _on_container_mouse_exited() -> void:
-	print("no")
-
 func set_font_size(value: int) -> void:
 	%ChatText.add_theme_font_size_override(&"normal_font_size", value)
 	%Header.add_theme_font_size_override(&"font_size", value)
