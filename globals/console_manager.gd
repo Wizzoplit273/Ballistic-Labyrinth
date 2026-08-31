@@ -108,6 +108,12 @@ func _enter_tree() -> void:
 		false,
 		true
 	)
+	register_command(
+		["pause", "p"],
+		"pause/resume the ingame",
+		true,
+		false
+	)
 
 ## first string in alias list corresponds with a callable's name(ex: "connect" corresponds with cmd_connect)
 func register_command(
@@ -690,3 +696,9 @@ func cmd_get_sessions(args: PackedStringArray, _flags: Array[PackedStringArray],
 			else: result = str(session.get(key[0]))
 			print_output(key[0] + ": " + result, "shell_output", 0)
 		return
+
+const PAUSE_ALIASES := ["true", "t", "yes", "y"]
+func cmd_pause(args: PackedStringArray, _flags: Array[PackedStringArray], _pid: int) -> void:
+	if args.is_empty(): MasterManager.set_pause(not get_tree().is_paused())
+	elif args[0] == "true": MasterManager.set_pause(true)
+	else: MasterManager.set_pause(false)

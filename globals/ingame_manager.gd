@@ -203,13 +203,13 @@ func delete_ingame(is_deleting_controllers: bool) -> void:
 
 @rpc("authority", "reliable")
 func end_ingame(is_deleting_controllers: bool) -> void:
+	MasterManager.set_pause(false)
 	current_state = State.STOPPED
 	delete_ingame(is_deleting_controllers)
 	if is_deleting_controllers and UIManager.is_ui_configured:
 		UIManager.lobby_node.activate(true)
 	if not NetworkManager.is_online: return
 	if not multiplayer.is_server(): return
-	MasterManager.set_pause(false)
 	end_ingame.rpc(is_deleting_controllers)
 
 @rpc("any_peer", "reliable", "call_local")
