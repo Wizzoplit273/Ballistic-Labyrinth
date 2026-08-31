@@ -102,6 +102,12 @@ func _enter_tree() -> void:
 		true,
 		false
 	)
+	register_command(
+		["get_sessions", "get_session", "get_sid", "get_s"],
+		"get certain or all attributes from every session",
+		false,
+		true
+	)
 
 ## first string in alias list corresponds with a callable's name(ex: "connect" corresponds with cmd_connect)
 func register_command(
@@ -347,6 +353,14 @@ func get_session_reference_from_flags(flags: Array[PackedStringArray], pid: int 
 		return Vector2i(result, 0)
 	return Vector2i(1, 1)
 
+func get_printed_session(sid: int) -> String:
+	if sid == 0: return ""
+	if not sid in SessionManager.data.keys(): return ""
+	var result: String = " " + str(SessionManager.encode_session_id(sid))
+	result += ":\n"
+	result += str(SessionManager.data[sid])
+	return result
+
 func cmd_help(args: PackedStringArray, _flags: Array[PackedStringArray], _pid: int) -> void:
 	var command_list: String = ""
 	var is_pid_admin: bool = SessionManager.is_admin(multiplayer.get_unique_id())
@@ -432,6 +446,10 @@ func cmd_get(args: PackedStringArray, flags: Array[PackedStringArray], _pid: int
 		else: result = str(session_entry.get(key[0]))
 		print_output(key[0] + ": " + result, "shell_output", 0)
 		return
+	if not args[0] in CMD_GET_SESSION: return
+	print_output(get_printed_session(target_sid), "shell_output", 0)
+
+const CMD_GET_SESSION := ["session", "register"]
 
 func cmd_set(args: PackedStringArray, _flags: Array[PackedStringArray], pid: int) -> void:
 	if not multiplayer.is_server(): return
@@ -653,3 +671,22 @@ func cmd_restart_ingame(_args: PackedStringArray, _flags: Array[PackedStringArra
 		print_output("can't restart ingame when offline/disconnected", "shell_error", 0)
 		return
 	IngameManager.restart_ingame()
+
+func cmd_get_sessions(args: PackedStringArray, _flags: Array[PackedStringArray], _pid: int) -> void:
+	if args.is_empty():
+		var result: String = ""
+		for sid: int in SessionManager.data.keys():
+			result += "\n--- "
+			result += get_printed_session(sid)
+		if result.is_empty(): print_output("there are no current sessions", "shell_output", 0)
+		else: print_output(result, "shell_output", 0)
+		return
+	for key: PackedStringArray in ATTRIBUTE_ALIASES.values():
+		if not args[0] in key: continue
+		for session: Dictionary in SessionManager.data.values():
+			var result: String
+			if key[0] == "color":
+				result = SessionManager.color_to_string(session.get(key[0]))
+			else: result = str(session.get(key[0]))
+			print_output(key[0] + ": " + result, "shell_output", 0)
+		return

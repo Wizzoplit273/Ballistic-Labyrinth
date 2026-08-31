@@ -33,8 +33,8 @@ func clear_registry() -> void:
 	data[0] = profile_data
 
 func is_admin(pid: int) -> bool:
+	if pid == 1: return true
 	if not NetworkManager.is_online: return false
-	if NetworkManager.is_dedicated_server: return true
 	if pid <= 0: return false
 	if not pid in data.keys(): return false
 	if data.get(pid).get("admin") != true: return false
@@ -243,12 +243,10 @@ func request_profile_update(profile: Dictionary) -> void:
 	if not multiplayer.is_server(): return
 	var sender_id: int = multiplayer.get_remote_sender_id()
 	var clean_name: String = profile.get("name", "unnamed").strip_edges()
-	if clean_name.is_empty(): clean_name = "Player " + str(sender_id)
-	var get_admin: bool = false
-	if sender_id in data.keys(): get_admin = profile.get("admin", false)
+	if clean_name.is_empty(): clean_name = "Player " + encode_session_id(sender_id)
 	var new_session: Dictionary = {
 		"name": clean_name,
-		"admin": get_admin,
+		"admin": is_admin(sender_id),
 		"color": profile.get("color", Color(1.0, 1.0, 1.0, 1.0)),
 		"kills": 0,
 		"score": 0

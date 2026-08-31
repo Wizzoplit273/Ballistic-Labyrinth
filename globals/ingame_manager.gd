@@ -118,7 +118,7 @@ func start_game() -> void:
 	var pid: int = multiplayer.get_remote_sender_id()
 	if not NetworkManager.is_online: return
 	if not multiplayer.is_server(): return
-	if not SessionManager.is_admin(pid): return
+	if pid != 0 and not SessionManager.is_admin(pid): return
 	current_seed = randi()
 	current_maze_dimensions.x = randi_range(set_maze_dimensions[0], set_maze_dimensions[1])
 	current_maze_dimensions.y = randi_range(set_maze_dimensions[2], set_maze_dimensions[3])
@@ -155,7 +155,9 @@ func set_maze_properties(maze_seed: int, maze_dimensions: Vector2i) -> void:
 	current_maze_dimensions = maze_dimensions
 
 func create_ingame() -> void:
-	if ingame_container.get_child_count() > 0: return
+	if ingame_container.get_child_count() > 0:
+		print("ALREADY EXISTS")
+		return
 	var data: Dictionary = {
 		"seed": current_seed,
 		"dimensions": current_maze_dimensions
@@ -172,7 +174,7 @@ func spawn_ingame(data: Variant) -> Node:
 	return ingame
 
 func restart_ingame() -> void:
-	delete_ingame(false)
+	end_ingame() #delete_ingame(false)
 	await get_tree().process_frame
 	is_ingame_configured = false
 	is_ingame_finished = false
