@@ -582,14 +582,14 @@ func cmd_bot(args: PackedStringArray, flags: Array[PackedStringArray], pid: int)
 		SessionManager.set_bot_trait_from_str(sid, ATTRIBUTE, VALUE)
 		return
 	elif args[0] in ALIASES_4: # BOT enable ...
-		if not IngameManager.is_ingame_configured:
+		if IngameManager.current_state != IngameManager.State.FINISHED:
 			print_output("can't change bot process mode when ingame is not loaded", "shell_error", pid)
 			return
 		for bot_controller: Node in IngameManager.get_children():
 			if bot_controller.get_meta("type", "null") != "bot": continue
 			bot_controller.process_mode = Node.PROCESS_MODE_PAUSABLE
 	elif args[0] in ALIASES_5: # BOT disable ...
-		if not IngameManager.is_ingame_configured:
+		if IngameManager.current_state != IngameManager.State.FINISHED:
 			print_output("can't change bot process mode when ingame is not loaded", "shell_error", pid)
 			return
 		for bot_controller: Node in IngameManager.get_children():
@@ -664,7 +664,7 @@ func cmd_close_ingame(_args: PackedStringArray, _flags: Array[PackedStringArray]
 	if not NetworkManager.is_online:
 		print_output("can't close ingame when offline/disconnected", "shell_error", 0)
 		return
-	IngameManager.end_ingame()
+	IngameManager.end_ingame(true)
 
 func cmd_restart_ingame(_args: PackedStringArray, _flags: Array[PackedStringArray], _pid: int) -> void:
 	if not NetworkManager.is_online:

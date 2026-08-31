@@ -49,7 +49,7 @@ func configure_spawners() -> void:
 	$Bullets.spawn_function = IngameManager.spawn_bullet
 
 func _ready() -> void:
-	IngameManager.is_ingame_configured = true
+	IngameManager.current_state = IngameManager.State.ANIMATING
 	is_generation_animated = IngameManager.current_is_animated_generation
 	process_mode = Node.PROCESS_MODE_INHERIT
 	SEEDED_RNG.seed = IngameManager.current_seed
@@ -773,5 +773,4 @@ func _on_next_round_delay_timeout() -> void:
 
 @rpc("authority", "reliable", "call_local")
 func toggle_pawns(value: bool) -> void:
-	if UIManager.is_ui_configured: UIManager.lobby_node.toggle_spectate_window(false)
 	for pawn: Node in $TankPawns.get_children(): pawn.toggle(value)

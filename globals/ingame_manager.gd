@@ -1,5 +1,14 @@
 extends Node
 
+enum State {
+	STOPPED				= 0,
+	ANIMATING			= 1,
+	WAITING_BEFORE_SYNC = 2,
+	FINISHED			= 3
+}
+
+var current_state: State = State.STOPPED
+
 ## this node will have every controller node as a child node so they're easier to access
 
 ## updated once by origin node, remains constant
@@ -14,8 +23,8 @@ const INGAME_FILE: String = "res://ingame/ingame.tscn"
 var ingame_container: MultiplayerSpawner = null
 var controller_container: MultiplayerSpawner = null
 
-var is_ingame_configured: bool = false
-var is_ingame_finished: bool = false
+#var is_ingame_configured: bool = false
+#var is_ingame_finished: bool = false
 
 #var finished_clients: Array = []
 
@@ -96,7 +105,7 @@ func delete_controllers() -> void:
 
 func delete_player(pid: int) -> void:
 	if pid <= 1: return
-	if not is_ingame_configured: return
+	if current_state != State.FINISHED: return
 	var target_controller: MultiplayerSynchronizer = null
 	for cont: Node in controller_container.get_children():
 		if cont.sid <= 1: continue
@@ -119,6 +128,7 @@ func start_game() -> void:
 	if not NetworkManager.is_online: return
 	if not multiplayer.is_server(): return
 	if pid != 0 and not SessionManager.is_admin(pid): return
+	MasterManager.is_await_interrupted = true
 	current_seed = randi()
 	current_maze_dimensions.x = randi_range(set_maze_dimensions[0], set_maze_dimensions[1])
 	current_maze_dimensions.y = randi_range(set_maze_dimensions[2], set_maze_dimensions[3])
@@ -134,7 +144,7 @@ func end_game() -> void:
 	if not NetworkManager.is_online: return
 	if not multiplayer.is_server(): return
 	if not SessionManager.is_admin(pid): return
-	end_ingame()
+	end_ingame(true)
 
 const LATE_INGAME_SYNC_DELAY: float = 2.0
 @rpc("authority", "reliable")
@@ -155,9 +165,7 @@ func set_maze_properties(maze_seed: int, maze_dimensions: Vector2i) -> void:
 	current_maze_dimensions = maze_dimensions
 
 func create_ingame() -> void:
-	if ingame_container.get_child_count() > 0:
-		print("ALREADY EXISTS")
-		return
+	if ingame_container.get_child_count() > 0: return
 	var data: Dictionary = {
 		"seed": current_seed,
 		"dimensions": current_maze_dimensions
@@ -173,11 +181,11 @@ func spawn_ingame(data: Variant) -> Node:
 	current_maze_dimensions = data["dimensions"]
 	return ingame
 
+const RESTART_DELAY: float = 0.25
 func restart_ingame() -> void:
-	end_ingame() #delete_ingame(false)
-	await get_tree().process_frame
-	is_ingame_configured = false
-	is_ingame_finished = false
+	end_ingame(false) #delete_ingame(false)
+	await get_tree().create_timer(RESTART_DELAY).timeout
+	current_state = State.STOPPED
 	start_game()
 
 func _on_ingame_next_round() -> void:
@@ -194,15 +202,15 @@ func delete_ingame(is_deleting_controllers: bool) -> void:
 	ingame_container.get_child(0).queue_free()
 
 @rpc("authority", "reliable")
-func end_ingame() -> void:
-	is_ingame_finished = false
-	is_ingame_configured = false
-	delete_ingame(true)
-	if UIManager.is_ui_configured: UIManager.lobby_node.activate(true)
+func end_ingame(is_deleting_controllers: bool) -> void:
+	current_state = State.STOPPED
+	delete_ingame(is_deleting_controllers)
+	if is_deleting_controllers and UIManager.is_ui_configured:
+		UIManager.lobby_node.activate(true)
 	if not NetworkManager.is_online: return
 	if not multiplayer.is_server(): return
 	MasterManager.set_pause(false)
-	end_ingame.rpc()
+	end_ingame.rpc(is_deleting_controllers)
 
 @rpc("any_peer", "reliable", "call_local")
 func request_end_ingame() -> void:
@@ -211,7 +219,7 @@ func request_end_ingame() -> void:
 	if pid == 0: return
 	if not SessionManager.is_admin(pid): return
 	MasterManager.set_pause(false)
-	end_ingame()
+	end_ingame(true)
 
 func finish_network_maze_generation() -> void:
 	if not NetworkManager.is_online: return
@@ -219,10 +227,11 @@ func finish_network_maze_generation() -> void:
 	#for pid: int in multiplayer.get_peers():
 		#if pid in finished_clients: continue
 		#restart_ingame.rpc_id(pid, current_seed, current_maze_dimensions, false)
+	if current_state <= State.ANIMATING: return
 	place_pawns()
 	ingame_node.toggle_pawns.rpc(true)
 	ingame_node.activate_crate_spawn_timer()
-	is_ingame_finished = true
+	current_state = State.FINISHED
 
 #@rpc("any_peer", "reliable")
 #func add_finished_generation() -> void:
@@ -233,7 +242,9 @@ func finish_network_maze_generation() -> void:
 const FINISH_GENERATION_DELAY: float = 1.0
 func broadcast_generation_finish() -> void:
 	if not multiplayer.is_server(): return
+	current_state = State.WAITING_BEFORE_SYNC
 	await get_tree().create_timer(FINISH_GENERATION_DELAY).timeout
+	if current_state != State.WAITING_BEFORE_SYNC: return
 	finish_network_maze_generation()
 	#return
 	#add_finished_generation.rpc_id(1)

@@ -67,11 +67,9 @@ func peer_connected(peer_id: int) -> void:
 	if not multiplayer.is_server(): return
 	var encoded_pid: String = SessionManager.encode_session_id(peer_id)
 	ConsoleManager.print_output("Player connected with peer id = " + encoded_pid, "global", peer_id)
-	if not IngameManager.is_ingame_configured:
+	if IngameManager.current_state == IngameManager.State.STOPPED:
 		IngameManager.set_maze_animation_to_true.rpc_id(peer_id)
-		return
-	elif not IngameManager.is_ingame_finished:
-		UIManager.confirm_spectating.rpc_id(peer_id)
+	else: UIManager.confirm_spectating.rpc_id(peer_id)
 
 func peer_disconnected(peer_id: int) -> void:
 	if not multiplayer.is_server(): return
@@ -114,6 +112,7 @@ func disconnect_from_server() -> void:
 	SessionManager.clear_registry()
 	await get_tree().process_frame
 	multiplayer.multiplayer_peer.close()
+	IngameManager.current_state = IngameManager.State.STOPPED
 	set_local_online_status(false, false)
 	ChatManager.process_message("Successfully disconnected from server", "global", 0)
 
@@ -121,7 +120,7 @@ func close_server() -> void:
 	if not is_online: return
 	if not multiplayer.is_server(): return
 	print_local("Shutting down server...")
-	IngameManager.end_ingame()
+	IngameManager.end_ingame(true)
 	#await get_tree().create_timer(1.0).timeout
 	if multiplayer.get_peers().size() > 0:
 		notify_server_shutdown.rpc()

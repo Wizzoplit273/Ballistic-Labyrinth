@@ -191,7 +191,7 @@ func add_crate(count: int, type: String) -> void:
 	if not multiplayer.is_server(): return
 	if type == "bulk" and count <= 0: return
 	if IngameManager.ingame_container.get_child_count() == 0: return
-	if not IngameManager.is_ingame_configured: return
+	if IngameManager.current_state != IngameManager.State.FINISHED: return
 	if type == "bulk":
 		for i: int in range(0, count): IngameManager.ingame_container.get_child(0)._on_crate_spawn_delay_timeout("bulk")
 		return
@@ -201,7 +201,7 @@ func remove_crate(count: int) -> void:
 	if not multiplayer.is_server(): return
 	if count <= 0: return
 	if IngameManager.ingame_container.get_child_count() == 0: return
-	if not IngameManager.is_ingame_configured: return
+	if IngameManager.current_state != IngameManager.State.FINISHED: return
 	var crates_node: Node = IngameManager.ingame_container.get_child(0).get_node(^"Crates")
 	var current_count: int = crates_node.get_child_count()
 	if current_count < count: count = current_count

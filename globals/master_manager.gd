@@ -1,5 +1,19 @@
 extends Node
 
+const AWAIT_INTERRUPT_CHECK_INTERVAL: float = 0.05
+var is_await_interrupted: bool = false
+## if returning false, it should stop the function it's called in using return keyword
+## if returning true, parent function proceeds normally after timer
+## one-liner use: "if not await await_interrupt(seconds): return"
+func await_interrupt(duration_seconds: float) -> bool:
+	var elapsed: float = 0.0
+	while elapsed < duration_seconds:
+		if is_await_interrupted:
+			is_await_interrupted = false
+			return false
+		await get_tree().create_timer(AWAIT_INTERRUPT_CHECK_INTERVAL).timeout
+	return true
+
 func _enter_tree() -> void:
 	NetworkManager.master_enter_tree()
 	SessionManager.master_enter_tree()

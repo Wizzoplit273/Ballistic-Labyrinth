@@ -6,6 +6,67 @@
 [ext_resource type="Texture2D" uid="uid://cfp23f081i35a" path="res://ui/noise_texture_1.tres" id="4_5wkb4"]
 [ext_resource type="Texture2D" uid="uid://ufr4xvpydw1x" path="res://ingame/entities/tank_pawn/tank_regular.png" id="5_jvewa"]
 
+[sub_resource type="Animation" id="Animation_k0yk8"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Background:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(1, 1, 1, 0.72549)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+
+[sub_resource type="Animation" id="Animation_qp8cv"]
+resource_name = "spectate_window"
+length = 2.0
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Background:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0.72549), Color(1, 1, 1, 0)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [true, false]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_k0yk8"]
+_data = {
+&"RESET": SubResource("Animation_k0yk8"),
+&"spectate_window": SubResource("Animation_qp8cv")
+}
+
 [sub_resource type="LabelSettings" id="LabelSettings_xyqw4"]
 font_size = 75
 
@@ -32,7 +93,10 @@ metadata/_edit_lock_ = true
 
 [node name="SpectateWindow" type="CanvasLayer" parent="." unique_id=2115348833]
 layer = 4
-visible = false
+
+[node name="Animation" type="AnimationPlayer" parent="SpectateWindow" unique_id=1435562592]
+process_mode = 3
+libraries/ = SubResource("AnimationLibrary_k0yk8")
 
 [node name="Background" type="TextureRect" parent="SpectateWindow" unique_id=985987351]
 modulate = Color(1, 1, 1, 0.72549)
@@ -44,7 +108,8 @@ grow_vertical = 2
 texture = ExtResource("4_5wkb4")
 metadata/_edit_lock_ = true
 
-[node name="Title" type="Label" parent="SpectateWindow" unique_id=2092189379]
+[node name="Title" type="Label" parent="SpectateWindow/Background" unique_id=2092189379]
+layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
