@@ -49,7 +49,7 @@ func configure_spawners() -> void:
 	$Bullets.spawn_function = IngameManager.spawn_bullet
 
 func _ready() -> void:
-	IngameManager.current_state = IngameManager.State.ANIMATING
+	IngameManager.set_current_state(IngameManager.State.ANIMATING)
 	is_generation_animated = IngameManager.current_is_animated_generation
 	process_mode = Node.PROCESS_MODE_INHERIT
 	SEEDED_RNG.seed = IngameManager.current_seed

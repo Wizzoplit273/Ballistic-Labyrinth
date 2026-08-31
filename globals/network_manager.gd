@@ -112,7 +112,7 @@ func disconnect_from_server() -> void:
 	SessionManager.clear_registry()
 	await get_tree().process_frame
 	multiplayer.multiplayer_peer.close()
-	IngameManager.current_state = IngameManager.State.STOPPED
+	IngameManager.set_current_state(IngameManager.State.STOPPED)
 	set_local_online_status(false, false)
 	ChatManager.process_message("Successfully disconnected from server", "global", 0)
 

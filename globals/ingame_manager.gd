@@ -9,6 +9,23 @@ enum State {
 
 var current_state: State = State.STOPPED
 
+func set_current_state(state: State) -> void:
+	current_state = state
+	if not NetworkManager.is_dedicated_server: return
+	var state_name: String = ""
+	if state == State.STOPPED: state_name = " (STOPPED)"
+	if state == State.ANIMATING: state_name = " (ANIMATING)"
+	if state == State.WAITING_BEFORE_SYNC: state_name = " (WAITING BEFORE SYNC)"
+	if state == State.FINISHED: state_name = " (FINISHED)"
+	var message: Dictionary = {
+		"sender_sid": 1,
+		"sender_name": "server",
+		"text": "ingame state set to " + str(state) + state_name,
+		"timestamp": Time.get_time_string_from_unix_time(int(Time.get_unix_time_from_system())),
+		"channel": "global"
+	}
+	ConsoleManager.dedicated_server_print(message)
+
 ## this node will have every controller node as a child node so they're easier to access
 
 ## updated once by origin node, remains constant
@@ -185,7 +202,7 @@ const RESTART_DELAY: float = 0.25
 func restart_ingame() -> void:
 	end_ingame(false) #delete_ingame(false)
 	await get_tree().create_timer(RESTART_DELAY).timeout
-	current_state = State.STOPPED
+	set_current_state(State.STOPPED)
 	start_game()
 
 func _on_ingame_next_round() -> void:
@@ -204,7 +221,7 @@ func delete_ingame(is_deleting_controllers: bool) -> void:
 @rpc("authority", "reliable")
 func end_ingame(is_deleting_controllers: bool) -> void:
 	MasterManager.set_pause(false)
-	current_state = State.STOPPED
+	set_current_state(State.STOPPED)
 	delete_ingame(is_deleting_controllers)
 	if is_deleting_controllers and UIManager.is_ui_configured:
 		UIManager.lobby_node.activate(true)
@@ -231,7 +248,7 @@ func finish_network_maze_generation() -> void:
 	place_pawns()
 	ingame_node.toggle_pawns.rpc(true)
 	ingame_node.activate_crate_spawn_timer()
-	current_state = State.FINISHED
+	set_current_state(State.FINISHED)
 
 #@rpc("any_peer", "reliable")
 #func add_finished_generation() -> void:
@@ -242,7 +259,7 @@ func finish_network_maze_generation() -> void:
 const FINISH_GENERATION_DELAY: float = 1.0
 func broadcast_generation_finish() -> void:
 	if not multiplayer.is_server(): return
-	current_state = State.WAITING_BEFORE_SYNC
+	set_current_state(State.WAITING_BEFORE_SYNC)
 	await get_tree().create_timer(FINISH_GENERATION_DELAY).timeout
 	if current_state != State.WAITING_BEFORE_SYNC: return
 	finish_network_maze_generation()

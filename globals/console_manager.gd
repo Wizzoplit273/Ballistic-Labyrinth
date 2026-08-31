@@ -501,6 +501,9 @@ func cmd_assign(args: PackedStringArray, flags: Array[PackedStringArray], pid: i
 		print_output("can't get attributes from a bulk number", "shell_error", pid)
 		return
 	if filter[1] == 1: target_sid = multiplayer.get_unique_id()
+	if target_sid == 1 and NetworkManager.is_dedicated_server:
+		print_output("dedicated server doesn't have a session", "shell_error", pid)
+		return
 	if property == "admin":
 		if target_sid <= 0:
 			print_output("can't modify admin permissions for bots", "shell_error", pid)
