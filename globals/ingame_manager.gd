@@ -171,10 +171,8 @@ func spawn_ingame(data: Variant) -> Node:
 	current_maze_dimensions = data["dimensions"]
 	return ingame
 
-@rpc("authority", "reliable")
 func restart_ingame() -> void:
 	delete_ingame(false)
-	await get_tree().process_frame
 	await get_tree().process_frame
 	is_ingame_configured = false
 	is_ingame_finished = false
