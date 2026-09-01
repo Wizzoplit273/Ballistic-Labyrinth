@@ -421,6 +421,9 @@ func cmd_start_server(_args: PackedStringArray, _flags: Array[PackedStringArray]
 	if NetworkManager.is_online:
 		print_output("server is already started", "shell_error", 0)
 		return
+	if not NetworkManager.is_dedicated_server:
+		print_output("can only start service on a dedicated server", "shell_error", 0)
+		return
 	NetworkManager.start_server()
 
 func cmd_close_server(args: PackedStringArray, flags: Array[PackedStringArray], _pid: int) -> void:
