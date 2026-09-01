@@ -1,19 +1,16 @@
 # Ballistic-Labyrinth
-A 2D tank maze game in Godot inspired by Tank Trouble.
+A simple 2D multiplayer tank maze game in Godot inspired by Tank Trouble.
 
-Ballistic Labyrinth is intended to be an infinite game where you clear rooms from enemies and they gradually increase in health points and complexity. Each maze is randomly generated so you'll almost always encounter new room layouts. As such, this project will be more focused on the gameplay diversity and infinite scalability, so there won't be a fixed amount of assets you'll eventually get(for eg. turrets, move speed); they'll either lie on a constant interval of values or they'll grow indefinitely.
-This project was made a few months before organising into a Git repository, the previous versions being the commits from the legacy and legacy_exp branches.
-A long time ago, I tried implementing multiplayer on the legacy_exp branch, but it's unfinished and unplayable. You can still check it out if you want to.
-Since this project is made using the GDScript language, I would like it to remain like that for the sake of consistency.
+It's my first meaningful project because I've implemented multiplayer for a game for the first time. A long time ago, I tried implementing multiplayer on the legacy_exp branch, but it's unfinished and unplayable. You can still check it out if you want to.
+This project was made a few months before organising into a Git repository, the previous versions being the commits from the legacy and legacy_exp branches. Updates starting with v0 used to be individual archives now incorporated into this repository. The singleplayer-only version of this game is implemented in v1.4.0-lite and release version for the multiplayer variant is v1.18.
 
-Link to itch.io: https://wizzoplit273.itch.io/ballistic-labyrinth
+Links to itch.io exports: https://wizzoplit273.itch.io/ballistic-labyrinth
 
 Screenshots:
-<img width="1920" height="1200" alt="Screenshot_20250830_001913" src="https://github.com/user-attachments/assets/86745bbb-7d79-4dae-bb36-40e51317517b" />
-<img width="1920" height="1200" alt="Screenshot_20250830_002226" src="https://github.com/user-attachments/assets/fcf8c421-9559-4830-b8a9-b260d7f73644" />
-<img width="1920" height="1200" alt="Screenshot_20250824_002151" src="https://github.com/user-attachments/assets/17d1e6a1-b53b-4fdb-88c3-b7cdd77a2cd7" />
-<img width="1920" height="1065" alt="Screenshot from 2026-05-11 23-30-35" src="https://github.com/user-attachments/assets/b19da06d-305c-4612-8560-46644a06db4e" />
-<img width="1920" height="1065" alt="Screenshot from 2026-05-11 23-30-52" src="https://github.com/user-attachments/assets/b2493194-2e67-4d58-8b90-ce9b246993d2" />
-<img width="1920" height="1065" alt="Screenshot from 2026-05-11 23-31-16" src="https://github.com/user-attachments/assets/a8ab9037-11c9-4815-b388-fc4618177795" />
-<img width="1561" height="676" alt="Screenshot from 2026-05-11 23-33-13" src="https://github.com/user-attachments/assets/1d362b70-e09e-4f91-b80d-cb5d611e6cb2" />
-<img width="1632" height="837" alt="Screenshot from 2026-05-11 23-33-01" src="https://github.com/user-attachments/assets/f47bf7c7-7ee2-4e1d-8925-efe28530c918" />
+<img width="1919" height="1141" alt="Screenshot_20260901_101619" src="https://github.com/user-attachments/assets/9eab8b5d-64b7-45c4-a7f1-4196bde644d2" />
+<img width="1919" height="1143" alt="Screenshot_20260901_101802" src="https://github.com/user-attachments/assets/9686f1c1-1ac7-43d9-99a9-fcbd3216d617" />
+<img width="1919" height="1140" alt="Screenshot_20260901_101829" src="https://github.com/user-attachments/assets/0db519a8-6933-430d-8a24-c4bdd574e306" />
+<img width="1919" height="1143" alt="Screenshot_20260901_102203" src="https://github.com/user-attachments/assets/18215864-15d3-400a-b84c-d4b9b7a6378a" />
+<img width="1919" height="1146" alt="Screenshot_20260901_101855" src="https://github.com/user-attachments/assets/82112b0e-0d63-4716-b79e-fd924b3459f2" />
+<img width="233" height="227" alt="Screenshot_20260901_101928" src="https://github.com/user-attachments/assets/2ecaebc3-2f7e-4481-b8e9-68977b1323a8" />
+<img width="182" height="159" alt="Screenshot_20260901_102112" src="https://github.com/user-attachments/assets/940486ba-100f-43db-a31f-76c3df5c87da" />
