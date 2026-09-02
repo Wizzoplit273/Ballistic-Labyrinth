@@ -51,6 +51,7 @@ enabled=PackedStringArray()
 [file_customization]
 
 folder_colors={
+"res://addons/": "purple",
 "res://globals/": "gray",
 "res://ingame/": "blue",
 "res://ingame/entities/": "orange",
