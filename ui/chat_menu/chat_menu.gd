@@ -78,3 +78,9 @@ func set_font_size(value: int) -> void:
 	%ChatText.add_theme_font_size_override(&"normal_font_size", value)
 	%Header.add_theme_font_size_override(&"font_size", value)
 	%ChatInput.add_theme_font_size_override(&"font_size", value)
+
+func _on_chat_input_focus_entered() -> void:
+	is_blocked = true
+
+func _on_chat_input_focus_exited() -> void:
+	is_blocked = false
