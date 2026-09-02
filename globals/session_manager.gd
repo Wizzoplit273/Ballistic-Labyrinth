@@ -3,6 +3,8 @@ extends Node
 var data: Dictionary = {}
 var profile_data: Dictionary = {}
 
+var op_password: String = ""
+
 func is_bot(session_id: int) -> bool:
 	return session_id < 0
 
@@ -15,6 +17,7 @@ func turn_local_to_online_profile() -> void:
 
 func master_enter_tree() -> void:
 	create_local_profile()
+	randomize_password()
 
 func create_local_profile() -> void:
 	if NetworkManager.is_dedicated_server: return
@@ -27,6 +30,22 @@ func create_local_profile() -> void:
 		"score": 0
 	}
 	data[0] = profile_data
+
+func randomize_password() -> void:
+	if not NetworkManager.is_dedicated_server: return
+	var encoded: String = encode_session_id(abs(randi())+2)
+	var result: String = encoded
+	encoded = encode_session_id(abs(randi())+2)
+	result += encoded
+	op_password = result
+	var message: Dictionary = {
+		"sender_sid": 1,
+		"sender_name": "server",
+		"text": "OP_PASSWORD: " + op_password,
+		"timestamp": Time.get_time_string_from_unix_time(int(Time.get_unix_time_from_system())),
+		"channel": "global"
+	}
+	ConsoleManager.dedicated_server_print(message)
 
 func clear_registry() -> void:
 	data.clear()
@@ -255,7 +274,7 @@ func request_profile_update(profile: Dictionary) -> void:
 	UIManager.update_lobby_register()
 	update_registry.rpc(data)
 
-const ENCODE_ALPHABET: String = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+const ENCODE_ALPHABET: String = "0123456789ABCDEFGHJKLMNPRTUVWXYZabcdefhikmnorstuvwxz^&*~!?/\\<>"
 const ENCODE_BOT_PREFIX: String = "ai#"
 const ENCODE_HOST: String = "#HOST"
 

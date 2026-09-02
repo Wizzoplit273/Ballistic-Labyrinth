@@ -3,6 +3,13 @@ extends Node
 var chat_history: Array[Dictionary] = []
 var MAX_HISTORY: int = 100
 
+signal remove_previous_message
+@rpc("authority", "reliable", "call_local")
+func remove_previous_local_message() -> void:
+	if NetworkManager.is_dedicated_server: return
+	chat_history.pop_back()
+	remove_previous_message.emit()
+
 func send_local_message(text: String, channel: String) -> void:
 	process_message(text, channel, 0)
 

@@ -20,7 +20,7 @@ func _enter_tree() -> void:
 	)
 	register_command(
 		["connect", "join"],
-		"connects to a server using an IP address",
+		"connects to a server: provide IP address and port at input fields in lobby",
 		false,
 		true
 	)
@@ -118,6 +118,12 @@ func _enter_tree() -> void:
 		["toggle_ingame_states", "toggle_ingame_state", "ingame_state"],
 		"toggles displaying messages for dedicated server when ingame state changes",
 		true,
+		false
+	)
+	register_command(
+		["op", "admin", "master"],
+		"grants or revokes admin for any peer, but it's passworded and successful assigns change the password",
+		false,
 		false
 	)
 
@@ -378,6 +384,8 @@ func cmd_help(args: PackedStringArray, _flags: Array[PackedStringArray], _pid: i
 	var is_pid_admin: bool = SessionManager.is_admin(multiplayer.get_unique_id())
 	if args.is_empty():
 		for command: Dictionary in registry:
+			if not NetworkManager.is_online and command["aliases"][0] != "connect": continue
+			if command["aliases"][0] == "op": continue
 			if command["requires_admin"] == true and not is_pid_admin: continue
 			var length: int = command["aliases"].size()
 			var index: int = 0
@@ -504,6 +512,9 @@ func cmd_assign(args: PackedStringArray, flags: Array[PackedStringArray], pid: i
 	if property.is_empty():
 		print_output("nonexistent attribute " + args[0], "shell_error", pid)
 		return
+	if property == "admin":
+		print_output("can't modify admin permissions with assign", "shell_error", pid)
+		return
 	var target_sid: int = 0
 	var filter: Vector2i = get_session_reference_from_flags(flags, pid)
 	if filter[1] >= 2: return
@@ -516,31 +527,10 @@ func cmd_assign(args: PackedStringArray, flags: Array[PackedStringArray], pid: i
 	if target_sid == 1 and NetworkManager.is_dedicated_server:
 		print_output("dedicated server doesn't have a session", "shell_error", pid)
 		return
-	if property == "admin":
-		if target_sid <= 0:
-			print_output("can't modify admin permissions for bots", "shell_error", pid)
-			return
-		if target_sid == 1:
-			print_output("can't change host's admin role", "shell_error", pid)
-			return
 	if target_sid <= 0 and property == "personality":
 		print_output("can't change bot personality using the assign command", "shell_error", pid)
 		return
-	var old_admin_value: bool = SessionManager.data[target_sid]["admin"]
 	SessionManager.assign_from_str(target_sid, args[0], args[1])
-	if property != "admin": return
-	var current_admin_value: bool = args[1] == "true"
-	var has_admin_changed: bool = current_admin_value != old_admin_value
-	if not has_admin_changed:
-		if current_admin_value == true: print_output("this player is already an admin", "shell_error", pid)
-		else: print_output("this player is already not an admin", "shell_error", pid)
-		return
-	if SessionManager.data[target_sid]["admin"] == true:
-		if target_sid <= 0: return
-		print_output("you have been granted admin permissions", "target", target_sid)
-		return
-	if target_sid <= 0: return
-	print_output("you are no longer an admin", "target", target_sid)
 
 func cmd_bot(args: PackedStringArray, flags: Array[PackedStringArray], pid: int) -> void:
 	if not multiplayer.is_server(): return
@@ -733,3 +723,33 @@ func cmd_toggle_ingame_states(args: PackedStringArray, _flags: Array[PackedStrin
 		"channel": "global"
 	}
 	ConsoleManager.dedicated_server_print(message)
+
+func cmd_op(args: PackedStringArray, _flags: Array[PackedStringArray], pid: int) -> void:
+	ChatManager.remove_previous_local_message.rpc_id(pid)
+	if args.size() < 3:
+		print_output("usage: op {true/false} {pid} {password}", "shell_output", pid)
+		return
+	var entered_pass: String = args[2]
+	if entered_pass != SessionManager.op_password:
+		print_output("incorrect op password", "shell_error", pid)
+		return
+	SessionManager.randomize_password()
+	var target_pid: int = SessionManager.decode_session_id(args[1])
+	if target_pid <= 0:
+		print_output("invalid peer id", "shell_error", pid)
+		return
+	if not target_pid in multiplayer.get_peers():
+		print_output("peer id " + args[1] + " doesn't exist", "shell_error", pid)
+		return
+	var old_admin_value: bool = SessionManager.data[target_pid]["admin"]
+	SessionManager.assign_from_str(target_pid, "admin", args[0])
+	var current_admin_value: bool = args[0] == "true"
+	var has_admin_changed: bool = current_admin_value != old_admin_value
+	if not has_admin_changed:
+		if current_admin_value == true: print_output("this player is already an admin", "shell_error", pid)
+		else: print_output("this player is already not an admin", "shell_error", pid)
+		return
+	if SessionManager.data[target_pid]["admin"] == true:
+		print_output("you have been granted admin permissions", "target", target_pid)
+		return
+	print_output("you are no longer an admin", "target", target_pid)

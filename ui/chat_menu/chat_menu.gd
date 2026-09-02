@@ -36,10 +36,15 @@ func _process(_delta: float) -> void:
 
 func connect_signal() -> void:
 	ChatManager.connect(&"update_local_chat_ui", update_chat)
+	ChatManager.connect(&"remove_previous_message", remove_previous_message)
 
 func update_chat(new_messages: Array[Dictionary]) -> void:
 	for message: Dictionary in new_messages:
 		add_message(message)
+
+func remove_previous_message() -> void:
+	%ChatText.text = ""
+	update_chat(ChatManager.chat_history)
 
 const NO_TIMESTAMP_CHANNELS: PackedStringArray = ["shell_input", "shell_error", "shell_output"]
 func add_message(message: Dictionary) -> void:
