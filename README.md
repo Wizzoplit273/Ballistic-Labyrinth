@@ -5,6 +5,7 @@ It's my first meaningful project because I've implemented multiplayer for a game
 This project was made a few months before organising into a Git repository, the previous versions being the commits from the legacy and legacy_exp branches. Updates starting with v0 used to be individual archives now incorporated into this repository. The singleplayer-only version of this game is implemented in v1.4.0-lite and release version for the multiplayer variant is v1.18.
 
 Link to itch.io lite version export: https://wizzoplit273.itch.io/ballistic-labyrinth-lite
+
 Link to itch.io release version export: https://wizzoplit273.itch.io/ballistic-labyrinth
 
 Screenshots:
