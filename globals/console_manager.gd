@@ -19,6 +19,18 @@ func _enter_tree() -> void:
 		true
 	)
 	register_command(
+		["help_chat", "chat", "chat_help"],
+		"shows shortcuts for adjusting chat window",
+		false,
+		true
+	)
+	register_command(
+		["help_controls"],
+		"shows keybindings for moving the tank in the game",
+		false,
+		true
+	)
+	register_command(
 		["connect", "join"],
 		"connects to a server: provide IP address and port at input fields in lobby",
 		false,
@@ -753,3 +765,21 @@ func cmd_op(args: PackedStringArray, _flags: Array[PackedStringArray], pid: int)
 		print_output("you have been granted admin permissions", "target", target_pid)
 		return
 	print_output("you are no longer an admin", "target", target_pid)
+
+func cmd_help_chat(_args: PackedStringArray, _flags: Array[PackedStringArray], _pid: int):
+	var message: String = "\n"
+	message += "Shift+M: toggle move window\n"
+	message += "Shift+R: toggle chat resizing\n"
+	message += "Shift+H: toggle chat visibility\n"
+	message += "chat_resize: command for resizing chat text\n"
+	print_output(message, "shell_output", 0)
+
+func cmd_help_controls(_args: PackedStringArray, _flags: Array[PackedStringArray], _pid: int):
+	var message: String = "\n"
+	message += "W/up arrow to move forward\n"
+	message += "S/down arrow to move backward\n"
+	message += "A/left arrow to rotate counterclockwise\n"
+	message += "D/right arrow to rotate clockwise\n"
+	message += "Hold shift to drift\n"
+	message += "Press space to shoot\n"
+	print_output(message, "shell_output", 0)
