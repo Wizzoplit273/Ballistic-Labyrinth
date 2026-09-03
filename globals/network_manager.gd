@@ -66,6 +66,7 @@ func peer_connected(peer_id: int) -> void:
 	if not multiplayer.is_server(): return
 	var encoded_pid: String = SessionManager.encode_session_id(peer_id)
 	ConsoleManager.print_output("Player connected with peer id = " + encoded_pid, "global", peer_id)
+	MasterManager.play_server_sound(MasterManager.sounds.get_node(^"PlayerJoin"))
 	if IngameManager.current_state == IngameManager.State.STOPPED:
 		IngameManager.set_maze_animation_to_true.rpc_id(peer_id)
 	else: UIManager.confirm_spectating.rpc_id(peer_id)
@@ -74,6 +75,7 @@ func peer_disconnected(peer_id: int) -> void:
 	if not multiplayer.is_server(): return
 	var encoded_pid: String = SessionManager.encode_session_id(peer_id)
 	ConsoleManager.print_output("Player disconnected with peer id = " + encoded_pid, "global", peer_id)
+	MasterManager.play_server_sound(MasterManager.sounds.get_node(^"PlayerLeave"))
 	IngameManager.delete_player(peer_id)
 	SessionManager.data.erase(peer_id)
 	UIManager.update_lobby_register()

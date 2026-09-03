@@ -1,0 +1,25 @@
+[gd_scene format=3 uid="uid://dmv1x73crfgj2"]
+
+[ext_resource type="AudioStream" uid="uid://dhoxj0irluo7u" path="res://ingame/tiles/MAZE_GENERATION_glitch-fx-transitions-10-311812.mp3" id="1_cm0nb"]
+[ext_resource type="AudioStream" uid="uid://cy22uropw1uaf" path="res://ingame/entities/SHOOT_NORMAL_toy-gun-364850.mp3" id="2_jnvoc"]
+[ext_resource type="AudioStream" uid="uid://xbcrbb2hp7dh" path="res://ui/chat_menu/player_chat.mp3" id="2_lcyq4"]
+
+[node name="AudioContainer" type="Node" unique_id=1548328737]
+
+[node name="PlayerJoin" type="AudioStreamPlayer" parent="." unique_id=2047588814]
+stream = ExtResource("1_cm0nb")
+volume_db = -4.0
+pitch_scale = 0.4
+max_polyphony = 5
+
+[node name="PlayerChat" type="AudioStreamPlayer" parent="." unique_id=1239251453]
+stream = ExtResource("2_lcyq4")
+volume_db = -8.0
+pitch_scale = 1.25
+max_polyphony = 5
+
+[node name="PlayerLeave" type="AudioStreamPlayer" parent="." unique_id=2144720961]
+stream = ExtResource("2_jnvoc")
+volume_db = -4.0
+pitch_scale = 0.1
+max_polyphony = 5

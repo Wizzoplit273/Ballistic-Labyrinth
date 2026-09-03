@@ -53,6 +53,7 @@ func add_message(message: Dictionary) -> void:
 	if not message.get("channel") in NO_TIMESTAMP_CHANNELS:
 		%ChatText.text += str(message.get("timestamp")) + " "
 	if message.get("channel") == "peer":
+		MasterManager.play_server_sound(MasterManager.sounds.get_node(^"PlayerChat"))
 		%ChatText.text += message.get("sender_name")
 		%ChatText.text += "(" + readable_sid + "): "
 	elif message.get("channel") == "shell_input":

@@ -15,12 +15,21 @@ func await_interrupt(duration_seconds: float) -> bool:
 	return true
 
 func _enter_tree() -> void:
+	instantiate_audio_container()
 	NetworkManager.master_enter_tree()
 	SessionManager.master_enter_tree()
 	UIManager.master_enter_tree()
 
+var sounds: Node = null
+const AUDIO_CONTAINER_PATH: String = "res://globals/audio_container.tscn"
+func instantiate_audio_container() -> void:
+	sounds = load(AUDIO_CONTAINER_PATH).instantiate()
+	add_child(sounds)
+
 func play_server_sound(player: Node, pid: int = 0) -> void:
-	if not multiplayer.is_server(): return
+	if not multiplayer.is_server():
+		receive_server_sound(player.get_path())
+		return
 	if pid < 0: return
 	if pid == 0: receive_server_sound.rpc(player.get_path())
 	else: receive_server_sound.rpc_id(pid, player.get_path())
