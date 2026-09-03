@@ -5,6 +5,7 @@
 [ext_resource type="AudioStream" uid="uid://g7a62bk645rj" path="res://soundtrack_menu.mp3" id="3_rk1hj"]
 [ext_resource type="Texture2D" uid="uid://cfp23f081i35a" path="res://ui/noise_texture_1.tres" id="4_5wkb4"]
 [ext_resource type="Texture2D" uid="uid://ufr4xvpydw1x" path="res://ingame/entities/tank_pawn/tank_regular.png" id="5_jvewa"]
+[ext_resource type="Script" uid="uid://b71fg000v8km1" path="res://ui/web_line_edit.gd" id="5_k0yk8"]
 
 [sub_resource type="Animation" id="Animation_k0yk8"]
 length = 0.001
@@ -245,6 +246,38 @@ size_flags_vertical = 3
 size_flags_stretch_ratio = 0.02
 metadata/_edit_lock_ = true
 
+[node name="JoinContainer" type="VBoxContainer" parent="Frame/Side1" unique_id=1094697193]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.25
+alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="JoinButton" type="Button" parent="Frame/Side1/JoinContainer" unique_id=1779516058]
+layout_mode = 2
+text = "Join Game"
+metadata/_edit_lock_ = true
+
+[node name="Spacer" type="Control" parent="Frame/Side1/JoinContainer" unique_id=222539405]
+custom_minimum_size = Vector2(0, 25)
+layout_mode = 2
+metadata/_edit_lock_ = true
+
+[node name="WebLineEdit" type="LineEdit" parent="Frame/Side1/JoinContainer" unique_id=576707078]
+layout_mode = 2
+placeholder_text = "URL"
+alignment = 1
+script = ExtResource("5_k0yk8")
+metadata/_custom_type_script = "uid://b71fg000v8km1"
+metadata/_edit_lock_ = true
+
+[node name="Spacer2" type="Control" parent="Frame/Side1" unique_id=860729740]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.02
+metadata/_edit_lock_ = true
+
 [node name="NameContainer" type="VBoxContainer" parent="Frame/Side1" unique_id=1414096542]
 layout_mode = 2
 size_flags_horizontal = 3
@@ -260,12 +293,14 @@ horizontal_alignment = 1
 vertical_alignment = 1
 metadata/_edit_lock_ = true
 
-[node name="UsernameEdit" type="LineEdit" parent="Frame/Side1/NameContainer" unique_id=1397378817]
+[node name="UsernameEdit" type="LineEdit" parent="Frame/Side1/NameContainer" unique_id=630066593]
 unique_name_in_owner = true
 layout_mode = 2
 text = "unnamed"
 placeholder_text = "username"
 alignment = 1
+script = ExtResource("5_k0yk8")
+metadata/_custom_type_script = "uid://b71fg000v8km1"
 metadata/_edit_lock_ = true
 
 [node name="Spacer3" type="Control" parent="Frame/Side1" unique_id=1559013663]
@@ -282,7 +317,7 @@ metadata/_edit_lock_ = true
 
 [node name="PlayerColorTitle" type="Label" parent="Frame/Side1/PlayerColor" unique_id=147146953]
 layout_mode = 2
-text = "Player Colour"
+text = "Player Color"
 label_settings = SubResource("LabelSettings_bao8v")
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -363,6 +398,8 @@ metadata/_edit_lock_ = true
 
 [connection signal="pressed" from="ExitConfirmDialog/Frame/ButtonContainer/DiscardButton" to="." method="_on_discard_button_pressed"]
 [connection signal="pressed" from="ExitConfirmDialog/Frame/ButtonContainer/ConfirmButton" to="." method="_on_confirm_button_pressed"]
+[connection signal="pressed" from="Frame/Side1/JoinContainer/JoinButton" to="." method="_on_join_button_pressed"]
+[connection signal="text_changed" from="Frame/Side1/JoinContainer/WebLineEdit" to="." method="_on_web_line_edit_text_changed"]
 [connection signal="text_submitted" from="Frame/Side1/NameContainer/UsernameEdit" to="." method="_on_username_edit_text_submitted"]
 [connection signal="color_changed" from="Frame/Side1/PlayerColor/PlayerColorContainer/PlayerColorPicker" to="." method="_on_player_color_picker_color_changed"]
 [connection signal="pressed" from="Frame/Side1/LeaveGameButton" to="." method="_on_exit_game_button_pressed"]
