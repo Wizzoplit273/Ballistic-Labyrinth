@@ -1,6 +1,6 @@
 extends Node
 
-const SERVER_PORT: int = 31738
+const SERVER_PORT: int = 7777
 const MAX_CLIENTS: int = 32
 const COMPRESSION: ENetConnection.CompressionMode = ENetConnection.CompressionMode.COMPRESS_FASTLZ
 
@@ -44,6 +44,7 @@ func _enter_tree() -> void:
 func start_server() -> void:
 	if is_online: return
 	peer = ENetMultiplayerPeer.new()
+	peer.set_bind_ip("0.0.0.0")
 	var error: Error = peer.create_server(SERVER_PORT, MAX_CLIENTS)
 	if error != OK:
 		print_error("NETWORK ERROR: cannot host: " + str(error))
@@ -56,7 +57,7 @@ func start_server() -> void:
 
 func start_client() -> void:
 	if is_online: return
-	print_local("Trying to connect to ip = " + ip_address)
+	print_local("Trying to connect to ip = " + ip_address + " with port = " + str(client_port))
 	peer = ENetMultiplayerPeer.new()
 	var error: Error = peer.create_client(ip_address, client_port)
 	if error != OK: return
