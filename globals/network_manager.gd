@@ -1,12 +1,9 @@
 extends Node
 
 const SERVER_PORT: int = 7777
-const MAX_CLIENTS: int = 32
-const COMPRESSION: ENetConnection.CompressionMode = ENetConnection.CompressionMode.COMPRESS_FASTLZ
 
-var peer: ENetMultiplayerPeer
-var ip_address: String = "localhost"
-var client_port: int = 31738
+var peer: WebSocketMultiplayerPeer
+var url: String = "ws://localhost:7777"
 
 var is_online: bool = false
 var is_server: bool = false
@@ -43,26 +40,25 @@ func _enter_tree() -> void:
 
 func start_server() -> void:
 	if is_online: return
-	peer = ENetMultiplayerPeer.new()
-	peer.set_bind_ip("0.0.0.0")
-	var error: Error = peer.create_server(SERVER_PORT, MAX_CLIENTS)
+	peer = WebSocketMultiplayerPeer.new()
+	var error: Error = peer.create_server(SERVER_PORT)
 	if error != OK:
 		print_error("NETWORK ERROR: cannot host: " + str(error))
 		return
 	IngameManager.current_is_animated_generation = true
-	peer.get_host().compress(COMPRESSION)
 	multiplayer.set_multiplayer_peer(peer)
 	print_local("Server is up! Waiting for players...")
 	set_local_online_status(true, true)
 
 func start_client() -> void:
 	if is_online: return
-	print_local("Trying to connect to ip = " + ip_address + " with port = " + str(client_port))
-	peer = ENetMultiplayerPeer.new()
-	var error: Error = peer.create_client(ip_address, client_port)
-	if error != OK: return
+	print_local("Trying to connect to URL = " + url)
+	peer = WebSocketMultiplayerPeer.new()
+	var error: Error = peer.create_client(url)
+	if error != OK:
+		print_error("NETWORK ERROR: connection failed: " + str(error))
+		return
 	IngameManager.current_is_animated_generation = false
-	peer.get_host().compress(COMPRESSION)
 	multiplayer.set_multiplayer_peer(peer)
 	set_local_online_status(true, false)
 
@@ -99,7 +95,7 @@ func disconnect_client(peer_id: int) -> void:
 	if peer_id <= 1:
 		print_error("NETWORK ERROR: can't disconnect client with id " + encoded_pid + ": should be > 1")
 		return
-	var target_peer: ENetMultiplayerPeer = multiplayer.multiplayer_peer as ENetMultiplayerPeer
+	var target_peer: WebSocketMultiplayerPeer = multiplayer.multiplayer_peer as WebSocketMultiplayerPeer
 	if not target_peer:
 		print_error("NETWORK ERROR: can't disconnect client with id " + encoded_pid + ": null peer object")
 		return

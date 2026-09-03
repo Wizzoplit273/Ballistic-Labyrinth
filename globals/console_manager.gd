@@ -421,10 +421,14 @@ func cmd_help(args: PackedStringArray, _flags: Array[PackedStringArray], _pid: i
 		return
 	print_output("command not found: " + args[0], "shell_error", 0)
 
-func cmd_connect(_args: PackedStringArray, _flags: Array[PackedStringArray], _pid: int) -> void:
+func cmd_connect(args: PackedStringArray, _flags: Array[PackedStringArray], _pid: int) -> void:
 	if NetworkManager.is_online:
 		print_output("already online/connected", "shell_error", 0)
 		return
+	if args.is_empty():
+		print_output("usage: connect {ws/wss url}", "shell_output", 0)
+		return
+	NetworkManager.url = args[0]
 	NetworkManager.start_client()
 
 func cmd_disconnect(args: PackedStringArray, flags: Array[PackedStringArray], _pid: int) -> void:

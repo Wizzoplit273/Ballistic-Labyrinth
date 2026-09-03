@@ -108,11 +108,5 @@ func _on_player_color_picker_color_changed(color: Color) -> void:
 	%PlayerColorTest.modulate = color
 	SessionManager.set_profile_color(color)
 
-func _on_ip_address_edit_text_changed(new_text: String) -> void:
-	NetworkManager.ip_address = new_text
-
-func _on_port_edit_text_changed(new_text: String) -> void:
-	if new_text == "localhost":
-		NetworkManager.client_port = NetworkManager.SERVER_PORT
-		return
-	NetworkManager.client_port = int(new_text)
+func _on_url_edit_text_changed(new_text: String) -> void:
+	pass # Replace with function body.
