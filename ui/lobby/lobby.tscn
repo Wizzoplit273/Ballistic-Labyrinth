@@ -245,33 +245,6 @@ size_flags_vertical = 3
 size_flags_stretch_ratio = 0.02
 metadata/_edit_lock_ = true
 
-[node name="JoinContainer" type="VBoxContainer" parent="Frame/Side1" unique_id=1406538635]
-layout_mode = 2
-alignment = 1
-metadata/_edit_lock_ = true
-
-[node name="JoinGameButton" type="Button" parent="Frame/Side1/JoinContainer" unique_id=1453929641]
-layout_mode = 2
-size_flags_horizontal = 6
-size_flags_vertical = 4
-text = "Join Server"
-metadata/_edit_lock_ = true
-
-[node name="URLEdit" type="LineEdit" parent="Frame/Side1/JoinContainer" unique_id=1315528371]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_font_sizes/font_size = 30
-placeholder_text = "URL"
-alignment = 1
-metadata/_edit_lock_ = true
-
-[node name="Spacer2" type="Control" parent="Frame/Side1" unique_id=261301873]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-size_flags_stretch_ratio = 0.03
-metadata/_edit_lock_ = true
-
 [node name="NameContainer" type="VBoxContainer" parent="Frame/Side1" unique_id=1414096542]
 layout_mode = 2
 size_flags_horizontal = 3
@@ -292,6 +265,7 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "unnamed"
 placeholder_text = "username"
+alignment = 1
 metadata/_edit_lock_ = true
 
 [node name="Spacer3" type="Control" parent="Frame/Side1" unique_id=1559013663]
@@ -389,8 +363,6 @@ metadata/_edit_lock_ = true
 
 [connection signal="pressed" from="ExitConfirmDialog/Frame/ButtonContainer/DiscardButton" to="." method="_on_discard_button_pressed"]
 [connection signal="pressed" from="ExitConfirmDialog/Frame/ButtonContainer/ConfirmButton" to="." method="_on_confirm_button_pressed"]
-[connection signal="pressed" from="Frame/Side1/JoinContainer/JoinGameButton" to="." method="_on_join_game_button_pressed"]
-[connection signal="text_changed" from="Frame/Side1/JoinContainer/URLEdit" to="." method="_on_url_edit_text_changed"]
 [connection signal="text_submitted" from="Frame/Side1/NameContainer/UsernameEdit" to="." method="_on_username_edit_text_submitted"]
 [connection signal="color_changed" from="Frame/Side1/PlayerColor/PlayerColorContainer/PlayerColorPicker" to="." method="_on_player_color_picker_color_changed"]
 [connection signal="pressed" from="Frame/Side1/LeaveGameButton" to="." method="_on_exit_game_button_pressed"]

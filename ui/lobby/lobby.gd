@@ -92,9 +92,6 @@ func _on_discard_button_pressed() -> void:
 	unfocus()
 	$ExitConfirmDialog.visible = false
 
-func _on_join_game_button_pressed() -> void:
-	NetworkManager.start_client()
-
 func _on_exit_game_button_pressed() -> void:
 	unfocus()
 	$ExitConfirmDialog.visible = true
@@ -107,6 +104,3 @@ func _on_username_edit_text_submitted(new_text: String) -> void:
 func _on_player_color_picker_color_changed(color: Color) -> void:
 	%PlayerColorTest.modulate = color
 	SessionManager.set_profile_color(color)
-
-func _on_url_edit_text_changed(new_text: String) -> void:
-	pass # Replace with function body.
