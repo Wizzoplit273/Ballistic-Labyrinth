@@ -50,9 +50,9 @@ func _enter_tree() -> void:
 	)
 	register_command(
 		["close_server", "end_server", "stop_server", "disconnect_server"],
-		"closes the server(host only)",
+		"closes the server",
 		true,
-		true
+		false
 	)
 	register_command(
 		["get"],
@@ -453,9 +453,6 @@ func cmd_start_server(_args: PackedStringArray, _flags: Array[PackedStringArray]
 func cmd_close_server(args: PackedStringArray, flags: Array[PackedStringArray], _pid: int) -> void:
 	if not NetworkManager.is_online:
 		print_output("already offline/disconnected", "shell_error", 0)
-		return
-	if not multiplayer.is_server():
-		print_output("permission denied: only host can close the server", "shell_error", 0)
 		return
 	if not is_cmd_confirmed(cmd_close_server, args, flags, 1): return
 	NetworkManager.close_server()
