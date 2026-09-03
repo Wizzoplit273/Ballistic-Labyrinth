@@ -68,6 +68,8 @@ func add_message(message: Dictionary) -> void:
 	elif message.get("channel") == "global":
 		%ChatText.text += "***: "
 	%ChatText.text += message.get("text") + "\n"
+	await get_tree().process_frame
+	%ChatText.scroll_to_line(%ChatText.get_line_count() - 1)
 
 func _on_chat_input_text_submitted(raw: String) -> void:
 	%ChatInput.clear()
