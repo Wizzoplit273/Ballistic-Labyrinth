@@ -9,9 +9,11 @@ func is_bot(session_id: int) -> bool:
 	return session_id < 0
 
 func turn_local_to_online_profile() -> void:
+	if not multiplayer.is_server(): return
 	if NetworkManager.is_dedicated_server: return
 	data.clear()
 	profile_data["admin"] = true
+	profile_data["op"] = true
 	data[multiplayer.get_unique_id()] = profile_data
 	#UIManager.update_lobby_register() # happens right after exiting this scope
 
@@ -25,6 +27,8 @@ func create_local_profile() -> void:
 	profile_data = {
 		"name": "unnamed",
 		"admin": false,
+		"op": false,
+		"muted": false,
 		"color": Color(1.0, 1.0, 1.0, 1.0),
 		"kills": 0,
 		"score": 0
@@ -56,7 +60,22 @@ func is_admin(pid: int) -> bool:
 	if not NetworkManager.is_online: return false
 	if pid <= 0: return false
 	if not pid in data.keys(): return false
+	if data.get(pid).get("op") == true: return true
 	if data.get(pid).get("admin") != true: return false
+	return true
+
+func is_op(pid: int) -> bool:
+	if pid == 1: return true
+	if not NetworkManager.is_online: return false
+	if pid <= 0: return false
+	if not pid in data.keys(): return false
+	if data.get(pid).get("op") != true: return false
+	return true
+
+func is_muted(pid: int) -> bool:
+	if pid <= 1: return false
+	if not pid in data.keys(): return false
+	if data.get(pid).get("muted") != true: return false
 	return true
 
 @rpc("authority", "reliable")
@@ -67,15 +86,23 @@ func add_session(session_id: int, profile: Dictionary) -> void:
 	if not multiplayer.is_server(): return
 	add_session.rpc(session_id, profile)
 
+var max_bot_count: int = 5
 @rpc("authority", "reliable", "call_local")
 func add_bot(count: int = 1) -> void:
 	if count <= 0: return
+	var current_bot_count: int = 0
+	for sid: int in data.keys():
+		if sid >= 0: continue
+		current_bot_count += 1
+	if current_bot_count + count > max_bot_count: return
 	var new_sid: int = -1
 	while count > 0:
 		while data.has(new_sid): new_sid -= 1
 		add_session(new_sid, {
 			"name": "bot " + str(abs(new_sid)),
 			"admin": false,
+			"op": false,
+			"muted": false,
 			"color": Color(1.0, 1.0, 1.0, 1.0),
 			"kills": 0,
 			"score": 0,
@@ -101,6 +128,11 @@ func remove_bot_count(count: int = 1) -> void:
 		count -= 1
 	UIManager.update_lobby_register()
 
+func mute_peer(is_muting: bool, pid: int) -> void:
+	if pid <= 0: return
+	if data[pid].get("staff_access") == ConsoleManager.StaffAccess.OP: return
+	data[pid]["muted"] = is_muting
+
 func set_profile_name(name_string: String) -> void:
 	profile_data["name"] = name_string
 	wrap_request_profile_update()
@@ -112,6 +144,11 @@ func set_profile_color(color: Color) -> void:
 func set_admin(pid: int, is_this_admin: bool) -> void:
 	data[pid]["admin"] = is_this_admin
 	UIManager.toggle_admin_options(is_this_admin)
+
+func set_op(pid: int, is_this_op: bool) -> void:
+	data[pid]["op"] = is_this_op
+	data[pid]["admin"] = true
+	UIManager.toggle_admin_options(true)
 
 func increment_kill(sid: int) -> void:
 	if sid == 0: return
@@ -161,6 +198,9 @@ func assign_from_str(sid: int, attribute: String, value: String) -> void:
 			if attribute == "admin": # stricter console set for admin permission
 				if value == "true": set_admin(sid, true)
 				else: set_admin(sid, false)
+			elif attribute == "admin": # stricter console set for op permission
+				if value == "true": set_op(sid, true)
+				else: set_op(sid, false)
 			else:
 				if value == "false" or value == "0": data[sid][attribute] = false
 				else: data[sid][attribute] = true
@@ -206,11 +246,15 @@ func random_bot_color(set_seed: int) -> void:
 		result += " " + str(rng.randf_range(MIN_RANDOM_COLOR, MAX_RANDOM_COLOR)) + "\""
 		assign_from_str(bot_id, "color", result)
 
+var max_crate_count: int = 15
 func add_crate(count: int, type: String) -> void:
 	if not multiplayer.is_server(): return
 	if type == "bulk" and count <= 0: return
 	if IngameManager.ingame_container.get_child_count() == 0: return
 	if IngameManager.current_state != IngameManager.State.FINISHED: return
+	var current_crate_count: int = IngameManager.ingame_container.get_node("Crates").get_child_count()
+	if type != "bulk": count = 1
+	if current_crate_count + count > max_crate_count: return
 	if type == "bulk":
 		for i: int in range(0, count): IngameManager.ingame_container.get_child(0)._on_crate_spawn_delay_timeout("bulk")
 		return
@@ -236,20 +280,22 @@ func wrap_request_profile_update() -> void:
 		request_profile_update(profile_data)
 	else: request_profile_update.rpc_id(1, profile_data)
 
-func get_profile_name() -> String:
-	return profile_data.get("name")
-
-func get_profile_color() -> Color:
-	return profile_data.get("color")
-
-func get_profile_kills() -> int:
-	return profile_data.get("kills")
-
-func get_profile_score() -> int:
-	return profile_data.get("score")
-
-func get_profile_admin() -> bool:
-	return profile_data.get("admin")
+#func get_profile_name() -> String:
+	#return profile_data.get("name")
+#
+#func get_profile_color() -> Color:
+	#return profile_data.get("color")
+#
+#func get_profile_kills() -> int:
+	#return profile_data.get("kills")
+#
+#func get_profile_score() -> int:
+	#return profile_data.get("score")
+#
+#func get_profile_admin() -> bool:
+	#return profile_data.get("admin")
+#func get_profile_op() -> bool:
+	#return profile_data.get("op")
 
 @rpc("authority", "reliable")
 func update_registry(server_data: Dictionary) -> void:
@@ -266,6 +312,8 @@ func request_profile_update(profile: Dictionary) -> void:
 	var new_session: Dictionary = {
 		"name": clean_name,
 		"admin": is_admin(sender_id),
+		"op": is_op(sender_id),
+		"muted": is_muted(sender_id),
 		"color": profile.get("color", Color(1.0, 1.0, 1.0, 1.0)),
 		"kills": 0,
 		"score": 0

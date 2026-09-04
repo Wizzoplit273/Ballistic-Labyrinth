@@ -41,6 +41,7 @@ func process_message(text: String, channel: String, target_pid: int) -> void:
 	var sender_id: int
 	if not multiplayer: sender_id = 0
 	else: sender_id = multiplayer.get_remote_sender_id()
+	if SessionManager.is_muted(sender_id): return
 	var final_text: String = text.strip_edges()
 	var message: Dictionary = {}
 	var new_array: Array[Dictionary] = []

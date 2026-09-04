@@ -67,11 +67,13 @@ func setup_controller_container() -> void:
 	controller_container.name = "ControllerContainer"
 	controller_container.spawn_path = controller_container.get_path()
 
+var max_maze_size: int = 25
 @rpc("authority", "reliable", "call_local")
 func set_maze_size(string: String) -> void:
 	var result: Vector4i = SessionManager.string_to_vector4i(string)
 	if result[0] <= 0 or result[1] <= 0 or result[2] <= 0 or result[3] <= 0: return
 	if result[0] > result[1] or result[2] > result[3]: return
+	for i: int in range(4): if result[i] > max_maze_size: return
 	set_maze_dimensions = result
 
 @rpc("authority", "reliable", "call_local")

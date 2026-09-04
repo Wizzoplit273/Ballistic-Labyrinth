@@ -10,132 +10,168 @@ const ATTRIBUTE_ALIASES: Dictionary = {
 	"score": ["score", "win", "wins", "s", "w"]
 }
 
+enum StaffAccess {
+	ANY = 0,
+	ADMIN = 1,
+	OP = 2
+}
+
 ## confirm("yes") command isn't registered and stores a command in a temporary buffer
 func _enter_tree() -> void:
 	register_command(
 		["help"],
 		"shows available commands",
-		false,
+		StaffAccess.ANY,
 		true
 	)
 	register_command(
 		["help_chat", "chat", "chat_help"],
 		"shows shortcuts for adjusting chat window",
-		false,
+		StaffAccess.ANY,
 		true
 	)
 	register_command(
 		["help_controls"],
 		"shows keybindings for moving the tank in the game",
-		false,
+		StaffAccess.ANY,
 		true
 	)
 	register_command(
 		["connect", "join"],
 		"connects to a server: provide IP address and port at input fields in lobby",
-		false,
+		StaffAccess.ANY,
 		true
 	)
 	register_command(
 		["disconnect", "leave"],
 		"leaves from the currently connected server",
-		false,
+		StaffAccess.ANY,
 		true
 	)
 	register_command(
 		["start_server", "open_server"],
 		"configures this game instance as a server(host only)",
-		false,
+		StaffAccess.ANY,
 		true
 	)
 	register_command(
 		["close_server", "end_server", "stop_server", "disconnect_server"],
 		"closes the server",
-		true,
+		StaffAccess.OP,
 		false
 	)
 	register_command(
 		["get"],
 		"get attributes from yourself or a certain player",
-		false,
+		StaffAccess.ANY,
 		true
 	)
 	register_command(
 		["set"],
 		"set one of your attributes to a specific value",
-		false,
+		StaffAccess.ANY,
 		false
 	)
 	register_command(
 		["assign"],
 		"modify any attribute from any session except admin role",
-		true,
+		StaffAccess.ADMIN,
 		false
 	)
 	register_command(
 		["bot", "ai"],
 		"create or delete bots",
-		true,
+		StaffAccess.ADMIN,
 		false
 	)
 	register_command( # temporary quick configuration
 		["chat_resize"],
 		"resize chat text to a specific size",
-		false,
+		StaffAccess.ANY,
 		true
 	)
 	register_command(
 		["start_game", "play", "start"],
 		"starts the game",
-		true,
+		StaffAccess.ADMIN,
 		false
 	)
 	register_command(
 		["crate", "powerup", "weapon"],
 		"general command for manipulating crates ingame",
-		true,
+		StaffAccess.ADMIN,
 		false
 	)
 	register_command(
 		["maze", "maze_set", "maze_size", "maze_set_size", "set_maze_size"],
 		"sets the maze's minimum and maximum random width and height: \"min_w, max_w, min_h, max_h\"",
-		true,
+		StaffAccess.ADMIN,
 		false
 	)
 	register_command(
 		["close_ingame", "end_ingame", "close_game", "end_game"],
 		"ends the currently playing game and gets everyone back to lobby",
-		true,
+		StaffAccess.ADMIN,
 		false
 	)
 	register_command(
 		["restart_ingame", "restart_game", "restart"],
 		"restarts the currently playing game",
-		true,
+		StaffAccess.ADMIN,
 		false
 	)
 	register_command(
 		["get_sessions", "get_session", "get_sid", "get_s"],
 		"get certain or all attributes from every session",
-		false,
+		StaffAccess.ANY,
 		true
 	)
 	register_command(
 		["pause", "p"],
 		"pause/resume the ingame",
-		true,
+		StaffAccess.ADMIN,
 		false
 	)
 	register_command(
 		["toggle_ingame_states", "toggle_ingame_state", "ingame_state"],
 		"toggles displaying messages for dedicated server when ingame state changes",
-		true,
+		StaffAccess.OP,
 		false
 	)
 	register_command(
-		["op", "admin", "master"],
-		"grants or revokes admin for any peer, but it's passworded and successful assigns change the password",
-		false,
+		["op", "master"],
+		"grants or revokes op for any peer, but it's passworded and successful assigns change the password",
+		StaffAccess.ANY,
+		false
+	)
+	register_command(
+		["admin"],
+		"grants or revokes admin for any peer",
+		StaffAccess.OP,
+		false
+	)
+	register_command(
+		["bot_max", "max_bot"],
+		"set max bot count",
+		StaffAccess.OP,
+		false
+	)
+	register_command(
+		["crate_max", "max_crate"],
+		"set max crate count",
+		StaffAccess.OP,
+		false
+	)
+	register_command(
+		["maze_max", "max_maze"],
+		"set max maze size",
+		StaffAccess.OP,
+		false
+	)
+	register_command(
+		["mute"],
+		"mute or unmute any peer except ops",
+		StaffAccess.OP,
 		false
 	)
 
@@ -143,12 +179,12 @@ func _enter_tree() -> void:
 func register_command(
 	aliases: PackedStringArray,
 	description: String,
-	requires_admin: bool,
+	staff_access: StaffAccess,
 	is_local: bool) -> void:
 	registry.append({
 		"aliases": aliases,
 		"description": description,
-		"requires_admin": requires_admin,
+		"staff_access": staff_access,
 		"is_local": is_local
 	})
 
@@ -242,11 +278,27 @@ func get_invoked_as_dictionary(invoked: String) -> Dictionary:
 	return active_cmd
 
 func is_admin_local_verify(invoked: String, active_cmd: Dictionary) -> bool:
-	## temporary setup for testing the game
-	## in the future, client-only exports won't have cmd_start_server and cmd_close_server
-	if active_cmd["requires_admin"] and not SessionManager.is_admin(multiplayer.get_unique_id()):
+	if active_cmd["staff_access"] == StaffAccess.ADMIN and not SessionManager.is_admin(multiplayer.get_unique_id()):
 		print_output("command not found: " + invoked, "shell_error", 0)
 		return false
+	return true
+
+func is_admin_server_verify(cmd: Dictionary, pid: int) -> bool:
+	if not cmd in registry: return false
+	if cmd["is_local"]: return false
+	if cmd["staff_access"] == StaffAccess.ADMIN and not SessionManager.is_admin(pid): return false
+	return true
+
+func is_op_local_verify(invoked: String, active_cmd: Dictionary) -> bool:
+	if active_cmd["staff_access"] == StaffAccess.OP and not SessionManager.is_op(multiplayer.get_unique_id()):
+		print_output("command not found: " + invoked, "shell_error", 0)
+		return false
+	return true
+
+func is_op_server_verify(cmd: Dictionary, pid: int) -> bool:
+	if not cmd in registry: return false
+	if cmd["is_local"]: return false
+	if cmd["staff_access"] == StaffAccess.OP and not SessionManager.is_op(pid): return false
 	return true
 
 func get_flags_and_args_and_execute_cmd(tokens: PackedStringArray, active_cmd: Dictionary) -> void:
@@ -285,6 +337,7 @@ func execute_raw_string(raw_text: String) -> void:
 	var active_cmd: Dictionary = get_invoked_as_dictionary(invoked)
 	if active_cmd.is_empty(): return
 	if not is_admin_local_verify(invoked, active_cmd): return
+	if not is_op_local_verify(invoked, active_cmd): return
 	get_flags_and_args_and_execute_cmd(tokens, active_cmd)
 
 func execute_cmd(cmd: Dictionary, args: PackedStringArray, flags: Array[PackedStringArray]) -> void:
@@ -294,17 +347,12 @@ func execute_cmd(cmd: Dictionary, args: PackedStringArray, flags: Array[PackedSt
 	if not NetworkManager.is_online: return
 	request_network_cmd.rpc_id(1, cmd, args, flags)
 
-func is_admin_server_verify(cmd: Dictionary, pid: int) -> bool:
-	if not cmd in registry: return false
-	if cmd["is_local"]: return false
-	if cmd["requires_admin"] and not SessionManager.is_admin(pid): return false
-	return true
-
 @rpc("any_peer", "reliable", "call_local")
 func request_network_cmd(cmd: Dictionary, args: PackedStringArray, flags: Array[PackedStringArray]) -> void:
 	var pid: int = multiplayer.get_remote_sender_id()
 	if not multiplayer.is_server(): return
 	if not is_admin_server_verify(cmd, pid): return
+	if not is_op_server_verify(cmd, pid): return
 	Callable(self, "cmd_" + cmd["aliases"][0]).call(args, flags, pid)
 
 var is_confirming_command: bool = false
@@ -394,11 +442,13 @@ func get_printed_session(sid: int) -> String:
 func cmd_help(args: PackedStringArray, _flags: Array[PackedStringArray], _pid: int) -> void:
 	var command_list: String = ""
 	var is_pid_admin: bool = SessionManager.is_admin(multiplayer.get_unique_id())
+	var is_pid_op: bool = SessionManager.is_op(multiplayer.get_unique_id())
 	if args.is_empty():
 		for command: Dictionary in registry:
 			if not NetworkManager.is_online and command["aliases"][0] != "connect": continue
 			if command["aliases"][0] == "op": continue
-			if command["requires_admin"] == true and not is_pid_admin: continue
+			if command["staff_access"] == StaffAccess.ADMIN and not is_pid_admin: continue
+			if command["staff_access"] == StaffAccess.OP and not is_pid_op: continue
 			var length: int = command["aliases"].size()
 			var index: int = 0
 			for alias: String in command["aliases"]:
@@ -754,6 +804,33 @@ func cmd_op(args: PackedStringArray, _flags: Array[PackedStringArray], pid: int)
 	if not target_pid in multiplayer.get_peers():
 		print_output("peer id " + args[1] + " doesn't exist", "shell_error", pid)
 		return
+	var old_op_value: bool = SessionManager.data[target_pid]["op"]
+	SessionManager.assign_from_str(target_pid, "op", args[0])
+	var current_op_value: bool = args[0] == "true"
+	var has_op_changed: bool = current_op_value != old_op_value
+	if not has_op_changed:
+		if current_op_value == true: print_output("this player is already an op", "shell_error", pid)
+		else: print_output("this player is already not an op", "shell_error", pid)
+		return
+	if SessionManager.data[target_pid]["op"] == true:
+		print_output("you have been granted op permissions", "target", target_pid)
+		return
+	print_output("you are no longer an op", "target", target_pid)
+
+func cmd_admin(args: PackedStringArray, _flags: Array[PackedStringArray], pid: int) -> void:
+	if args.size() < 2:
+		print_output("usage: admin {true/false} {pid}", "shell_output", pid)
+		return
+	var target_pid: int = SessionManager.decode_session_id(args[1])
+	if target_pid <= 0:
+		print_output("invalid peer id", "shell_error", pid)
+		return
+	if not target_pid in multiplayer.get_peers():
+		print_output("peer id " + args[1] + " doesn't exist", "shell_error", pid)
+		return
+	if SessionManager.data["target_pid"].get("op") == true:
+		print_output("can't change admin role for op session", "shell_error", pid)
+		return
 	var old_admin_value: bool = SessionManager.data[target_pid]["admin"]
 	SessionManager.assign_from_str(target_pid, "admin", args[0])
 	var current_admin_value: bool = args[0] == "true"
@@ -767,7 +844,47 @@ func cmd_op(args: PackedStringArray, _flags: Array[PackedStringArray], pid: int)
 		return
 	print_output("you are no longer an admin", "target", target_pid)
 
-func cmd_help_chat(_args: PackedStringArray, _flags: Array[PackedStringArray], _pid: int):
+func cmd_bot_max(args: PackedStringArray, _flags: Array[PackedStringArray], pid: int) -> void:
+	if args.size() < 1:
+		print_output("usage: bot_max {count}", "shell_output", pid)
+		return
+	var count: int = int(args[0])
+	if count < 0: count = 0
+	SessionManager.max_bot_count = count
+
+func cmd_crate_max(args: PackedStringArray, _flags: Array[PackedStringArray], pid: int) -> void:
+	if args.size() < 1:
+		print_output("usage: crate_max {count}", "shell_output", pid)
+		return
+	var count: int = int(args[0])
+	if count < 0: count = 0
+	SessionManager.max_crate_count = count
+
+func cmd_maze_max(args: PackedStringArray, _flags: Array[PackedStringArray], pid: int) -> void:
+	if args.size() < 1:
+		print_output("usage: maze_max {cell width/height}", "shell_output", pid)
+		return
+	var size: int = int(args[0])
+	if size < 1: size = 1
+	IngameManager.max_maze_size = size
+
+func cmd_mute(args: PackedStringArray, _flags: Array[PackedStringArray], pid: int) -> void:
+	if args.size() < 2:
+		print_output("usage: mute {true/false} {pid}", "shell_output", pid)
+		return
+	var is_muting: bool = args[0] == "true"
+	var target_pid: int = SessionManager.decode_session_id(args[1])
+	if target_pid <= 0:
+		print_output("invalid peer id", "shell_error", pid)
+		return
+	if not target_pid in multiplayer.get_peers():
+		print_output("peer id " + args[1] + " doesn't exist", "shell_error", pid)
+		return
+	if SessionManager.data["target_pid"].get("op") == true:
+		print_output("can't mute an op session", "shell_error", pid)
+		return
+
+func cmd_help_chat(_args: PackedStringArray, _flags: Array[PackedStringArray], _pid: int) -> void:
 	var message: String = "\n"
 	message += "Shift+M: toggle move window\n"
 	message += "Shift+R: toggle chat resizing\n"
@@ -775,7 +892,7 @@ func cmd_help_chat(_args: PackedStringArray, _flags: Array[PackedStringArray], _
 	message += "chat_resize: command for resizing chat text\n"
 	print_output(message, "shell_output", 0)
 
-func cmd_help_controls(_args: PackedStringArray, _flags: Array[PackedStringArray], _pid: int):
+func cmd_help_controls(_args: PackedStringArray, _flags: Array[PackedStringArray], _pid: int) -> void:
 	var message: String = "\n"
 	message += "W/up arrow to move forward\n"
 	message += "S/down arrow to move backward\n"
