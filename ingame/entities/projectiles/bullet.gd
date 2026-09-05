@@ -80,7 +80,7 @@ func configure_if_trap() -> void:
 		initial_velocity_speed = 0.0
 		TRAP_HIDE_DISTANCE = -1.0
 
-@rpc("authority", "reliable", "call_local")
+@rpc("authority", "unreliable", "call_local")
 func play_animation(animation: String) -> void:
 	if not $AnimationPlayer.has_animation(animation): return
 	$AnimationPlayer.play(animation)

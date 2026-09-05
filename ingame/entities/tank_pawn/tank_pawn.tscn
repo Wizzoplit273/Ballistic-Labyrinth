@@ -94,7 +94,9 @@ script = ExtResource("1_86qf6")
 metadata/entity_type = "tank"
 
 [node name="Sync" type="MultiplayerSynchronizer" parent="." unique_id=383817068]
+replication_interval = 0.05
 replication_config = SubResource("SceneReplicationConfig_q4xwi")
+visibility_update_mode = 1
 
 [node name="NoAmmoNoise" type="AudioStreamPlayer" parent="." unique_id=1444013312]
 stream = ExtResource("2_22na7")

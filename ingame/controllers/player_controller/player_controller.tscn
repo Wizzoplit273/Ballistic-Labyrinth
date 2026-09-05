@@ -15,6 +15,7 @@ properties/2/replication_mode = 1
 
 [node name="PlayerController" type="MultiplayerSynchronizer" unique_id=1979509290]
 root_path = NodePath(".")
+replication_interval = 0.05
 replication_config = SubResource("SceneReplicationConfig_kfqpx")
 script = ExtResource("1_kfqpx")
 metadata/type = "player"

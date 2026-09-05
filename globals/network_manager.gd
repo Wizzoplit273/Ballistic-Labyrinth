@@ -38,6 +38,10 @@ func _enter_tree() -> void:
 	multiplayer.connected_to_server.connect(connected_to_server)
 	multiplayer.connection_failed.connect(connection_failed)
 
+func setup_websocket_no_delay() -> void:
+	if not multiplayer.multiplayer_peer: return
+	multiplayer.multiplayer_peer.transfer_mode = MultiplayerPeer.TRANSFER_MODE_UNRELIABLE_ORDERED
+
 func start_server() -> void:
 	if is_online: return
 	peer = WebSocketMultiplayerPeer.new()
@@ -47,6 +51,7 @@ func start_server() -> void:
 		return
 	IngameManager.current_is_animated_generation = true
 	multiplayer.set_multiplayer_peer(peer)
+	setup_websocket_no_delay()
 	print_local("Server is up! Waiting for players...")
 	set_local_online_status(true, true)
 
@@ -60,6 +65,7 @@ func start_client() -> void:
 		return
 	IngameManager.current_is_animated_generation = false
 	multiplayer.set_multiplayer_peer(peer)
+	setup_websocket_no_delay()
 	set_local_online_status(true, false)
 
 func peer_connected(peer_id: int) -> void:

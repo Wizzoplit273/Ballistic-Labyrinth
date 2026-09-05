@@ -805,8 +805,8 @@ func cmd_op(args: PackedStringArray, _flags: Array[PackedStringArray], pid: int)
 		print_output("peer id " + args[1] + " doesn't exist", "shell_error", pid)
 		return
 	var old_op_value: bool = SessionManager.data[target_pid]["op"]
+	SessionManager.assign_from_str(target_pid, "op", args[0])
 	var current_op_value: bool = args[0] == "true"
-	SessionManager.set_op(target_pid, current_op_value)
 	var has_op_changed: bool = current_op_value != old_op_value
 	if not has_op_changed:
 		if current_op_value == true: print_output("this player is already an op", "shell_error", pid)
@@ -828,7 +828,7 @@ func cmd_admin(args: PackedStringArray, _flags: Array[PackedStringArray], pid: i
 	if not target_pid in multiplayer.get_peers():
 		print_output("peer id " + args[1] + " doesn't exist", "shell_error", pid)
 		return
-	if SessionManager.data["target_pid"].get("op") == true:
+	if SessionManager.data[target_pid].get("op") == true:
 		print_output("can't change admin role for op session", "shell_error", pid)
 		return
 	var old_admin_value: bool = SessionManager.data[target_pid]["admin"]
@@ -880,9 +880,10 @@ func cmd_mute(args: PackedStringArray, _flags: Array[PackedStringArray], pid: in
 	if not target_pid in multiplayer.get_peers():
 		print_output("peer id " + args[1] + " doesn't exist", "shell_error", pid)
 		return
-	if SessionManager.data["target_pid"].get("op") == true:
+	if SessionManager.data[target_pid].get("op") == true:
 		print_output("can't mute an op session", "shell_error", pid)
 		return
+	SessionManager.mute_peer(is_muting, target_pid)
 
 func cmd_help_chat(_args: PackedStringArray, _flags: Array[PackedStringArray], _pid: int) -> void:
 	var message: String = "\n"

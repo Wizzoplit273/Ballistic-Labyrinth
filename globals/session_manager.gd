@@ -141,14 +141,14 @@ func set_profile_color(color: Color) -> void:
 	profile_data["color"] = color
 	wrap_request_profile_update()
 
-func set_admin(pid: int, is_this_admin: bool) -> void:
+func set_local_admin(pid: int, is_this_admin: bool) -> void:
 	data[pid]["admin"] = is_this_admin
+	if pid != multiplayer.get_unique_id(): return
 	UIManager.toggle_admin_options(is_this_admin)
 
-func set_op(pid: int, is_this_op: bool) -> void:
+func set_local_op(pid: int, is_this_op: bool) -> void:
 	data[pid]["op"] = is_this_op
-	data[pid]["admin"] = true
-	UIManager.toggle_admin_options(true)
+	set_local_admin(pid, true)
 
 func increment_kill(sid: int) -> void:
 	if sid == 0: return
@@ -196,11 +196,11 @@ func assign_from_str(sid: int, attribute: String, value: String) -> void:
 	else:
 		if typeof(data[sid][attribute]) == TYPE_BOOL:
 			if attribute == "admin": # stricter console set for admin permission
-				if value == "true": set_admin(sid, true)
-				else: set_admin(sid, false)
+				if value == "true": set_local_admin(sid, true)
+				else: set_local_admin(sid, false)
 			elif attribute == "admin": # stricter console set for op permission
-				if value == "true": set_op(sid, true)
-				else: set_op(sid, false)
+				if value == "true": set_local_op(sid, true)
+				else: set_local_op(sid, false)
 			else:
 				if value == "false" or value == "0": data[sid][attribute] = false
 				else: data[sid][attribute] = true

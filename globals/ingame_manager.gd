@@ -351,7 +351,7 @@ func spawn_bullet(payload: Dictionary) -> Node:
 	if bullet.type == "trap": ingame_node.get_node("Sounds/TrapPlaceNoise").play()
 	return bullet
 
-@rpc("any_peer", "reliable", "call_local")
+@rpc("any_peer", "unreliable_ordered", "call_local")
 func teleport_tank(pos: Vector2) -> void:
 	var pid: int = multiplayer.get_remote_sender_id()
 	if not multiplayer.is_server(): return
