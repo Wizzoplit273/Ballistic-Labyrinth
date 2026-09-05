@@ -1,5 +1,10 @@
 extends RigidBody2D
 
+@export var server_position: Vector2 = Vector2.ZERO
+@export var server_rotation: float = 0.0
+@export var server_linear_velocity: Vector2 = Vector2.ZERO
+@export var server_angular_velocity: float = 0.0
+
 var controller: Node = null
 
 var max_linear_speed: float = 200.0
@@ -62,7 +67,21 @@ func equip_weapon(type: String) -> void:
 	weapon_type = type
 	$Rest/Image.texture = load(SKIN_PATH_PREFIX + type + SKIN_EXTENSION)
 
-func _physics_process(_delta: float) -> void:
+func server_synchronize() -> void:
+	server_position = position
+	server_rotation = rotation
+	server_linear_velocity = linear_velocity
+	server_angular_velocity = angular_velocity
+
+var lerp_weight: float
+func client_interpolate(delta: float) -> void:
+	lerp_weight = 1.0 - exp(-IngameManager.LERP_DECAY_RATE * delta)
+	position = lerp(position, server_position, lerp_weight)
+	rotation = lerp(rotation, server_rotation, lerp_weight)
+	linear_velocity = lerp(linear_velocity, server_linear_velocity, lerp_weight)
+	angular_velocity = lerp(angular_velocity, server_angular_velocity, lerp_weight)
+
+func _physics_process(delta: float) -> void:
 	if not controller:
 		linear_velocity = Vector2.ZERO
 		angular_velocity = 0.0
@@ -75,7 +94,8 @@ func _physics_process(_delta: float) -> void:
 	if controller.is_drifting: apply_central_force(forward_direction * sign(controller.linear_input) * drift_speed)
 	else: apply_central_impulse(forward_direction * sign(controller.linear_input) * linear_speed)
 	if linear_velocity.length() > max_linear_speed: linear_velocity = linear_velocity.normalized() * max_linear_speed
-	if not multiplayer.is_server(): return
+	if multiplayer.is_server(): server_synchronize()
+	else: client_interpolate(delta)
 
 var is_invincible: bool = false
 ## called by bullet scenes that hit the player

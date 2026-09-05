@@ -8,25 +8,25 @@
 [ext_resource type="Texture2D" uid="uid://d1q7gd2e0q0ji" path="res://light.png" id="6_qnes1"]
 
 [sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_qnes1"]
-properties/0/path = NodePath(".:position")
+properties/0/path = NodePath("Rest:visible")
 properties/0/spawn = true
-properties/0/replication_mode = 1
-properties/1/path = NodePath(".:linear_velocity")
+properties/0/replication_mode = 2
+properties/1/path = NodePath("DespawnParticles:emitting")
 properties/1/spawn = true
-properties/1/replication_mode = 1
-properties/2/path = NodePath("Rest:visible")
+properties/1/replication_mode = 2
+properties/2/path = NodePath("Rest/LaserTrail:emitting")
 properties/2/spawn = true
 properties/2/replication_mode = 2
-properties/3/path = NodePath("DespawnParticles:emitting")
+properties/3/path = NodePath("Rest/RocketTrail:emitting")
 properties/3/spawn = true
 properties/3/replication_mode = 2
-properties/4/path = NodePath("Rest/LaserTrail:emitting")
+properties/4/path = NodePath(".:server_position")
 properties/4/spawn = true
-properties/4/replication_mode = 2
-properties/5/path = NodePath("Rest/RocketTrail:emitting")
+properties/4/replication_mode = 1
+properties/5/path = NodePath(".:server_rotation")
 properties/5/spawn = true
-properties/5/replication_mode = 2
-properties/6/path = NodePath("Rest/Image:rotation")
+properties/5/replication_mode = 1
+properties/6/path = NodePath(".:server_linear_velocity")
 properties/6/spawn = true
 properties/6/replication_mode = 1
 
@@ -156,6 +156,7 @@ metadata/_edit_lock_ = true
 metadata/entity_type = "bullet"
 
 [node name="Sync" type="MultiplayerSynchronizer" parent="." unique_id=1712751378]
+replication_interval = 0.05
 replication_config = SubResource("SceneReplicationConfig_qnes1")
 visibility_update_mode = 1
 

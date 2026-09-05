@@ -47,6 +47,11 @@ var controller_container: MultiplayerSpawner = null
 
 #var finished_clients: Array = []
 
+var LERP_DECAY_RATE: float = 15.0
+@rpc("authority", "reliable")
+func set_lerp_decay_rate(value: float) -> void:
+	LERP_DECAY_RATE = value
+
 var alive_tanks_count: int = 0
 
 func _enter_tree() -> void:

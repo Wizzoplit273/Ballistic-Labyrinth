@@ -1,5 +1,9 @@
 extends RigidBody2D
 
+@export var server_position: Vector2 = Vector2.ZERO
+@export var server_rotation: float = 0.0
+@export var server_linear_velocity: Vector2 = Vector2.ZERO
+
 var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 
 ## initialised by parent level node right after instantiation:
@@ -91,11 +95,25 @@ func set_node_rotations() -> void:
 	$Rest/VelocityRaycast3.rotation = linear_velocity.angle() - PI/2 + PI/60
 	if type != "trap": $Rest/Image.rotation = linear_velocity.angle()
 
-func _physics_process(_delta: float) -> void:
+func server_synchronize() -> void:
+	server_position = position
+	if type != "trap": server_rotation = $Rest/Image.rotation
+	server_linear_velocity = linear_velocity
+
+var lerp_weight: float
+func client_interpolate(delta: float) -> void:
+	lerp_weight = 1.0 - exp(-IngameManager.LERP_DECAY_RATE * delta)
+	position = lerp(position, server_position, lerp_weight)
+	if type != "trap": $Rest/Image.rotation = lerp($Rest/Image.rotation, server_rotation, lerp_weight)
+	linear_velocity = lerp(linear_velocity, server_linear_velocity, lerp_weight)
+
+func _physics_process(delta: float) -> void:
 	if linear_velocity.length() != 0.0: linear_velocity = linear_velocity.normalized() * initial_velocity_speed
 	configure_if_rocket()
 	configure_if_trap()
 	set_node_rotations()
+	if multiplayer.is_server(): server_synchronize()
+	else: client_interpolate(delta)
 
 func _on_lifespan_timer_timeout() -> void:
 	die("lifespan")

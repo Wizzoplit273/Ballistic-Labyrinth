@@ -174,6 +174,12 @@ func _enter_tree() -> void:
 		StaffAccess.OP,
 		false
 	)
+	register_command(
+		["lerp_decay_rate"],
+		"sets or gets client-side prediction's lerp decay rate",
+		StaffAccess.OP,
+		false
+	)
 
 ## first string in alias list corresponds with a callable's name(ex: "connect" corresponds with cmd_connect)
 func register_command(
@@ -902,3 +908,9 @@ func cmd_help_controls(_args: PackedStringArray, _flags: Array[PackedStringArray
 	message += "Hold shift to drift\n"
 	message += "Press space to shoot\n"
 	print_output(message, "shell_output", 0)
+
+func cmd_lerp_decay_rate(args: PackedStringArray, _flags: Array[PackedStringArray], pid: int) -> void:
+	if args.size() < 1:
+		print_output("current value: " + str(IngameManager.LERP_DECAY_RATE), "shell_output", pid)
+		return
+	IngameManager.set_lerp_decay_rate.rpc(float(args[0]))
