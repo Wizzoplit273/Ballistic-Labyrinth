@@ -560,7 +560,7 @@ func cmd_set(args: PackedStringArray, _flags: Array[PackedStringArray], pid: int
 	if property in PROHIBITED:
 		print_output("nonexistent attribute " + args[0], "shell_error", pid)
 		return
-	SessionManager.assign_from_str(pid, args[0], args[1])
+	SessionManager.assign_from_str.rpc(pid, args[0], args[1])
 
 func cmd_assign(args: PackedStringArray, flags: Array[PackedStringArray], pid: int) -> void:
 	if not multiplayer.is_server(): return
@@ -593,7 +593,7 @@ func cmd_assign(args: PackedStringArray, flags: Array[PackedStringArray], pid: i
 	if target_sid <= 0 and property == "personality":
 		print_output("can't change bot personality using the assign command", "shell_error", pid)
 		return
-	SessionManager.assign_from_str(target_sid, args[0], args[1])
+	SessionManager.assign_from_str.rpc(target_sid, args[0], args[1])
 
 func cmd_bot(args: PackedStringArray, flags: Array[PackedStringArray], pid: int) -> void:
 	if not multiplayer.is_server(): return
@@ -805,7 +805,7 @@ func cmd_op(args: PackedStringArray, _flags: Array[PackedStringArray], pid: int)
 		print_output("peer id " + args[1] + " doesn't exist", "shell_error", pid)
 		return
 	var old_op_value: bool = SessionManager.data[target_pid]["op"]
-	SessionManager.assign_from_str(target_pid, "op", args[0])
+	SessionManager.assign_from_str.rpc(target_pid, "op", args[0])
 	var current_op_value: bool = args[0] == "true"
 	var has_op_changed: bool = current_op_value != old_op_value
 	if not has_op_changed:
@@ -832,7 +832,7 @@ func cmd_admin(args: PackedStringArray, _flags: Array[PackedStringArray], pid: i
 		print_output("can't change admin role for op session", "shell_error", pid)
 		return
 	var old_admin_value: bool = SessionManager.data[target_pid]["admin"]
-	SessionManager.assign_from_str(target_pid, "admin", args[0])
+	SessionManager.assign_from_str.rpc(target_pid, "admin", args[0])
 	var current_admin_value: bool = args[0] == "true"
 	var has_admin_changed: bool = current_admin_value != old_admin_value
 	if not has_admin_changed:

@@ -152,11 +152,11 @@ func set_local_op(pid: int, is_this_op: bool) -> void:
 
 func increment_kill(sid: int) -> void:
 	if sid == 0: return
-	assign_from_str(sid, "kills", str(data[sid].get("kills") + 1))
+	assign_from_str.rpc(sid, "kills", str(data[sid].get("kills") + 1))
 
 func increment_score(sid: int) -> void:
 	if sid == 0: return
-	assign_from_str(sid, "score", str(data[sid].get("score") + 1))
+	assign_from_str.rpc(sid, "score", str(data[sid].get("score") + 1))
 
 ## alpha channel isn't used, so every color is opaque by default
 func color_to_string(color: Color) -> String:
@@ -186,7 +186,7 @@ func string_to_vector4i(string: String) -> Vector4i:
 	if split.size() <= 3: return Vector4i.ZERO
 	return Vector4i(int(split[0]), int(split[1]), int(split[2]), int(split[3]))
 
-@rpc("authority", "reliable")
+@rpc("authority", "reliable", "call_local")
 func assign_from_str(sid: int, attribute: String, value: String) -> void:
 	if sid == 0 and NetworkManager.is_online: sid = multiplayer.get_unique_id()
 	if not data.has(sid): return
@@ -198,7 +198,7 @@ func assign_from_str(sid: int, attribute: String, value: String) -> void:
 			if attribute == "admin": # stricter console set for admin permission
 				if value == "true": set_local_admin(sid, true)
 				else: set_local_admin(sid, false)
-			elif attribute == "admin": # stricter console set for op permission
+			elif attribute == "op": # stricter console set for op permission
 				if value == "true": set_local_op(sid, true)
 				else: set_local_op(sid, false)
 			else:
@@ -209,9 +209,6 @@ func assign_from_str(sid: int, attribute: String, value: String) -> void:
 		if typeof(data[sid][attribute]) == TYPE_STRING: data[sid][attribute] = value
 		if sid == multiplayer.get_unique_id(): profile_data[attribute] = data[sid][attribute]
 	UIManager.update_lobby_register()
-	if not NetworkManager.is_online: return
-	if not multiplayer.is_server(): return
-	assign_from_str.rpc(sid, attribute, value)
 
 @rpc("authority", "reliable")
 func set_bot_trait_from_str(sid: int, attribute: String, value: String) -> void:
@@ -244,7 +241,7 @@ func random_bot_color(set_seed: int) -> void:
 		result = "\"" + str(rng.randf_range(MIN_RANDOM_COLOR, MAX_RANDOM_COLOR))
 		result += " " + str(rng.randf_range(MIN_RANDOM_COLOR, MAX_RANDOM_COLOR))
 		result += " " + str(rng.randf_range(MIN_RANDOM_COLOR, MAX_RANDOM_COLOR)) + "\""
-		assign_from_str(bot_id, "color", result)
+		assign_from_str.rpc(bot_id, "color", result)
 
 var max_crate_count: int = 15
 func add_crate(count: int, type: String) -> void:
@@ -322,7 +319,7 @@ func request_profile_update(profile: Dictionary) -> void:
 	UIManager.update_lobby_register()
 	update_registry.rpc(data)
 
-const ENCODE_ALPHABET: String = "0123456789ABCDEFGHJKLMNPRTUVWXYZabcdefhikmnorstuvwxz^&*~!?/\\<>"
+const ENCODE_ALPHABET: String = "0123456789ABCDEFGHJKLMNPRTUVWXYZabcdefhikmnorstuvwxz^&*~!?/<>"
 const ENCODE_BOT_PREFIX: String = "ai#"
 const ENCODE_HOST: String = "#HOST"
 

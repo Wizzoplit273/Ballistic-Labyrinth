@@ -2,4 +2,4 @@
 .import/
 export_presets.cfg
 build/
-addons/
+addons/edgegap-godot-plugin/
