@@ -2,12 +2,10 @@ extends Node
 
 const STUN_URL: String = "stun:stun.l.google.com:19302"
 const SIGNALING_PORT: int = 9080
-#const SERVER_PORT: int = 7777
 
 var signaling_peer: WebSocketMultiplayerPeer
 var rtc_peer: WebRTCMultiplayerPeer
 var rtc_connections: Dictionary = {} # peer_id -> WebRTCPeerConnection
-#var peer: WebSocketMultiplayerPeer
 var url: String = "ws://localhost:" + str(SIGNALING_PORT)
 
 var is_online: bool = false
@@ -47,10 +45,10 @@ var rtc_offer_sent: bool = false
 func _process(_delta: float) -> void:
 	if not signaling_peer: return
 	signaling_peer.poll()
-	if not is_server and not rtc_offer_sent:
-			var ws_peer := signaling_peer.get_peer(1)
-			if ws_peer and ws_peer.get_ready_state() == WebSocketPeer.STATE_OPEN:
-				_initiate_webrtc_offer()
+	#if not is_server and not rtc_offer_sent:
+			#var ws_peer := signaling_peer.get_peer(1)
+			#if ws_peer and ws_peer.get_ready_state() == WebSocketPeer.STATE_OPEN:
+				#_initiate_webrtc_offer()
 	while signaling_peer.get_available_packet_count() > 0:
 		var sender_id = signaling_peer.get_packet_peer()
 		var packet = signaling_peer.get_packet()
@@ -74,6 +72,7 @@ func setup_signaling_server() -> bool:
 
 func _on_signaling_peer_connected(id: int) -> void:
 	if not is_server: return
+	_send_signal(id, {"type": "id", "id": id})
 	var conn := WebRTCPeerConnection.new()
 	conn.initialize({ "iceServers": [{ "urls": [STUN_URL] }] })
 	conn.session_description_created.connect(_on_sdp_created.bind(id))
@@ -96,12 +95,30 @@ func _send_signal(id: int, data: Dictionary) -> void:
 	signaling_peer.put_packet(packet)
 
 func _handle_signaling_data(id: int, data: Dictionary) -> void:
+	if data.type == "id" and not is_server:
+		_initialize_webrtc_client(int(data.id))
+		return
 	if not rtc_connections.has(id): return
 	var conn: WebRTCPeerConnection = rtc_connections[id]
 	if data.type == "sdp":
 		conn.set_remote_description(data.sdp_type, data.sdp)
 	elif data.type == "ice":
 		conn.add_ice_candidate(data.media, data.index, data.name)
+
+func _initialize_webrtc_client(my_id: int) -> void:
+	rtc_peer = WebRTCMultiplayerPeer.new()
+	var rtc_error: Error = rtc_peer.create_client(my_id)
+	if rtc_error != OK:
+		print_error("NETWORK ERROR: rtc client creation failed: " + str(rtc_error))
+		return
+	multiplayer.set_multiplayer_peer(rtc_peer)
+	var conn := WebRTCPeerConnection.new()
+	conn.initialize({ "iceServers": [{ "urls": [STUN_URL] }] })
+	conn.session_description_created.connect(_on_sdp_created.bind(1))
+	conn.ice_candidate_created.connect(_on_ice_created.bind(1))
+	rtc_peer.add_peer(conn, 1)
+	rtc_connections[1] = conn
+	conn.create_offer()
 
 func _on_signaling_peer_disconnected(id: int) -> void:
 	if rtc_connections.has(id):
@@ -158,8 +175,8 @@ func setup_rtc_client_connection() -> void:
 func start_client() -> void:
 	if is_online: return
 	if not setup_signaling_client(): return
-	if not setup_rtc_client_peer(): return
-	setup_rtc_client_connection()
+	#if not setup_rtc_client_peer(): return
+	#setup_rtc_client_connection()
 	IngameManager.current_is_animated_generation = false
 	set_local_online_status(true, false)
 
