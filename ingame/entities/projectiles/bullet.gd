@@ -96,7 +96,7 @@ func set_node_rotations() -> void:
 	if type != "trap": $Rest/Image.rotation = linear_velocity.angle()
 
 func server_synchronize() -> void:
-	server_position = position
+	server_position = global_position
 	if type != "trap": server_rotation = $Rest/Image.rotation
 	server_linear_velocity = linear_velocity
 

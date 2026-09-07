@@ -39,7 +39,7 @@ func _notification(what: int) -> void:
 func toggle(value: bool) -> void:
 	if value:
 		visible = true
-		process_mode = Node.PROCESS_MODE_INHERIT
+		process_mode = Node.PROCESS_MODE_ALWAYS
 	elif not $Rest.visible:
 		visible = false
 		process_mode = Node.PROCESS_MODE_DISABLED
@@ -73,15 +73,23 @@ func server_synchronize() -> void:
 	server_linear_velocity = linear_velocity
 	server_angular_velocity = angular_velocity
 
+@rpc("authority", "reliable")
+func snap_state(sid: int, pos: Vector2, rot: float) -> void:
+	#var pawn: RigidBody2D = IngameManager.ingame_node.get_node(^"TankPawns").get_
+	global_position = pos
+	global_rotation = rot
+
 var lerp_weight: float
 func client_interpolate(delta: float) -> void:
 	lerp_weight = 1.0 - exp(-IngameManager.LERP_DECAY_RATE * delta)
-	position = lerp(position, server_position, lerp_weight)
-	rotation = lerp(rotation, server_rotation, lerp_weight)
+	global_position = lerp(global_position, server_position, lerp_weight)
+	global_rotation = lerp(global_rotation, server_rotation, lerp_weight)
 	linear_velocity = lerp(linear_velocity, server_linear_velocity, lerp_weight)
 	angular_velocity = lerp(angular_velocity, server_angular_velocity, lerp_weight)
 
+## PROBLEM TO FIX: for clients, player controllers are decoupled both ways from their respective pawns
 func _physics_process(delta: float) -> void:
+	if not multiplayer.is_server(): print("FINALLY")
 	if not controller:
 		linear_velocity = Vector2.ZERO
 		angular_velocity = 0.0

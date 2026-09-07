@@ -51,7 +51,7 @@ func start_server() -> void:
 		return
 	IngameManager.current_is_animated_generation = true
 	multiplayer.set_multiplayer_peer(peer)
-	setup_websocket_no_delay()
+	#setup_websocket_no_delay()
 	print_local("Server is up! Waiting for players...")
 	set_local_online_status(true, true)
 
@@ -65,7 +65,7 @@ func start_client() -> void:
 		return
 	IngameManager.current_is_animated_generation = false
 	multiplayer.set_multiplayer_peer(peer)
-	setup_websocket_no_delay()
+	#setup_websocket_no_delay()
 	set_local_online_status(true, false)
 
 func peer_connected(peer_id: int) -> void:
