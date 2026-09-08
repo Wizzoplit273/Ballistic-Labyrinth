@@ -5,7 +5,7 @@
 [ext_resource type="Script" uid="uid://c116i4g5og7gj" path="res://ingame/entities/projectiles/bullet.gd" id="2_wrvnv"]
 [ext_resource type="AudioStream" uid="uid://cy22uropw1uaf" path="res://ingame/entities/SHOOT_NORMAL_toy-gun-364850.mp3" id="3_05xpt"]
 [ext_resource type="AudioStream" uid="uid://dhoxj0irluo7u" path="res://ingame/tiles/MAZE_GENERATION_glitch-fx-transitions-10-311812.mp3" id="3_qbrdm"]
-[ext_resource type="Texture2D" uid="uid://d1q7gd2e0q0ji" path="res://light.png" id="6_qnes1"]
+[ext_resource type="Texture2D" uid="uid://d1q7gd2e0q0ji" path="res://ingame/entities/light.png" id="6_qnes1"]
 
 [sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_qnes1"]
 properties/0/path = NodePath(".:position")
