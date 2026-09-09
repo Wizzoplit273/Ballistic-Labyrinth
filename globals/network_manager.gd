@@ -1,6 +1,20 @@
 extends Node
 
-const STUN_URL: String = "stun:stun.l.google.com:19302"
+const ICE_SERVERS: Array[Dictionary] = [
+	{ "urls": ["stun:stun.l.google.com:19302"] },
+	{ "urls": ["stun:openrelay.metered.ca:80"] },
+	{ 
+		"urls": ["turn:openrelay.metered.ca:80"],
+		"username": "openrelayproject",
+		"credential": "openrelayproject"
+	},
+	{ 
+		"urls": ["turn:openrelay.metered.ca:443"],
+		"username": "openrelayproject",
+		"credential": "openrelayproject"
+	}
+]
+
 const SIGNALING_PORT: int = 9080
 
 var signaling_peer: WebSocketMultiplayerPeer
@@ -45,10 +59,7 @@ var rtc_offer_sent: bool = false
 func _process(_delta: float) -> void:
 	if not signaling_peer: return
 	signaling_peer.poll()
-	#if not is_server and not rtc_offer_sent:
-			#var ws_peer := signaling_peer.get_peer(1)
-			#if ws_peer and ws_peer.get_ready_state() == WebSocketPeer.STATE_OPEN:
-				#_initiate_webrtc_offer()
+	if signaling_peer.get_connection_status() == MultiplayerPeer.CONNECTION_DISCONNECTED: return
 	while signaling_peer.get_available_packet_count() > 0:
 		var sender_id = signaling_peer.get_packet_peer()
 		var packet = signaling_peer.get_packet()
@@ -74,7 +85,7 @@ func _on_signaling_peer_connected(id: int) -> void:
 	if not is_server: return
 	_send_signal(id, {"type": "id", "id": id})
 	var conn := WebRTCPeerConnection.new()
-	conn.initialize({ "iceServers": [{ "urls": [STUN_URL] }] })
+	conn.initialize({ "iceServers": ICE_SERVERS })
 	conn.session_description_created.connect(_on_sdp_created.bind(id))
 	conn.ice_candidate_created.connect(_on_ice_created.bind(id))
 	rtc_peer.add_peer(conn, id)
@@ -113,7 +124,7 @@ func _initialize_webrtc_client(my_id: int) -> void:
 		return
 	multiplayer.set_multiplayer_peer(rtc_peer)
 	var conn := WebRTCPeerConnection.new()
-	conn.initialize({ "iceServers": [{ "urls": [STUN_URL] }] })
+	conn.initialize({ "iceServers": ICE_SERVERS })
 	conn.session_description_created.connect(_on_sdp_created.bind(1))
 	conn.ice_candidate_created.connect(_on_ice_created.bind(1))
 	rtc_peer.add_peer(conn, 1)
@@ -121,11 +132,14 @@ func _initialize_webrtc_client(my_id: int) -> void:
 	conn.create_offer()
 
 func _on_signaling_peer_disconnected(id: int) -> void:
-	if rtc_connections.has(id):
-		rtc_connections[id].close()
-		rtc_connections.erase(id)
-	if rtc_peer and rtc_peer.has_peer(id):
-		rtc_peer.remove_peer(id)
+	print_local("Signaling WebSocket disconnected for peer " + SessionManager.encode_session_id(id))
+	#if rtc_connections.has(id):
+		#var conn: WebRTCPeerConnection = rtc_connections[id]
+		#if conn.get_connection_state() == WebRTCPeerConnection.STATE_CONNECTED: return
+		#conn.close()
+		#rtc_connections.erase(id)
+	#if rtc_peer and rtc_peer.has_peer(id):
+		#rtc_peer.remove_peer(id)
 
 func setup_rtc_server() -> bool:
 	rtc_peer = WebRTCMultiplayerPeer.new()
@@ -166,7 +180,7 @@ func setup_rtc_client_peer() -> bool:
 
 func setup_rtc_client_connection() -> void:
 	var conn := WebRTCPeerConnection.new()
-	conn.initialize({ "iceServers": [{ "urls": [STUN_URL] }] })
+	conn.initialize({ "iceServers": ICE_SERVERS })
 	conn.session_description_created.connect(_on_sdp_created.bind(1))
 	conn.ice_candidate_created.connect(_on_ice_created.bind(1))
 	rtc_peer.add_peer(conn, 1)
@@ -182,6 +196,7 @@ func start_client() -> void:
 
 func peer_connected(peer_id: int) -> void:
 	if not multiplayer.is_server(): return
+	_close_peer_signaling(peer_id)
 	var encoded_pid: String = SessionManager.encode_session_id(peer_id)
 	ConsoleManager.print_output("Player connected with peer id = " + encoded_pid, "global", peer_id)
 	MasterManager.play_server_sound(MasterManager.sounds.get_node(^"PlayerJoin"))
@@ -203,7 +218,21 @@ func peer_disconnected(peer_id: int) -> void:
 func connected_to_server() -> void:
 	var encoded_pid: String = SessionManager.encode_session_id(multiplayer.get_unique_id())
 	print_local("Successfully joined with peer id = " + encoded_pid)
+	_close_client_signaling()
 	SessionManager.request_profile_update.rpc_id(1, SessionManager.profile_data)
+
+func _close_client_signaling() -> void:
+	#if not signaling_peer: return
+	#signaling_peer.close()
+	#signaling_peer = null
+	print("Signaling WebSocket closed gracefully after WebRTC connection")
+
+func _close_peer_signaling(peer_id: int) -> void:
+	pass
+	#if not signaling_peer: return
+	#if signaling_peer.get_connection_status() == MultiplayerPeer.CONNECTION_DISCONNECTED: return
+	#if not signaling_peer.has_peer(peer_id): return
+	#signaling_peer.disconnect_peer(peer_id)
 
 ## called on clients
 func connection_failed() -> void:
