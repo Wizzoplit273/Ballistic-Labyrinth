@@ -36,9 +36,11 @@ func set_local_online_status(value_online: bool, value_server: bool) -> void:
 func print_local(text: String) -> void:
 	#print(text)
 	ChatManager.process_message(text, "global", 0)
+	ClientDebugManager.log_to_file("***: " + text)
 
 func print_error(text: String) -> void:
 	ChatManager.process_message(text, "shell_error", 0)
+	ClientDebugManager.log_to_file("E: " + text)
 	push_error(text)
 	printerr(text)
 	print_debug()
@@ -67,6 +69,7 @@ func _process(_delta: float) -> void:
 		_handle_signaling_data(sender_id, data)
 
 func _initiate_webrtc_offer() -> void:
+	ClientDebugManager.log_to_file("L: _initiate_webrtc_offer() executed")
 	rtc_offer_sent = true
 	if rtc_connections.has(1):
 		rtc_connections[1].create_offer()
@@ -107,6 +110,7 @@ func _send_signal(id: int, data: Dictionary) -> void:
 
 func _handle_signaling_data(id: int, data: Dictionary) -> void:
 	if data.type == "id" and not is_server:
+		ClientDebugManager.log_to_file("_handle_signaling_data() executed on client-side")
 		_initialize_webrtc_client(int(data.id))
 		return
 	if not rtc_connections.has(id): return
@@ -122,6 +126,7 @@ func _initialize_webrtc_client(my_id: int) -> void:
 	if rtc_error != OK:
 		print_error("NETWORK ERROR: rtc client creation failed: " + str(rtc_error))
 		return
+	ClientDebugManager.log_to_file("_initialize_webrtc_client() success(rtc_error == OK)")
 	multiplayer.set_multiplayer_peer(rtc_peer)
 	var conn := WebRTCPeerConnection.new()
 	conn.initialize({ "iceServers": ICE_SERVERS })
@@ -166,6 +171,7 @@ func setup_signaling_client() -> bool:
 	if error != OK:
 		print_error("NETWORK ERROR: signaling connection failed: " + str(error))
 		return false
+	ClientDebugManager.log_to_file("L: setup_signaling_client() returns true")
 	return true
 
 func setup_rtc_client_peer() -> bool:
@@ -176,9 +182,11 @@ func setup_rtc_client_peer() -> bool:
 		print_error("NETWORK ERROR: rtc client creation failed: " + str(rtc_error))
 		return false
 	multiplayer.set_multiplayer_peer(rtc_peer)
+	ClientDebugManager.log_to_file("L: setup_rtc_client_peer() returns true")
 	return true
 
 func setup_rtc_client_connection() -> void:
+	ClientDebugManager.log_to_file("setup_rtc_client_connection() executed")
 	var conn := WebRTCPeerConnection.new()
 	conn.initialize({ "iceServers": ICE_SERVERS })
 	conn.session_description_created.connect(_on_sdp_created.bind(1))
@@ -222,12 +230,13 @@ func connected_to_server() -> void:
 	SessionManager.request_profile_update.rpc_id(1, SessionManager.profile_data)
 
 func _close_client_signaling() -> void:
+	ClientDebugManager.log_to_file("_close_client_signaling() executed by code commented out")
 	#if not signaling_peer: return
 	#signaling_peer.close()
 	#signaling_peer = null
-	print("Signaling WebSocket closed gracefully after WebRTC connection")
+	#print("Signaling WebSocket closed gracefully after WebRTC connection")
 
-func _close_peer_signaling(peer_id: int) -> void:
+func _close_peer_signaling(_peer_id: int) -> void:
 	pass
 	#if not signaling_peer: return
 	#if signaling_peer.get_connection_status() == MultiplayerPeer.CONNECTION_DISCONNECTED: return
@@ -250,6 +259,7 @@ func disconnect_client(peer_id: int) -> void:
 	print_local("Kicked peer with id " + encoded_pid)
 
 func end_signaling_and_rtc() -> void:
+	if not multiplayer.is_server(): ClientDebugManager.log_to_file("end_signaling_and_rtc() executed")
 	if signaling_peer:
 		signaling_peer.close()
 		signaling_peer = null
@@ -261,6 +271,7 @@ func end_signaling_and_rtc() -> void:
 
 func disconnect_from_server() -> void:
 	if multiplayer.is_server(): return
+	ClientDebugManager.log_to_file("disconnect_from_server() executed")
 	SessionManager.clear_registry()
 	await get_tree().process_frame
 	end_signaling_and_rtc()

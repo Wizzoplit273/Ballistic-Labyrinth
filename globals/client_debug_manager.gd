@@ -7,6 +7,7 @@ func _ready() -> void:
 	DirAccess.remove_absolute(LOG_FILE_PATH)
 
 func log_to_file(message: String) -> void:
+	if NetworkManager.is_online and multiplayer.is_server(): return
 	var time_stamp := Time.get_datetime_string_from_system()
 	var log_entry := "[%s] %s" % [time_stamp, message]
 	var file: FileAccess
@@ -19,6 +20,7 @@ func log_to_file(message: String) -> void:
 	file.close()
 
 func download_logs() -> void:
+	if NetworkManager.is_online and multiplayer.is_server(): return
 	if not FileAccess.file_exists(LOG_FILE_PATH):
 		ConsoleManager.print_output("No logs to download yet", "shell_output", 0)
 		return
