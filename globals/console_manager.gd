@@ -174,6 +174,12 @@ func _enter_tree() -> void:
 		StaffAccess.OP,
 		false
 	)
+	register_command(
+		["download_logs"],
+		"download client-side logs",
+		StaffAccess.ANY,
+		true
+	)
 
 ## first string in alias list corresponds with a callable's name(ex: "connect" corresponds with cmd_connect)
 func register_command(
@@ -902,3 +908,6 @@ func cmd_help_controls(_args: PackedStringArray, _flags: Array[PackedStringArray
 	message += "Hold shift to drift\n"
 	message += "Press space to shoot\n"
 	print_output(message, "shell_output", 0)
+
+func cmd_download_logs(_args: PackedStringArray, _flags: Array[PackedStringArray], _pid: int) -> void:
+	ClientDebugManager.download_logs()

@@ -30,6 +30,7 @@ IngameManager="*uid://bgrkr8b4vpemw"
 MasterManager="*uid://bmre2o6yqqp4y"
 ChatManager="*uid://dtud6btactpa7"
 ConsoleManager="*uid://d25xxhu2th33n"
+ClientDebugManager="*uid://bd8a467uikerl"
 
 [display]
 
