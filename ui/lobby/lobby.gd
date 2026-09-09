@@ -69,8 +69,7 @@ func activate(value: bool) -> void:
 	visible = value
 	$SpectateWindow.visible = false
 	if IngameManager.current_state != IngameManager.State.STOPPED: return
-	if value:
-		$Soundtrack.play()
+	if value and MasterManager.is_soundtrack_enabled: $Soundtrack.play()
 	else: $Soundtrack.stop()
 
 func unfocus() -> void:
@@ -110,3 +109,7 @@ func _on_web_line_edit_text_changed(new_text: String) -> void:
 
 func _on_join_button_pressed() -> void:
 	NetworkManager.start_client()
+
+func _on_toggle_soundtrack_toggled(toggled_on: bool) -> void:
+	MasterManager.toggle_soundtrack(not toggled_on)
+	if MasterManager.is_soundtrack_enabled: $Soundtrack.play()

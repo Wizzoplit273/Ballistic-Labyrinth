@@ -303,6 +303,18 @@ script = ExtResource("5_k0yk8")
 metadata/_custom_type_script = "uid://b71fg000v8km1"
 metadata/_edit_lock_ = true
 
+[node name="Spacer" type="Control" parent="Frame/Side1/NameContainer" unique_id=1418751131]
+custom_minimum_size = Vector2(0, 25)
+layout_mode = 2
+metadata/_edit_lock_ = true
+
+[node name="ToggleSoundtrack" type="Button" parent="Frame/Side1/NameContainer" unique_id=104686666]
+layout_mode = 2
+theme_override_font_sizes/font_size = 25
+toggle_mode = true
+text = "Toggle soundtrack"
+metadata/_edit_lock_ = true
+
 [node name="Spacer3" type="Control" parent="Frame/Side1" unique_id=1559013663]
 layout_mode = 2
 size_flags_horizontal = 3
@@ -401,5 +413,6 @@ metadata/_edit_lock_ = true
 [connection signal="pressed" from="Frame/Side1/JoinContainer/JoinButton" to="." method="_on_join_button_pressed"]
 [connection signal="text_changed" from="Frame/Side1/JoinContainer/WebLineEdit" to="." method="_on_web_line_edit_text_changed"]
 [connection signal="text_submitted" from="Frame/Side1/NameContainer/UsernameEdit" to="." method="_on_username_edit_text_submitted"]
+[connection signal="toggled" from="Frame/Side1/NameContainer/ToggleSoundtrack" to="." method="_on_toggle_soundtrack_toggled"]
 [connection signal="color_changed" from="Frame/Side1/PlayerColor/PlayerColorContainer/PlayerColorPicker" to="." method="_on_player_color_picker_color_changed"]
 [connection signal="pressed" from="Frame/Side1/LeaveGameButton" to="." method="_on_exit_game_button_pressed"]
