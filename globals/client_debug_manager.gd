@@ -19,16 +19,13 @@ func log_to_file(message: String) -> void:
 	file.store_line(log_entry)
 	file.close()
 
+const SAVE_SCENE: String = "res://ui/client_debug_save/client_debug_save.tscn"
 func download_logs() -> void:
 	if NetworkManager.is_online and multiplayer.is_server(): return
 	if not FileAccess.file_exists(LOG_FILE_PATH):
 		ConsoleManager.print_output("No logs to download yet", "shell_output", 0)
 		return
-	var file_dialog := FileDialog.new()
-	file_dialog.use_native_dialog = true
-	file_dialog.access = FileDialog.ACCESS_FILESYSTEM
-	file_dialog.file_mode = FileDialog.FILE_MODE_SAVE_FILE
-	file_dialog.add_filter("*.log", "Log Files")
+	var file_dialog: FileDialog = load(SAVE_SCENE).instantiate()
 	file_dialog.current_file = LOG_FILE_NAME
 	# Connect signals via lambdas to automatically clean up the dialog node
 	file_dialog.file_selected.connect(func(path: String):
