@@ -99,14 +99,14 @@ func server_setup_success() -> void:
 
 func client_setup_success() -> void:
 	if is_server: return
-	IngameManager.current_is_animated_generation = false
-	set_local_online_status(true, false)
-	SessionManager.request_profile_update.rpc_id(1, SessionManager.profile_data)
 
 ## called on clients
 func connected_to_server() -> void:
+	IngameManager.current_is_animated_generation = false
+	set_local_online_status(true, false)
 	var encoded_pid: String = SessionManager.encode_session_id(multiplayer.get_unique_id())
 	print_local("Successfully joined with peer id = " + encoded_pid)
+	SessionManager.request_profile_update.rpc_id(1, SessionManager.profile_data)
 
 ## called on clients
 func connection_failed() -> void:
@@ -118,7 +118,8 @@ func handle_signaling_message(message: String) -> void:
 	var data: Dictionary = json.data
 	var type: String = data.get("type", "")
 	var sender_id: int = data.get("sender_id", 0)
-	if type == "id":
+	if is_dedicated_server: print("Server received signal type: ", data)
+	if type == "id": 
 		if is_server:
 			my_rtc_id = 1
 			var error: Error = rtc_peer.create_server()
@@ -161,7 +162,13 @@ func handle_signaling_message(message: String) -> void:
 		return
 	if type == "candidate":
 		if not rtc_connections.has(sender_id): return
-		rtc_connections[sender_id].add_ice_candidate(data.get("mid", ""), data.get("index", 0), data.get("sdp", ""))
+		var err: Error = rtc_connections[sender_id].add_ice_candidate(
+			data.get("mid", ""), 
+			data.get("index", 0), 
+			data.get("sdp", "")
+		)
+		if err != OK:
+			print_error("Failed to add ICE candidate from peer " + str(sender_id) + ": " + str(err))
 		return
 
 func _on_session_description_created(type: String, sdp: String, target_id: int) -> void:
