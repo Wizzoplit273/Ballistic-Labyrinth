@@ -153,6 +153,7 @@ func handle_signaling_message(message: String) -> void:
 	if type == "offer":
 		var peer := setup_rtc_peer(sender_id)
 		peer.set_remote_description("offer", data.get("sdp", ""))
+		peer.create_offer()
 		return
 	if type == "answer":
 		if not rtc_connections.has(sender_id): return
@@ -260,111 +261,3 @@ func notify_server_shutdown() -> void:
 	IngameManager.set_current_state(IngameManager.State.STOPPED)
 	set_local_online_status(false, false)
 	print_local("Server is closing")
-
-## UNCHANGED CODE FROM THIS LINE ONWARD
-
-#func _initiate_webrtc_offer() -> void:
-	#ClientDebugManager.log_to_file("L: _initiate_webrtc_offer() executed")
-	#rtc_offer_sent = true
-	#if rtc_connections.has(1):
-		#rtc_connections[1].create_offer()
-
-#func setup_signaling_server() -> bool:
-	#signaling_peer = WebSocketPeer.new()
-	#var signaling_error: Error = signaling_peer.create_server(SIGNALING_PORT)
-	#if signaling_error != OK:
-		#print_error("NETWORK ERROR: cannot host signaling server: " + str(signaling_error))
-		#return false
-	#signaling_peer.peer_connected.connect(_on_signaling_peer_connected)
-	#signaling_peer.peer_disconnected.connect(_on_signaling_peer_disconnected)
-	#return true
-
-#func _on_signaling_peer_connected(id: int) -> void:
-	#if not is_server: return
-	#_send_signal(id, {"type": "id", "id": id})
-	#var conn := WebRTCPeerConnection.new()
-	#conn.initialize({ "iceServers": ICE_SERVERS })
-	#conn.session_description_created.connect(_on_sdp_created.bind(id))
-	#conn.ice_candidate_created.connect(_on_ice_created.bind(id))
-	#rtc_peer.add_peer(conn, id)
-	#rtc_connections[id] = conn
-
-#func _initialize_webrtc_client(my_id: int) -> void:
-	#rtc_peer = WebRTCMultiplayerPeer.new()
-	#var rtc_error: Error = rtc_peer.create_client(my_id)
-	#if rtc_error != OK:
-		#print_error("NETWORK ERROR: rtc client creation failed: " + str(rtc_error))
-		#return
-	#ClientDebugManager.log_to_file("_initialize_webrtc_client() success(rtc_error == OK)")
-	#multiplayer.set_multiplayer_peer(rtc_peer)
-	#var conn := WebRTCPeerConnection.new()
-	#conn.initialize({ "iceServers": ICE_SERVERS })
-	#conn.session_description_created.connect(_on_sdp_created.bind(1))
-	#conn.ice_candidate_created.connect(_on_ice_created.bind(1))
-	#rtc_peer.add_peer(conn, 1)
-	#rtc_connections[1] = conn
-	#conn.create_offer()
-
-#func _on_signaling_peer_disconnected(id: int) -> void:
-	#print_local("Signaling WebSocket disconnected for peer " + SessionManager.encode_session_id(id))
-	##if rtc_connections.has(id):
-		##var conn: WebRTCPeerConnection = rtc_connections[id]
-		##if conn.get_connection_state() == WebRTCPeerConnection.STATE_CONNECTED: return
-		##conn.close()
-		##rtc_connections.erase(id)
-	##if rtc_peer and rtc_peer.has_peer(id):
-		##rtc_peer.remove_peer(id)
-
-#func setup_rtc_server() -> bool:
-	#rtc_peer = WebRTCMultiplayerPeer.new()
-	#var rtc_error: Error = rtc_peer.create_server()
-	#if rtc_error != OK:
-		#print_error("NETWORK ERROR: cannot host rtc peer: " + str(rtc_error))
-		#return false
-	#multiplayer.set_multiplayer_peer(rtc_peer)
-	#return true
-
-#func setup_signaling_client() -> bool:
-	#print_local("Trying to connect to URL = " + url)
-	#rtc_offer_sent = false
-	#signaling_peer = WebSocketPeer.new()
-	#var error: Error = signaling_peer.create_client(url)
-	#if error != OK:
-		#print_error("NETWORK ERROR: signaling connection failed: " + str(error))
-		#return false
-	#ClientDebugManager.log_to_file("L: setup_signaling_client() returns true")
-	#return true
-
-#func setup_rtc_client_peer() -> bool:
-	#rtc_peer = WebRTCMultiplayerPeer.new()
-	#var random_id: int = abs(randi_range(2, INT32_MAX))
-	#var rtc_error: Error = rtc_peer.create_client(random_id)
-	#if rtc_error != OK:
-		#print_error("NETWORK ERROR: rtc client creation failed: " + str(rtc_error))
-		#return false
-	#multiplayer.set_multiplayer_peer(rtc_peer)
-	#ClientDebugManager.log_to_file("L: setup_rtc_client_peer() returns true")
-	#return true
-
-#func setup_rtc_client_connection() -> void:
-	#ClientDebugManager.log_to_file("setup_rtc_client_connection() executed")
-	#var conn := WebRTCPeerConnection.new()
-	#conn.initialize({ "iceServers": ICE_SERVERS })
-	#conn.session_description_created.connect(_on_sdp_created.bind(1))
-	#conn.ice_candidate_created.connect(_on_ice_created.bind(1))
-	#rtc_peer.add_peer(conn, 1)
-	#rtc_connections[1] = conn
-
-#func _close_client_signaling() -> void:
-	#ClientDebugManager.log_to_file("_close_client_signaling() executed by code commented out")
-	##if not signaling_peer: return
-	##signaling_peer.close()
-	##signaling_peer = null
-	##print("Signaling WebSocket closed gracefully after WebRTC connection")
-
-#func _close_peer_signaling(_peer_id: int) -> void:
-	#pass
-	##if not signaling_peer: return
-	##if signaling_peer.get_connection_status() == MultiplayerPeer.CONNECTION_DISCONNECTED: return
-	##if not signaling_peer.has_peer(peer_id): return
-	##signaling_peer.disconnect_peer(peer_id)
