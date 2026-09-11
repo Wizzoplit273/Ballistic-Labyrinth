@@ -105,7 +105,7 @@ func _on_player_color_picker_color_changed(color: Color) -> void:
 	SessionManager.set_profile_color(color)
 
 func _on_web_line_edit_text_changed(new_text: String) -> void:
-	NetworkManager.url = new_text
+	NetworkManager.webtransport_url = new_text
 
 func _on_join_button_pressed() -> void:
 	NetworkManager.start_client()

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>$GODOT_PROJECT_NAME</title>
+    <style>
+        body { margin: 0; background-color: #111; overflow: hidden; }
+        #canvas { display: block; width: 100vw; height: 100vh; }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+
+    <script src="$GODOT_BASENAME.js"></script>
+    <script>
+        let wtClientSession = null;
+
+        window.startWebTransportClient = async function(url) {
+            try {
+                const transport = new WebTransport(url);
+                await transport.ready;
+                wtClientSession = transport;
+                if (window.godotCallbacks?.onConnected) {
+                    window.godotCallbacks.onConnected();
+                }
+                readIncomingDatagrams(transport);
+            } catch (error) {
+                console.error("WebTransport connection failed:", error);
+                if (window.godotCallbacks?.onError) {
+                    window.godotCallbacks.onError();
+                }
+            }
+        };
+
+        async function readIncomingDatagrams(transport) {
+            const reader = transport.datagrams.readable.getReader();
+            try {
+                while (true) {
+                    const { value, done } = await reader.read();
+                    if (done) break;
+                    const jsonString = new TextDecoder().decode(value);
+                    if (window.godotCallbacks?.onMessage) {
+                        window.godotCallbacks.onMessage(jsonString);
+                    }
+                }
+            } catch (err) {
+                console.error("Datagram read error:", err);
+            }
+        }
+
+        window.sendWebTransportPacket = async function(jsonString) {
+            if (!wtClientSession) return;
+            const writer = wtClientSession.datagrams.writable.getWriter();
+            await writer.write(new TextEncoder().encode(jsonString));
+            writer.releaseLock();
+        };
+
+        // Boot Godot Engine
+        const engine = new Engine($GODOT_CONFIG);
+        engine.startGame();
+    </script>
+</body>
+</html>

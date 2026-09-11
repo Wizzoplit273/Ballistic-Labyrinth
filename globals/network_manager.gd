@@ -7,6 +7,8 @@ var is_online: bool = false
 var is_server: bool = false
 var is_dedicated_server: bool = false
 
+var webtransport_url: String = ""
+
 func set_local_online_status(value_online: bool, value_server: bool) -> void:
 	is_online = value_online
 	is_server = value_server
@@ -21,6 +23,23 @@ func print_error(text: String) -> void:
 	ChatManager.process_message(text, "shell_error", 0)
 	push_error(text)
 	printerr(text)
+
+func _ready() -> void:
+	if OS.has_feature("web"):
+		var window = JavaScriptBridge.get_interface("window")
+		window.godotCallbacks = {
+			"onConnected": JavaScriptBridge.create_callback(func(_args): connected_to_server()),
+			"onError": JavaScriptBridge.create_callback(func(_args): connection_failed()),
+			"onMessage": JavaScriptBridge.create_callback(_on_external_message)
+		}
+
+func _on_external_message(args: Array) -> void:
+	if args.is_empty(): return
+	var json_string: String = args[0]
+	var json = JSON.new()
+	if json.parse(json_string) == OK:
+		# Process custom JSON incoming packets from the WebTransport proxy
+		handle_client_json_packet(1, json.get_data())
 
 func master_enter_tree() -> void:
 	if OS.has_feature("server") or DisplayServer.get_name() == "headless":
@@ -47,6 +66,17 @@ func _process(_delta: float) -> void:
 		ENetConnection.EVENT_RECEIVE:
 			var packet_data: PackedByteArray = event[3]
 			_on_enet_packet_received(peer, packet_data)
+
+func start_client() -> void:
+	if is_online: return
+	print_local("Trying to connect via WebTransport proxy to URL = " + webtransport_url)
+	if not OS.has_feature("web"):
+		print_error("WebTransport client is only supported in web browser exports")
+		return
+	var js_code: String = "window.startWebTransportClient('%s');" % webtransport_url
+	JavaScriptBridge.eval(js_code)
+	IngameManager.current_is_animated_generation = false
+	set_local_online_status(true, false)
 
 func start_server() -> void:
 	if is_online: return
