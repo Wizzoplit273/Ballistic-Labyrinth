@@ -2,8 +2,9 @@ extends Node
 
 const SERVER_PORT: int = 7777
 
-var peer: WebSocketMultiplayerPeer
-var url: String = "ws://localhost:7777"
+var peer: ENetMultiplayerPeer
+
+var ip_address: String = "localhost"
 
 var is_online: bool = false
 var is_server: bool = false
@@ -44,7 +45,7 @@ func setup_websocket_no_delay() -> void:
 
 func start_server() -> void:
 	if is_online: return
-	peer = WebSocketMultiplayerPeer.new()
+	peer = ENetMultiplayerPeer.new()
 	var error: Error = peer.create_server(SERVER_PORT)
 	if error != OK:
 		print_error("NETWORK ERROR: cannot host: " + str(error))
@@ -57,9 +58,9 @@ func start_server() -> void:
 
 func start_client() -> void:
 	if is_online: return
-	print_local("Trying to connect to URL = " + url)
-	peer = WebSocketMultiplayerPeer.new()
-	var error: Error = peer.create_client(url)
+	print_local("Trying to connect to IP address = " + ip_address)
+	peer = ENetMultiplayerPeer.new()
+	var error: Error = peer.create_client(ip_address, SERVER_PORT)
 	if error != OK:
 		print_error("NETWORK ERROR: connection failed: " + str(error))
 		return
