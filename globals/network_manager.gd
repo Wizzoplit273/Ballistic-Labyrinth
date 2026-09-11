@@ -5,6 +5,7 @@ const SERVER_PORT: int = 7777
 var peer: ENetMultiplayerPeer
 
 var ip_address: String = "localhost"
+var port: int = 7777
 
 var is_online: bool = false
 var is_server: bool = false
@@ -58,9 +59,9 @@ func start_server() -> void:
 
 func start_client() -> void:
 	if is_online: return
-	print_local("Trying to connect to IP address = " + ip_address)
+	print_local("Connecting to server...")
 	peer = ENetMultiplayerPeer.new()
-	var error: Error = peer.create_client(ip_address, SERVER_PORT)
+	var error: Error = peer.create_client(ip_address, port)
 	if error != OK:
 		print_error("NETWORK ERROR: connection failed: " + str(error))
 		return

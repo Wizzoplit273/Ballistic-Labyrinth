@@ -104,12 +104,15 @@ func _on_player_color_picker_color_changed(color: Color) -> void:
 	%PlayerColorTest.modulate = color
 	SessionManager.set_profile_color(color)
 
-func _on_join_input_text_changed(new_text: String) -> void:
-	NetworkManager.ip_address = new_text
-
 func _on_join_button_pressed() -> void:
 	NetworkManager.start_client()
 
 func _on_toggle_soundtrack_toggled(toggled_on: bool) -> void:
 	MasterManager.toggle_soundtrack(not toggled_on)
 	if MasterManager.is_soundtrack_enabled: $Soundtrack.play()
+
+func _on_ip_address_input_text_changed(new_text: String) -> void:
+	NetworkManager.ip_address = new_text
+
+func _on_port_input_text_changed(new_text: String) -> void:
+	NetworkManager.port = int(new_text)
