@@ -26,6 +26,12 @@ func instantiate_audio_container() -> void:
 	sounds = load(AUDIO_CONTAINER_PATH).instantiate()
 	add_child(sounds)
 
+var is_soundtrack_enabled: bool = true
+func toggle_soundtrack(is_enabled: bool) -> void:
+	if not UIManager.is_ui_configured: return
+	is_soundtrack_enabled = is_enabled
+	if not is_enabled: UIManager.lobby_node.get_node(^"Soundtrack").stop()
+
 func play_server_sound(player: Node, pid: int = 0) -> void:
 	if not multiplayer.is_server():
 		receive_server_sound(player.get_path())

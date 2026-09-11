@@ -303,6 +303,18 @@ script = ExtResource("5_k0yk8")
 metadata/_custom_type_script = "uid://b71fg000v8km1"
 metadata/_edit_lock_ = true
 
+[node name="Spacer" type="Control" parent="Frame/Side1/NameContainer" unique_id=317498284]
+custom_minimum_size = Vector2(0, 15)
+layout_mode = 2
+metadata/_edit_lock_ = true
+
+[node name="ToggleSoundtrack" type="Button" parent="Frame/Side1/NameContainer" unique_id=1768961957]
+layout_mode = 2
+theme_override_font_sizes/font_size = 25
+toggle_mode = true
+text = "Toggle soundtrack"
+metadata/_edit_lock_ = true
+
 [node name="Spacer3" type="Control" parent="Frame/Side1" unique_id=1559013663]
 layout_mode = 2
 size_flags_horizontal = 3
