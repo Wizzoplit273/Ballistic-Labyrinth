@@ -14,7 +14,7 @@ max_polyphony = 5
 
 [node name="PlayerChat" type="AudioStreamPlayer" parent="." unique_id=1239251453]
 stream = ExtResource("2_lcyq4")
-volume_db = -8.0
+volume_db = -6.0
 pitch_scale = 1.25
 max_polyphony = 5
 

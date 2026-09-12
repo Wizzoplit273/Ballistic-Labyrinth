@@ -174,6 +174,12 @@ func _enter_tree() -> void:
 		StaffAccess.OP,
 		false
 	)
+	register_command(
+		["kick"],
+		"kicks a non-staff peer session",
+		StaffAccess.OP,
+		false
+	)
 
 ## first string in alias list corresponds with a callable's name(ex: "connect" corresponds with cmd_connect)
 func register_command(
@@ -902,3 +908,19 @@ func cmd_help_controls(_args: PackedStringArray, _flags: Array[PackedStringArray
 	message += "Hold shift to drift\n"
 	message += "Press space to shoot\n"
 	print_output(message, "shell_output", 0)
+
+func cmd_kick(args: PackedStringArray, _flags: Array[PackedStringArray], pid: int) -> void:
+	if args.size() < 1:
+		print_output("usage: kick {pid}", "shell_output", pid)
+		return
+	var target_pid: int = SessionManager.decode_session_id(args[0])
+	if target_pid <= 0:
+		print_output("invalid peer id", "shell_error", pid)
+		return
+	if not target_pid in multiplayer.get_peers():
+		print_output("peer id " + args[0] + " doesn't exist", "shell_error", pid)
+		return
+	if SessionManager.data[target_pid].get("admin") == true:
+		print_output("can't kick a staff peer", "shell_error", pid)
+		return
+	NetworkManager.disconnect_client(target_pid)

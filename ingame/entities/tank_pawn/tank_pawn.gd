@@ -5,15 +5,9 @@ var controller: Node = null
 var max_linear_speed: float = 200.0
 var linear_speed: float = 200.0
 var drift_speed: float = 600.0
-var angular_speed: float = 6.0
+var angular_speed: float = 4.0
 
 var max_bullet_count: int = 5
-var fired_bullet_count: int = 0
-
-const REGULAR_SPAWN_OFFSET: float = 30.0
-const ROCKET_SPAWN_OFFSET: float = 40.0
-const LASER_SPAWN_OFFSET: float = 30.0
-const TRAP_SPAWN_OFFSET: float = 60.0
 
 var regular_speed: float = 300.0
 var regular_lifespan: float = 0.0
@@ -23,7 +17,16 @@ var rocket_speed: float = 300.0
 var rocket_lifespan: float = 15.0
 var trap_speed: float = 700.0
 
+var is_invincible: bool = false
+
+const REGULAR_SPAWN_OFFSET: float = 30.0
+const ROCKET_SPAWN_OFFSET: float = 40.0
+const LASER_SPAWN_OFFSET: float = 30.0
+const TRAP_SPAWN_OFFSET: float = 60.0
+
 var weapon_type: String = "regular"
+
+var fired_bullet_count: int = 0
 
 var label_node: Label
 
@@ -77,11 +80,11 @@ func _physics_process(_delta: float) -> void:
 	if linear_velocity.length() > max_linear_speed: linear_velocity = linear_velocity.normalized() * max_linear_speed
 	if not multiplayer.is_server(): return
 
-var is_invincible: bool = false
 ## called by bullet scenes that hit the player
 func die() -> void:
 	if is_invincible: return
 	$Rest.visible = false
 	process_mode = Node.PROCESS_MODE_DISABLED
+	set_collision_layer_value(2, false)
 	$DeathParticles.restart()
 	IngameManager._on_tank_die()

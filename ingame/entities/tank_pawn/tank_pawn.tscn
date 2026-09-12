@@ -35,6 +35,12 @@ properties/7/replication_mode = 2
 properties/8/path = NodePath("DeathParticles:modulate")
 properties/8/spawn = true
 properties/8/replication_mode = 2
+properties/9/path = NodePath(".:process_mode")
+properties/9/spawn = true
+properties/9/replication_mode = 2
+properties/10/path = NodePath(".:collision_layer")
+properties/10/spawn = true
+properties/10/replication_mode = 2
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_22na7"]
 size = Vector2(10, 6)
