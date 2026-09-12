@@ -1,14 +1,11 @@
 extends RigidBody2D
 
-var controller: Node = null
-
+## MODIFIABLE BY /value COMMAND
 var max_linear_speed: float = 200.0
 var linear_speed: float = 200.0
 var drift_speed: float = 600.0
 var angular_speed: float = 4.0
-
 var max_bullet_count: int = 5
-
 var regular_speed: float = 300.0
 var regular_lifespan: float = 0.0
 var laser_speed: float = 3000.0
@@ -16,16 +13,21 @@ var laser_lifespan: float = 1.0
 var rocket_speed: float = 300.0
 var rocket_lifespan: float = 15.0
 var trap_speed: float = 700.0
-
 var is_invincible: bool = false
+var is_noclipping: bool = false:
+	set(value):
+		set_collision_layer_value(2, not value)
+		set_collision_mask_value(1, not value)
 
 const REGULAR_SPAWN_OFFSET: float = 30.0
 const ROCKET_SPAWN_OFFSET: float = 40.0
 const LASER_SPAWN_OFFSET: float = 30.0
 const TRAP_SPAWN_OFFSET: float = 60.0
 
-var weapon_type: String = "regular"
+var controller: Node = null
 
+## MODIFIABLE BY /value COMMAND but not used much on those
+var weapon_type: String = "regular"
 var fired_bullet_count: int = 0
 
 var label_node: Label

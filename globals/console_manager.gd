@@ -74,7 +74,13 @@ func _enter_tree() -> void:
 	)
 	register_command(
 		["assign"],
-		"modify any attribute from any session except admin role",
+		"modify any primary attribute from any session except staff role",
+		StaffAccess.ADMIN,
+		false
+	)
+	register_command(
+		["value", "pawn", "pawn_value"],
+		"modify any pawn attribute from any session",
 		StaffAccess.ADMIN,
 		false
 	)
@@ -390,6 +396,8 @@ func is_cmd_confirmed(callback: Callable, args: PackedStringArray, flags: Array[
 		return false
 	return false
 
+const SELF_SID_WILDCARD: PackedStringArray = ["#", "#self"]
+const RANDOM_SID_WILDCARD: PackedStringArray = ["#random", "#rand", "#rng"]
 ## if y entry is < 0, then x entry refers to a number of SIDs(no specific SIDs)
 ## if y entry is = 0, then x entry refers to a target SID
 ## if y entry is = 1, then it's a silent exception
@@ -412,7 +420,10 @@ func get_session_reference_from_flags(flags: Array[PackedStringArray], pid: int 
 			if flag.size() <= 1:
 				print_output("provide an sid to ==sid to filter session ids", "shell_error", pid)
 				return Vector2i(2, 2)
-			result = SessionManager.decode_session_id(flag[1])
+			if pid == 0: pid = multiplayer.get_unique_id()
+			if flag[1].to_lower() in SELF_SID_WILDCARD: result = pid
+			elif flag[1].to_lower() in RANDOM_SID_WILDCARD: result = SessionManager.data.keys().pick_random()
+			else: result = SessionManager.decode_session_id(flag[1])
 			if not result in SessionManager.data.keys():
 				print_output("session with ID = " + flag[1] + " doesn't exist", "shell_error", pid)
 				return Vector2i(2, 2)
@@ -592,7 +603,6 @@ func cmd_assign(args: PackedStringArray, flags: Array[PackedStringArray], pid: i
 	if filter[1] < 0:
 		print_output("can't get attributes from a bulk number", "shell_error", pid)
 		return
-	if filter[1] == 1: target_sid = multiplayer.get_unique_id()
 	if target_sid == 1 and NetworkManager.is_dedicated_server:
 		print_output("dedicated server doesn't have a session", "shell_error", pid)
 		return
@@ -924,3 +934,27 @@ func cmd_kick(args: PackedStringArray, _flags: Array[PackedStringArray], pid: in
 		print_output("can't kick a staff peer", "shell_error", pid)
 		return
 	NetworkManager.disconnect_client(target_pid)
+
+func cmd_value(args: PackedStringArray, flags: Array[PackedStringArray], pid: int) -> void:
+	if args.size() <= 0:
+		print_output("usage: value {pawn attribute} [value] {==sid SID/==name NAME}", "shell_output", pid)
+	var target_sid: int = 0
+	var filter: Vector2i = get_session_reference_from_flags(flags, pid)
+	if filter[1] >= 2: return
+	if filter[1] == 1: target_sid = pid
+	if filter[1] == 0: target_sid = filter[0]
+	if filter[1] < 0:
+		print_output("can't reference a session ID from a bulk number", "shell_error", pid)
+		return
+	var target_pawn: Node = IngameManager.get_pawn(target_sid)
+	if target_pawn == null:
+		print_output("invalid tank pawn from session ID target", "shell_error", pid)
+		return
+	var attribute_get: Variant = target_pawn.get(args[0])
+	if attribute_get == null:
+		print_output("attribute " + args[0] + " doesn't exist for tank pawns", "shell_error", pid)
+		return
+	if args.size() <= 1:
+		print_output("attribute " + args[0] + " has value set to " + attribute_get, "shell_output", pid)
+		return
+	SessionManager.set_pawn_attribute(target_sid, args[0], args[1])

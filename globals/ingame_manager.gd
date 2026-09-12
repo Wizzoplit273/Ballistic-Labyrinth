@@ -296,9 +296,31 @@ func place_pawns() -> void:
 		var selected_cell: Vector2i = ingame_node.maze_cells.get(ingame_node.SEEDED_RNG.randi_range(0, ingame_node.maze_cells.size() - 1))
 		tank_pawn.global_position = ingame_node.maze_cell_to_world(selected_cell)
 		tank_pawn.rotation = ingame_node.SEEDED_RNG.randf_range(0, PI * 2)
+		set_pawn_attributes_to_spawn.rpc(sid, tank_pawn)
 		tank_pawn.connect("shoot_bullet", _on_shoot_bullet)
 		ingame_node.get_node("TankPawns").add_child(tank_pawn, true)
 		alive_tanks_count += 1
+
+@rpc("authority", "reliable", "call_local")
+func set_pawn_attributes_to_spawn(sid: int, pawn: Node) -> void:
+	var attributes: Dictionary = SessionManager.data[sid]["pawn_attributes"]
+	if attributes.is_empty(): return
+	for variable: String in attributes.keys():
+		var attr_get: Variant = pawn.get(variable)
+		if attr_get == null: continue
+		if typeof(attr_get) == TYPE_BOOL:
+			if attributes[variable] == "false": pawn.set(variable, false)
+			else: pawn.set(variable, true)
+			continue
+		if typeof(attr_get) == TYPE_INT:
+			pawn.set(variable, int(attributes[variable]))
+			continue
+		if typeof(attr_get) == TYPE_FLOAT:
+			pawn.set(variable, float(attributes[variable]))
+			continue
+		if typeof(attr_get) == TYPE_STRING:
+			pawn.set(variable, attributes[variable])
+			continue
 
 ## directly called by destroyed tanks
 func _on_tank_die() -> void:
@@ -397,10 +419,17 @@ func change_noclip() -> void:
 		break
 	if pawn == null: return
 	var is_noclip: bool = not pawn.get_collision_layer_value(2)
-	pawn.set_collision_layer_value(2, is_noclip)
-	pawn.set_collision_mask_value(1, is_noclip)
+	pawn.is_noclipping = is_noclip
 	var text: String = "noclip set to "
 	if not is_noclip: text += "true "
 	else: text += "false "
 	text += "for pid = " + SessionManager.encode_session_id(pid)
 	ConsoleManager.print_output(text, "admin", 0)
+
+func get_pawn(sid: int) -> Node:
+	if sid == 0: return null
+	for pawn: Node in ingame_node.get_node(^"TankPawns").get_children():
+		if pawn.controller == null: continue
+		if pawn.controller.sid != sid: continue
+		return pawn
+	return null

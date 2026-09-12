@@ -31,7 +31,8 @@ func create_local_profile() -> void:
 		"muted": false,
 		"color": Color(1.0, 1.0, 1.0, 1.0),
 		"kills": 0,
-		"score": 0
+		"score": 0,
+		"pawn_attributes": Dictionary()
 	}
 	data[0] = profile_data
 
@@ -78,6 +79,21 @@ func is_muted(pid: int) -> bool:
 	if data.get(pid).get("muted") != true: return false
 	return true
 
+func get_pawn_attributes(sid: int) -> Dictionary:
+	if sid == 0: return Dictionary()
+	if not sid in data.keys(): return Dictionary()
+	return data[sid].get("pawn_attributes")
+
+func get_kills(sid: int) -> int:
+	if sid == 0: return 0
+	if not sid in data.keys(): return 0
+	return data[sid].get("kills")
+
+func get_score(sid: int) -> int:
+	if sid == 0: return 0
+	if not sid in data.keys(): return 0
+	return data[sid].get("score")
+
 @rpc("authority", "reliable")
 func add_session(session_id: int, profile: Dictionary) -> void:
 	if session_id == 0: return
@@ -106,7 +122,8 @@ func add_bot(count: int = 1) -> void:
 			"color": Color(1.0, 1.0, 1.0, 1.0),
 			"kills": 0,
 			"score": 0,
-			"personality": {}
+			"pawn_attributes": Dictionary(),
+			"personality": Dictionary() ## unused
 		})
 		count -= 1
 	UIManager.update_lobby_register()
@@ -280,22 +297,14 @@ func wrap_request_profile_update() -> void:
 		request_profile_update(profile_data)
 	else: request_profile_update.rpc_id(1, profile_data)
 
-#func get_profile_name() -> String:
-	#return profile_data.get("name")
-#
-#func get_profile_color() -> Color:
-	#return profile_data.get("color")
-#
-#func get_profile_kills() -> int:
-	#return profile_data.get("kills")
-#
-#func get_profile_score() -> int:
-	#return profile_data.get("score")
-#
-#func get_profile_admin() -> bool:
-	#return profile_data.get("admin")
-#func get_profile_op() -> bool:
-	#return profile_data.get("op")
+@rpc("authority", "reliable")
+func set_pawn_attribute(sid: int, variable: String, value: String) -> void:
+	if sid == 0: return
+	if not sid in data.keys(): return
+	data[sid]["pawn_attributes"][variable] = value
+	if not NetworkManager.is_online: return
+	if not multiplayer.is_server(): return
+	set_pawn_attribute.rpc(variable, value)
 
 @rpc("authority", "reliable")
 func update_registry(server_data: Dictionary) -> void:
@@ -315,8 +324,9 @@ func request_profile_update(profile: Dictionary) -> void:
 		"op": is_op(sender_id),
 		"muted": is_muted(sender_id),
 		"color": profile.get("color", Color(1.0, 1.0, 1.0, 1.0)),
-		"kills": 0,
-		"score": 0
+		"kills": get_kills(sender_id),
+		"score": get_score(sender_id),
+		"pawn_attributes": get_pawn_attributes(sender_id)
 	}
 	data[sender_id] = new_session
 	UIManager.update_lobby_register()
