@@ -813,7 +813,9 @@ func cmd_op(args: PackedStringArray, _flags: Array[PackedStringArray], pid: int)
 		print_output("incorrect op password", "shell_error", pid)
 		return
 	SessionManager.randomize_password()
-	var target_pid: int = SessionManager.decode_session_id(args[1])
+	var target_pid: int
+	if args[1] in SELF_SID_WILDCARD: target_pid = pid
+	else: SessionManager.decode_session_id(args[1])
 	if target_pid <= 0:
 		print_output("invalid peer id", "shell_error", pid)
 		return
