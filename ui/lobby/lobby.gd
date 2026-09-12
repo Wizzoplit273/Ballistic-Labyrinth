@@ -95,7 +95,7 @@ func _on_exit_game_button_pressed() -> void:
 	unfocus()
 	$ExitConfirmDialog.visible = true
 
-func _on_username_edit_text_submitted(new_text: String) -> void:
+func _on_username_edit_text_changed(new_text: String) -> void:
 	var username: String = new_text.strip_edges()
 	%UsernameEdit.text = username
 	SessionManager.set_profile_name(username)
@@ -111,8 +111,5 @@ func _on_toggle_soundtrack_toggled(toggled_on: bool) -> void:
 	MasterManager.toggle_soundtrack(not toggled_on)
 	if MasterManager.is_soundtrack_enabled: $Soundtrack.play()
 
-func _on_ip_address_input_text_changed(new_text: String) -> void:
-	NetworkManager.ip_address = new_text
-
-func _on_port_input_text_changed(new_text: String) -> void:
-	NetworkManager.port = int(new_text)
+func _on_url_input_text_changed(new_text: String) -> void:
+	NetworkManager.url = new_text

@@ -74,6 +74,7 @@ func add_message(message: Dictionary) -> void:
 
 func _on_chat_input_text_submitted(raw: String) -> void:
 	%ChatInput.clear()
+	if raw.is_empty(): return
 	if raw.begins_with("/"): ConsoleManager.execute_raw_string(raw)
 	else: ChatManager.send_message(raw, "peer", 0)
 
