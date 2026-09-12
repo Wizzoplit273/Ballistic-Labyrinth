@@ -296,9 +296,9 @@ func place_pawns() -> void:
 		var selected_cell: Vector2i = ingame_node.maze_cells.get(ingame_node.SEEDED_RNG.randi_range(0, ingame_node.maze_cells.size() - 1))
 		tank_pawn.global_position = ingame_node.maze_cell_to_world(selected_cell)
 		tank_pawn.rotation = ingame_node.SEEDED_RNG.randf_range(0, PI * 2)
-		set_pawn_attributes_to_spawn.rpc(sid, tank_pawn.get_path())
 		tank_pawn.connect("shoot_bullet", _on_shoot_bullet)
 		ingame_node.get_node("TankPawns").add_child(tank_pawn, true)
+		set_pawn_attributes_to_spawn.rpc(sid, tank_pawn.get_path())
 		alive_tanks_count += 1
 
 @rpc("authority", "reliable", "call_local")
