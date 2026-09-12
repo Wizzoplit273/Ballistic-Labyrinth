@@ -1,11 +1,11 @@
 extends Node
 
 const SERVER_PORT: int = 7777
+const WS_BUFFER_SIZE: int = 4 * 1024 * 1024
 
-var peer: ENetMultiplayerPeer
+var peer: WebSocketMultiplayerPeer
 
-var ip_address: String = "localhost"
-var port: int = 7777
+var url: String = "ws://localhost:7777"
 
 var is_online: bool = false
 var is_server: bool = false
@@ -46,7 +46,9 @@ func setup_websocket_no_delay() -> void:
 
 func start_server() -> void:
 	if is_online: return
-	peer = ENetMultiplayerPeer.new()
+	peer = WebSocketMultiplayerPeer.new()
+	peer.inbound_buffer_size = WS_BUFFER_SIZE
+	peer.outbound_buffer_size = WS_BUFFER_SIZE
 	var error: Error = peer.create_server(SERVER_PORT)
 	if error != OK:
 		print_error("NETWORK ERROR: cannot host: " + str(error))
@@ -60,8 +62,10 @@ func start_server() -> void:
 func start_client() -> void:
 	if is_online: return
 	print_local("Connecting to server...")
-	peer = ENetMultiplayerPeer.new()
-	var error: Error = peer.create_client(ip_address, port)
+	peer = WebSocketMultiplayerPeer.new()
+	peer.inbound_buffer_size = WS_BUFFER_SIZE
+	peer.outbound_buffer_size = WS_BUFFER_SIZE
+	var error: Error = peer.create_client(url)
 	if error != OK:
 		print_error("NETWORK ERROR: connection failed: " + str(error))
 		return
@@ -97,6 +101,7 @@ func connected_to_server() -> void:
 
 ## called on clients
 func connection_failed() -> void:
+	set_local_online_status(false, false)
 	print_error("Connection failed")
 
 func disconnect_client(peer_id: int) -> void:
@@ -125,6 +130,7 @@ func disconnect_from_server() -> void:
 	set_local_online_status(false, false)
 	ChatManager.process_message("Successfully disconnected from server", "global", 0)
 
+const CLOSE_SERVER_DELAY: float = 0.2
 func close_server() -> void:
 	if not is_online: return
 	if not multiplayer.is_server(): return
@@ -133,7 +139,7 @@ func close_server() -> void:
 	#await get_tree().create_timer(1.0).timeout
 	if multiplayer.get_peers().size() > 0:
 		notify_server_shutdown.rpc()
-		await get_tree().create_timer(0.2).timeout
+		await get_tree().create_timer(CLOSE_SERVER_DELAY).timeout
 	if multiplayer.multiplayer_peer:
 		multiplayer.multiplayer_peer.close()
 		multiplayer.multiplayer_peer = null
