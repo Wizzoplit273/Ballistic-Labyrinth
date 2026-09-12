@@ -205,6 +205,7 @@ func string_to_vector4i(string: String) -> Vector4i:
 
 @rpc("authority", "reliable")
 func assign_from_str(sid: int, attribute: String, value: String) -> void:
+	if sid == 1 and NetworkManager.is_dedicated_server: return
 	if sid == 0 and NetworkManager.is_online: sid = multiplayer.get_unique_id()
 	if not data.has(sid): return
 	if not data[sid].has(attribute): return

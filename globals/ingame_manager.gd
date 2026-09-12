@@ -302,7 +302,7 @@ func place_pawns() -> void:
 		alive_tanks_count += 1
 
 @rpc("authority", "reliable", "call_local")
-func set_pawn_attributes_to_spawn(sid: int, pawn: Node) -> void:
+func set_pawn_attributes_to_spawn(sid: int, pawn: RigidBody2D) -> void:
 	var attributes: Dictionary = SessionManager.data[sid]["pawn_attributes"]
 	if attributes.is_empty(): return
 	for variable: String in attributes.keys():

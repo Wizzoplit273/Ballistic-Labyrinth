@@ -556,7 +556,7 @@ const CMD_GET_SESSION := ["session", "register"]
 
 func cmd_set(args: PackedStringArray, _flags: Array[PackedStringArray], pid: int) -> void:
 	if not multiplayer.is_server(): return
-	if NetworkManager.is_dedicated_server:
+	if pid == 1 and NetworkManager.is_dedicated_server:
 		print_output("dedicated server doesn't have a session", "shell_error", pid)
 		return
 	if args.is_empty():
@@ -940,6 +940,7 @@ func cmd_kick(args: PackedStringArray, _flags: Array[PackedStringArray], pid: in
 func cmd_value(args: PackedStringArray, flags: Array[PackedStringArray], pid: int) -> void:
 	if args.size() <= 0:
 		print_output("usage: value {pawn attribute} [value] {==sid SID/==name NAME}", "shell_output", pid)
+		return
 	var target_sid: int = 0
 	var filter: Vector2i = get_session_reference_from_flags(flags, pid)
 	if filter[1] >= 2: return
