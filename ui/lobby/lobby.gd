@@ -97,7 +97,6 @@ func _on_exit_game_button_pressed() -> void:
 
 func _on_username_edit_text_changed(new_text: String) -> void:
 	var username: String = new_text.strip_edges()
-	%UsernameEdit.text = username
 	SessionManager.set_profile_name(username)
 
 func _on_player_color_picker_color_changed(color: Color) -> void:
