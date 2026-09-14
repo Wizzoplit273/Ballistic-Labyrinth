@@ -92,6 +92,7 @@ func toggle_admin_options(is_admin: bool) -> void:
 	pause_menu_node.toggle_admin_options(is_admin)
 
 @rpc("authority", "reliable")
-func confirm_spectating() -> void:
+func confirm_spectating(is_maze_generated_next_round: bool) -> void:
+	IngameManager.server_is_animated_generation = is_maze_generated_next_round
 	if lobby_node == null: return
 	lobby_node.toggle_spectate_window(true)

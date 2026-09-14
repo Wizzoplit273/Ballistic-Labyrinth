@@ -58,7 +58,7 @@ func start_server() -> void:
 	if error != OK:
 		print_error("NETWORK ERROR: cannot host: " + str(error))
 		return
-	IngameManager.current_is_animated_generation = true
+	IngameManager.set_future_maze_generation(true)
 	multiplayer.set_multiplayer_peer(peer)
 	setup_websocket_no_delay()
 	print_local("Server is up! Waiting for players...")
@@ -84,8 +84,8 @@ func peer_connected(peer_id: int) -> void:
 	ConsoleManager.print_output("Player connected with peer id = " + encoded_pid, "global", peer_id)
 	MasterManager.play_server_sound(MasterManager.sounds.get_node(^"PlayerJoin"))
 	if IngameManager.current_state == IngameManager.State.STOPPED:
-		IngameManager.set_maze_animation_to_true.rpc_id(peer_id)
-	else: UIManager.confirm_spectating.rpc_id(peer_id)
+		IngameManager.set_future_maze_generation.rpc_id(peer_id, IngameManager.current_is_animated_generation)
+	else: UIManager.confirm_spectating.rpc_id(peer_id, IngameManager.current_is_animated_generation)
 
 func peer_disconnected(peer_id: int) -> void:
 	if not multiplayer.is_server(): return

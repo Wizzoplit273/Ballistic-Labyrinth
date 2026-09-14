@@ -82,7 +82,7 @@ func _ready() -> void:
 	implement_maze_walls_physics()
 	implement_navigation()
 	is_finished_loading = true
-	IngameManager.current_is_animated_generation = true
+	IngameManager.current_is_animated_generation = IngameManager.server_is_animated_generation
 	IngameManager.broadcast_generation_finish()
 
 

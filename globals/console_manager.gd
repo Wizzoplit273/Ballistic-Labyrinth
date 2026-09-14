@@ -210,6 +210,12 @@ func _enter_tree() -> void:
 		StaffAccess.OP,
 		false
 	)
+	register_command(
+		["set_maze_generation"],
+		"toggles maze generation for next rounds",
+		StaffAccess.OP,
+		false
+	)
 
 ## first string in alias list corresponds with a callable's name(ex: "connect" corresponds with cmd_connect)
 func register_command(
@@ -1014,3 +1020,11 @@ func cmd_set_wait_frames_count(args: PackedStringArray, _flags: Array[PackedStri
 		print_output("usage: set_wait_frames_count {COUNT}", "shell_output", pid)
 		return
 	IngameManager.set_wait_frames_count(int(args[0]))
+
+func cmd_set_maze_generation(args: PackedStringArray, _flags: Array[PackedStringArray], pid: int) -> void:
+	if args.size() <= 0:
+		print_output("usage: set_maze_generation {true/false}", "shell_output", pid)
+		return
+	var value: bool = true
+	if args[0] == "false": value = false
+	IngameManager.set_future_maze_generation.rpc(value)

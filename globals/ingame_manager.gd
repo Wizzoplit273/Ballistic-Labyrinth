@@ -49,6 +49,7 @@ var current_seed: int = 0
 var current_maze_dimensions: Vector2i = Vector2i(20, 12) ## first entry is width, second is height
 var set_maze_dimensions: Vector4i = Vector4i(20, 20, 12, 12)
 var current_is_animated_generation: bool = false
+var server_is_animated_generation: bool = true
 
 const INGAME_FILE: String = "res://ingame/ingame.tscn"
 var ingame_container: MultiplayerSpawner = null
@@ -89,8 +90,9 @@ func set_maze_size(string: String) -> void:
 	set_maze_dimensions = result
 
 @rpc("authority", "reliable", "call_local")
-func set_maze_animation_to_true() -> void:
-	current_is_animated_generation = true
+func set_future_maze_generation(value: bool) -> void:
+	current_is_animated_generation = value
+	server_is_animated_generation = value
 
 func create_controller(sid: int) -> void:
 	if sid == 0: return
