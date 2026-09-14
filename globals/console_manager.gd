@@ -175,6 +175,12 @@ func _enter_tree() -> void:
 		false
 	)
 	register_command(
+		["message_max", "max_message"],
+		"set max message size",
+		StaffAccess.OP,
+		false
+	)
+	register_command(
 		["mute"],
 		"mute or unmute any peer except ops",
 		StaffAccess.OP,
@@ -885,6 +891,14 @@ func cmd_maze_max(args: PackedStringArray, _flags: Array[PackedStringArray], pid
 	var size: int = int(args[0])
 	if size < 1: size = 1
 	IngameManager.max_maze_size = size
+
+func cmd_message_max(args: PackedStringArray, _flags: Array[PackedStringArray], pid: int) -> void:
+	if args.size() < 1:
+		print_output("usage: message_max {character count}", "shell_output", pid)
+		return
+	var size: int = int(args[0])
+	if size < 1: size = 1
+	ChatManager.max_message_size = size
 
 func cmd_mute(args: PackedStringArray, _flags: Array[PackedStringArray], pid: int) -> void:
 	if args.size() < 2:

@@ -26,6 +26,8 @@ func update_chat_history(new_message: Dictionary) -> void:
 	if NetworkManager.is_dedicated_server: ConsoleManager.dedicated_server_print(new_message)
 	else: update_local_chat_ui.emit(new_array)
 
+var max_message_size: int = 100
+
 ## CHANNELS
 ## --- shell_input: input command(only for configured chat menu UI, sent only locally)
 ## --- shell_output: regular shell output(sent only for executing peer)
@@ -43,6 +45,7 @@ func process_message(text: String, channel: String, target_pid: int) -> void:
 	else: sender_id = multiplayer.get_remote_sender_id()
 	if SessionManager.is_muted(sender_id): return
 	var final_text: String = text.strip_edges()
+	if final_text.length() > max_message_size: final_text = final_text.substr(0, max_message_size)
 	var message: Dictionary = {}
 	var new_array: Array[Dictionary] = []
 	if sender_id == 0 or target_pid == 1:
