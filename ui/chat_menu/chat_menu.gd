@@ -6,6 +6,16 @@ var is_resizing_window: bool = false
 
 @onready var body: TextureRect = %Texture
 
+func clear_chat(count: int) -> void:
+	if count == -1 or count >= %ChatText.get_paragraph_count():
+		%ChatText.text = ""
+		return
+	if count <= 0: return
+	var split_text: PackedStringArray = %ChatInput.text.split("\n")
+	for i: int in range(0, count): split_text.remove_at(split_text.size() - 1)
+	%ChatText.text = ""
+	%ChatText.text = "\n".join(split_text)
+
 func toggle_visibility() -> void:
 	visible = not visible
 

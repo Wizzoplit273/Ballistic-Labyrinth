@@ -192,6 +192,12 @@ func _enter_tree() -> void:
 		StaffAccess.OP,
 		false
 	)
+	register_command(
+		["purge"],
+		"clears the first N messages or every message from every peer",
+		StaffAccess.OP,
+		false
+	)
 
 ## first string in alias list corresponds with a callable's name(ex: "connect" corresponds with cmd_connect)
 func register_command(
@@ -975,3 +981,12 @@ func cmd_value(args: PackedStringArray, flags: Array[PackedStringArray], pid: in
 		print_output("attribute " + args[0] + " has value set to " + attribute_get, "shell_output", pid)
 		return
 	SessionManager.set_pawn_attribute(target_sid, args[0], args[1])
+
+func cmd_purge(args: PackedStringArray, _flags: Array[PackedStringArray], pid: int) -> void:
+	if args.size() <= 0:
+		print_output("usage: purge {COUNT/all}", "shell_output", pid)
+		return
+	if args[0] == "all":
+		ChatManager.purge(-1)
+		return
+	ChatManager.purge(int(args[0]))

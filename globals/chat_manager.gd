@@ -36,6 +36,24 @@ func update_chat_history(new_message: Dictionary) -> void:
 	if NetworkManager.is_dedicated_server: ConsoleManager.dedicated_server_print(new_message)
 	else: update_local_chat_ui.emit(new_array)
 
+@rpc("authority", "reliable")
+func purge(count: int) -> void:
+	if count < -1 or count == 0: return
+	if count == -1:
+		chat_history.clear()
+		clear_chat_menu(-1)
+		if not multiplayer.is_server(): return
+		purge.rpc(-1)
+		return
+	for i: int in range(0, count): chat_history.pop_front()
+	clear_chat_menu(count)
+	if not multiplayer.is_server(): return
+	purge.rpc(count)
+
+func clear_chat_menu(count: int) -> void:
+	if not UIManager.is_ui_configured: return
+	UIManager.chat_menu_node.clear_chat(count)
+
 var max_message_size: int = 120
 
 ## CHANNELS
