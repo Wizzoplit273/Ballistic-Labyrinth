@@ -3,6 +3,16 @@ extends Node
 var chat_history: Array[Dictionary] = []
 var MAX_HISTORY: int = 100
 
+var is_chat_enabled: bool = true
+
+@rpc("any_peer", "reliable", "call_local")
+func toggle_chat_messaging() -> void:
+	if not multiplayer.is_server(): return
+	is_chat_enabled = not is_chat_enabled
+	var state: String = "enabled"
+	if not is_chat_enabled: state = "disabled"
+	ConsoleManager.print_output("Chat messaging has been " + state, "global", 0)
+
 signal remove_previous_message
 @rpc("authority", "reliable", "call_local")
 func remove_previous_local_message() -> void:
@@ -26,7 +36,7 @@ func update_chat_history(new_message: Dictionary) -> void:
 	if NetworkManager.is_dedicated_server: ConsoleManager.dedicated_server_print(new_message)
 	else: update_local_chat_ui.emit(new_array)
 
-var max_message_size: int = 100
+var max_message_size: int = 120
 
 ## CHANNELS
 ## --- shell_input: input command(only for configured chat menu UI, sent only locally)
@@ -39,13 +49,15 @@ var max_message_size: int = 100
 signal update_local_chat_ui(messages: Array[Dictionary])
 @rpc("any_peer", "reliable", "call_local")
 func process_message(text: String, channel: String, target_pid: int) -> void:
+	if channel == "peer" and not is_chat_enabled: return
 	if target_pid < 0: return
 	var sender_id: int
 	if not multiplayer: sender_id = 0
 	else: sender_id = multiplayer.get_remote_sender_id()
 	if SessionManager.is_muted(sender_id): return
 	var final_text: String = text.strip_edges()
-	if final_text.length() > max_message_size: final_text = final_text.substr(0, max_message_size)
+	if channel == "peer": ## temporary fix, could easily be bypassed if client sends on a different channel
+		if final_text.length() > max_message_size: final_text = final_text.substr(0, max_message_size)
 	var message: Dictionary = {}
 	var new_array: Array[Dictionary] = []
 	if sender_id == 0 or target_pid == 1:

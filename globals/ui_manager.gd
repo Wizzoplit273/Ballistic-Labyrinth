@@ -39,6 +39,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		if lobby_node.visible and IngameManager.current_state == IngameManager.State.STOPPED: return
 		if not SessionManager.is_admin(multiplayer.get_unique_id()): return
 		MasterManager.set_pause.rpc_id(1, not pause_menu_node.visible)
+	if event.is_action_pressed(&"ToggleChat"):
+		if not SessionManager.is_op(multiplayer.get_unique_id()): return
+		ChatManager.toggle_chat_messaging.rpc_id(1)
 	if event.is_action_pressed(&"MoveWindow"):
 		chat_menu_node.toggle_move_window()
 	if event.is_action_pressed(&"ResizeWindow"):
