@@ -51,9 +51,22 @@ func configure_spawners() -> void:
 	$Crates.spawn_function = spawn_crate
 	$Bullets.spawn_function = IngameManager.spawn_bullet
 
+var STEPS_PER_FRAME: int = 1
+var WAIT_FRAMES_COUNT: int = 1
+var current_step_count: int = 0
+func wait_frames(count: int) -> void:
+	current_step_count += 1
+	if current_step_count <= STEPS_PER_FRAME: return
+	current_step_count = 0
+	var target_frame: int = Engine.get_physics_frames() + count
+	while Engine.get_physics_frames() < target_frame:
+		await get_tree().physics_frame
+
 func _ready() -> void:
 	IngameManager.set_current_state(IngameManager.State.ANIMATING)
-	is_generation_animated = false #IngameManager.current_is_animated_generation
+	STEPS_PER_FRAME = IngameManager.SET_STEPS_PER_FRAME
+	WAIT_FRAMES_COUNT = IngameManager.SET_WAIT_FRAMES_COUNT
+	is_generation_animated = IngameManager.current_is_animated_generation # = false
 	process_mode = Node.PROCESS_MODE_INHERIT
 	SEEDED_RNG.seed = IngameManager.current_seed
 	configure_spawners()
@@ -90,9 +103,11 @@ func create_maze_rectangle() -> void:
 	for row: int in range(0, IngameManager.current_maze_dimensions.y):
 		for column: int in range(0, IngameManager.current_maze_dimensions.x):
 			if is_generation_animated:
-				$Timers/Await.start()
-				await finish_await
-				$Sounds/DimensionsGenerationNoise.play()
+				await wait_frames(WAIT_FRAMES_COUNT)
+				#$Timers/Await.start()
+				#await finish_await
+				if current_step_count == 0:
+					$Sounds/DimensionsGenerationNoise.play()
 			var selected_cell: Vector2i = Vector2i(column, row)
 			$Map/Ground.set_cell(selected_cell, 0, Vector2i(0, 0), 1)
 			maze_cells.push_back(selected_cell)
@@ -266,9 +281,11 @@ func generate_maze_with_randomized_prim() -> void:
 	#var i: int = 0
 	while frontier_cells.size() != 0:
 		if is_generation_animated:
-			$Timers/Await.start()
-			await finish_await
-			$Sounds/MazeGenerationNoise.play()
+			await wait_frames(WAIT_FRAMES_COUNT)
+			#$Timers/Await.start()
+			#await finish_await
+			if current_step_count == 0:
+				$Sounds/MazeGenerationNoise.play()
 		if SEEDED_RNG.randi_range(0, 2) == 0:
 			selected_frontier_cell_index = 0
 		elif SEEDED_RNG.randi_range(0, 2) == 0:

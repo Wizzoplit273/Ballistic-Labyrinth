@@ -1,7 +1,6 @@
 extends Node
 
 const SERVER_PORT: int = 7777
-const WS_BUFFER_SIZE: int = 4 * 1024 * 1024
 
 var peer: WebSocketMultiplayerPeer
 
@@ -44,11 +43,17 @@ func setup_websocket_no_delay() -> void:
 	if not multiplayer.multiplayer_peer: return
 	multiplayer.multiplayer_peer.transfer_mode = MultiplayerPeer.TRANSFER_MODE_UNRELIABLE_ORDERED
 
+const WS_BUFFER_SIZE: int = 32 * 1024 # 32KB
+func setup_multiplayer_peer_settings() -> void:
+	if peer == null: return
+	peer.inbound_buffer_size = WS_BUFFER_SIZE
+	peer.outbound_buffer_size = WS_BUFFER_SIZE
+	peer.max_queued_packets = 1024
+
 func start_server() -> void:
 	if is_online: return
 	peer = WebSocketMultiplayerPeer.new()
-	peer.inbound_buffer_size = WS_BUFFER_SIZE
-	peer.outbound_buffer_size = WS_BUFFER_SIZE
+	setup_multiplayer_peer_settings()
 	var error: Error = peer.create_server(SERVER_PORT)
 	if error != OK:
 		print_error("NETWORK ERROR: cannot host: " + str(error))
@@ -63,8 +68,7 @@ func start_client() -> void:
 	if is_online: return
 	print_local("Connecting to server...")
 	peer = WebSocketMultiplayerPeer.new()
-	peer.inbound_buffer_size = WS_BUFFER_SIZE
-	peer.outbound_buffer_size = WS_BUFFER_SIZE
+	setup_multiplayer_peer_settings()
 	var error: Error = peer.create_client(url)
 	if error != OK:
 		print_error("NETWORK ERROR: connection failed: " + str(error))

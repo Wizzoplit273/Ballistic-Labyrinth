@@ -9,6 +9,18 @@ enum State {
 
 var current_state: State = State.STOPPED
 
+var SET_STEPS_PER_FRAME: int = 2
+var SET_WAIT_FRAMES_COUNT: int = 1
+
+@rpc("authority", "reliable", "call_local")
+func set_steps_per_frame(count: int) -> void:
+	if count <= 0: return
+	SET_STEPS_PER_FRAME = count
+
+func set_wait_frames_count(count: int) -> void:
+	if count <= 0: return
+	SET_WAIT_FRAMES_COUNT = count
+
 var is_showing_states: bool = false
 func set_current_state(state: State) -> void:
 	current_state = state

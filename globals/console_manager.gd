@@ -198,6 +198,18 @@ func _enter_tree() -> void:
 		StaffAccess.OP,
 		false
 	)
+	register_command(
+		["set_steps_per_frame"],
+		"sets the amount of generation steps for each physics frame during maze generation animation",
+		StaffAccess.OP,
+		false
+	)
+	register_command(
+		["set_wait_frames_count"],
+		"sets the amount of physics frames to wait for each consecutive step made during maze generation animation",
+		StaffAccess.OP,
+		false
+	)
 
 ## first string in alias list corresponds with a callable's name(ex: "connect" corresponds with cmd_connect)
 func register_command(
@@ -990,3 +1002,15 @@ func cmd_purge(args: PackedStringArray, _flags: Array[PackedStringArray], pid: i
 		ChatManager.purge(-1)
 		return
 	ChatManager.purge(int(args[0]))
+
+func cmd_set_steps_per_frame(args: PackedStringArray, _flags: Array[PackedStringArray], pid: int) -> void:
+	if args.size() <= 0:
+		print_output("usage: set_steps_per_frame {COUNT}", "shell_output", pid)
+		return
+	IngameManager.set_steps_per_frame(int(args[0]))
+
+func cmd_set_wait_frames_count(args: PackedStringArray, _flags: Array[PackedStringArray], pid: int) -> void:
+	if args.size() <= 0:
+		print_output("usage: set_wait_frames_count {COUNT}", "shell_output", pid)
+		return
+	IngameManager.set_wait_frames_count(int(args[0]))
