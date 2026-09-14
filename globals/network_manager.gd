@@ -83,6 +83,8 @@ func peer_connected(peer_id: int) -> void:
 	var encoded_pid: String = SessionManager.encode_session_id(peer_id)
 	ConsoleManager.print_output("Player connected with peer id = " + encoded_pid, "global", peer_id)
 	MasterManager.play_server_sound(MasterManager.sounds.get_node(^"PlayerJoin"))
+	IngameManager.set_steps_per_frame.rpc_id(peer_id, IngameManager.SET_STEPS_PER_FRAME)
+	IngameManager.set_wait_frames_count.rpc_id(peer_id, IngameManager.SET_WAIT_FRAMES_COUNT)
 	if IngameManager.current_state == IngameManager.State.STOPPED:
 		IngameManager.set_future_maze_generation.rpc_id(peer_id, IngameManager.current_is_animated_generation)
 	else: UIManager.confirm_spectating.rpc_id(peer_id, IngameManager.current_is_animated_generation)

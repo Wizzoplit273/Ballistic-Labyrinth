@@ -17,6 +17,7 @@ func set_steps_per_frame(count: int) -> void:
 	if count <= 0: return
 	SET_STEPS_PER_FRAME = count
 
+@rpc("authority", "reliable", "call_local")
 func set_wait_frames_count(count: int) -> void:
 	if count <= 0: return
 	SET_WAIT_FRAMES_COUNT = count

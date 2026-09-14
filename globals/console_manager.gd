@@ -1013,13 +1013,13 @@ func cmd_set_steps_per_frame(args: PackedStringArray, _flags: Array[PackedString
 	if args.size() <= 0:
 		print_output("usage: set_steps_per_frame {COUNT}", "shell_output", pid)
 		return
-	IngameManager.set_steps_per_frame(int(args[0]))
+	IngameManager.set_steps_per_frame.rpc(int(args[0]))
 
 func cmd_set_wait_frames_count(args: PackedStringArray, _flags: Array[PackedStringArray], pid: int) -> void:
 	if args.size() <= 0:
 		print_output("usage: set_wait_frames_count {COUNT}", "shell_output", pid)
 		return
-	IngameManager.set_wait_frames_count(int(args[0]))
+	IngameManager.set_wait_frames_count.rpc(int(args[0]))
 
 func cmd_set_maze_generation(args: PackedStringArray, _flags: Array[PackedStringArray], pid: int) -> void:
 	if args.size() <= 0:
